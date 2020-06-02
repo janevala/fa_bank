@@ -51,42 +51,71 @@ class LoginScreen extends StatelessWidget {
             }
           },
           child: SafeArea(
-            child: Container(
-              color: Constants.faColorRed[900],
-              child: Stack(
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.all(16),
-                    child: ListView(
-                      children: <Widget>[
-                        _buildWidgetImageHeader(),
-                        _buildWidgetSizedBox(16.0),
-                        _buildWidgetLabel(context, 'USER NAME'),
-                        _buildWidgetTextFieldUserName(context),
-                        _buildWidgetSizedBox(16.0),
-                        _buildWidgetLabel(context, 'PASSWORD'),
-                        _buildWidgetTextFieldPassword(context),
-                        _buildWidgetSizedBox(64.0),
-                        _buildWidgetButtonSignin(context),
-                      ],
+            child: Stack(
+              children: <Widget>[
+                ListView(
+                  children: <Widget>[
+                    Container(
+                      height: heightScreen,
+                      color: Constants.faColorRed[900],
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: ListView(
+                          children: <Widget>[
+                            _buildWidgetImageHeader(),
+                            _buildWidgetSizedBox(32),
+                            _buildWidgetLabel(context, 'USER NAME'),
+                            _buildWidgetTextFieldUserName(context),
+                            _buildWidgetSizedBox(32),
+                            _buildWidgetLabel(context, 'PASSWORD'),
+                            _buildWidgetTextFieldPassword(context),
+                            _buildWidgetSizedBox(64),
+                            _buildWidgetButtonSignin(context),
+                            _buildWidgetSizedBox(64),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  BlocBuilder<LoginBloc, LoginState>(
-                    builder: (context, state) {
-                      if (state is LoginLoading) {
-                        return Spinner();
-                      } else {
-                        return Container();
-                      }
-                    },
-                  ),
-                ],
-              ),
+/*                    Container(
+                      height: 150,
+                      color: Colors.white,
+                      child: _buildInformation(context),
+                    )*/
+                  ],
+                ),
+                BlocBuilder<LoginBloc, LoginState>(
+                  builder: (context, state) {
+                    if (state is LoginLoading) {
+                      return Spinner();
+                    } else {
+                      return Container();
+                    }
+                  },
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildInformation(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        _buildWidgetHeadline6(context, 'FORGOT PASSWORD?'),
+        _buildWidgetHeadline6(context, 'PRIVACY POLICY'),
+      ],
+    );
+  }
+
+  Widget _buildWidgetHeadline6(BuildContext context, String text) {
+    return Center(
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.headline6,
+        ));
   }
 
   Widget _buildWidgetButtonSignin(BuildContext context) {
@@ -114,6 +143,11 @@ class LoginScreen extends StatelessWidget {
           }
         },
         color: Colors.white,
+          shape: RoundedRectangleBorder(
+              borderRadius:
+              new BorderRadius
+                  .circular(
+                  5.0))
       ),
     );
   }

@@ -14,6 +14,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:intl/intl.dart';
 
 /// "Security" as in financial nomenclature, not data or information security.
 ///
@@ -150,7 +151,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         options: QueryOptions(
                             documentNode: gql(securityQuery),
                             variables: {"securityCode": security.securityCode},
-                            pollInterval: 10000),
+                            pollInterval: 30000),
                         builder: (QueryResult result,
                             {VoidCallback refetch, FetchMore fetchMore}) {
                           if (result.hasException) {
@@ -583,7 +584,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             _buildWidgetSubtitle2(context, 'INFORMATION'),
-            _buildWidgetHeadline6(context, '10 May 2020'),
+            _buildWidgetHeadline6(context, _getCurrentTime()),
           ],
         ));
   }
@@ -666,6 +667,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
             TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600]),
           ),
     ));
+  }
+
+  String _getCurrentTime() {
+    DateTime now = DateTime.now();
+    return DateFormat('d MMMM yyyy').format(now);
   }
 
   List<charts.Series<TimeSeries, DateTime>> _createChartData(
