@@ -133,12 +133,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 height: AppBar().preferredSize.height * 0.8),
             backgroundColor: Constants.faColorRed[900],
             actions: <Widget>[
-              IconButton(
+/*              IconButton(
                 icon: Icon(Icons.refresh),
                 onPressed: () {
                   doRefreshToken();
                 },
-              ),
+              ),*/
               IconButton(
                 icon: Icon(Icons.exit_to_app),
                 onPressed: () {
@@ -252,7 +252,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: InkWell(
               onTap: () => showToast(context, 'Not implemented'),
               child: Container(
-                  height: 32,
+                  height: 30,
                   child: RichText(
                     text: TextSpan(
                       style: Theme.of(context).textTheme.bodyText2.merge(
@@ -277,7 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Expanded(
           child: Center(
         child: ButtonTheme(
-            height: 32,
+            height: 30,
             minWidth: 32,
             child: FlatButton(
                 color: _pressWeekAttention
@@ -313,7 +313,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Expanded(
           child: Center(
         child: ButtonTheme(
-          height: 32,
+          height: 30,
           minWidth: 32,
           child: FlatButton(
               color: _pressMonthAttention
@@ -350,7 +350,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Expanded(
           child: Center(
         child: ButtonTheme(
-          height: 32,
+          height: 30,
           minWidth: 32,
           child: FlatButton(
               color: _press3MonthAttention
@@ -387,7 +387,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Expanded(
           child: Center(
         child: ButtonTheme(
-            height: 32,
+            height: 30,
             minWidth: 32,
             child: FlatButton(
                 color: _press6MonthAttention
@@ -423,7 +423,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Expanded(
           child: Center(
         child: ButtonTheme(
-            height: 32,
+            height: 30,
             minWidth: 32,
             child: FlatButton(
                 color: false ? Constants.faColorRed[900] : Colors.white,

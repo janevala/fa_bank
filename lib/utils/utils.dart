@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:fa_bank/constants.dart';
 import 'package:flutter/material.dart';
 
 class Utils {
@@ -7,7 +8,7 @@ class Utils {
     if (d > 0)
       return Colors.green;
     else if (d < 0)
-      return Colors.red;
+      return Constants.faColorRed[900];
     else
       return Colors.black;
   }

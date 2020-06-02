@@ -73,15 +73,17 @@ class InvestmentItem extends StatelessWidget {
               ),
             ),
             Expanded(
-                flex: 2,
+                flex: 3,
                 child: Column(
                   children: <Widget>[
                     _buildWidgetBodyText2(context, 'Today'),
-                    _buildWidgetHeadline6(context, 'n/a', Colors.black),
+                    _buildWidgetHeadline6(
+                        context,
+                        investment.changePercent.toStringAsFixed(2) + '%',
+                        Utils.getColor(investment.changePercent)),
                   ],
                 )),
             Expanded(
-              flex: 1,
               child: iconForwardPlatform,
             )
           ])
@@ -95,7 +97,7 @@ class InvestmentItem extends StatelessWidget {
         child: Text(
           text,
           style: Theme.of(context).textTheme.headline6.merge(
-                TextStyle(fontSize: 18, color: color),
+                TextStyle(fontSize: 17, color: color),
               ),
         ));
   }
@@ -106,7 +108,7 @@ class InvestmentItem extends StatelessWidget {
         child: Text(
           text,
           style: Theme.of(context).textTheme.bodyText2.merge(
-                TextStyle(fontSize: 16, color: Colors.grey[600]),
+                TextStyle(fontSize: 15, color: Colors.grey[600]),
               ),
         ));
   }
