@@ -42,7 +42,7 @@ query PortfolioOverview(\$id: Long!) {
         changePercent: valueChangeRelative
       }
     }
-    graph:analytics(withoutPositionData:true,
+    graph:analytics(withoutPositionData:false,
       parameters: {
         paramsSet: {
           timePeriodCodes:"GIVEN"
@@ -64,6 +64,8 @@ query PortfolioOverview(\$id: Long!) {
 }
 """;
 
+//note withoutPositionData false = slower query
+
 final SharedPreferencesManager _sharedPreferencesManager =
     locator<SharedPreferencesManager>();
 
@@ -72,16 +74,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 
   //Graph globals
-  final bool _graphAnimate = false;
+  bool _graphAnimate = true;
   String _graphDateCriteria = 'all';
   bool _pressWeekAttention = false;
   bool _pressMonthAttention = false;
   bool _press3MonthAttention = false;
   bool _press6MonthAttention = false;
+  bool _pressYTDAttention = false;
   static const String _week = '1w';
   static const String _month = '1m';
   static const String _threeMonth = '3m';
   static const String _sixMonth = '6m';
+  static const String _ytd = 'YTD';
 
   @override
   void initState() {
@@ -171,6 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         options: QueryOptions(
                             documentNode: gql(portfolioQuery),
                             variables: {"id": 10527075},
+//                            variables: {"id": 10527024},
                             pollInterval: 30000),
                         builder: (QueryResult result,
                             {VoidCallback refetch, FetchMore fetchMore}) {
@@ -207,14 +212,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   _widgetTitle(context, portfolioBody),
                                   Container(height: 12, color: Colors.grey[300]),
                                   _widgetSummary(context, portfolioBody),
-                                  _widgetDateChooser(context),
+                                  Padding(padding: EdgeInsets.only(left: 2, right: 2),
+                                      child: _widgetDateChooser(context)),
                                   Container(
                                     height: 250,
-                                    child: charts.TimeSeriesChart(_chartData(portfolioBody.portfolio.graph),
-                                      animate: _graphAnimate,
-                                      defaultRenderer: charts.LineRendererConfig(),
-                                      customSeriesRenderers: [charts.PointRendererConfig(customRendererId: 'stocksPoint')],
-                                      dateTimeFactory: const charts.LocalDateTimeFactory(),
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 4, right: 4),
+                                      child: charts.TimeSeriesChart(_chartData(portfolioBody.portfolio.graph),
+                                        animate: _graphAnimate,
+                                        defaultRenderer: charts.LineRendererConfig(),
+                                        customSeriesRenderers: [charts.PointRendererConfig(customRendererId: 'stocksPoint')],
+                                        dateTimeFactory: const charts.LocalDateTimeFactory(),
+                                      ),
                                     ),
                                   ),
                                   _widgetDescriptor(context),
@@ -244,7 +253,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           children: <Widget>[
             _widgetHeadline6(context, portfolio.portfolio.portfolioName),
-            _widgetBodyText2(context, portfolio.portfolio.client.name),
+            Center(
+                child: Text(
+                  portfolio.portfolio.client.name,
+                  style: Theme.of(context).textTheme.bodyText2.merge(
+                    TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.grey[600]),
+                  ),
+                ))
           ],
         ));
   }
@@ -252,34 +267,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _widgetDateChooser(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
       Expanded(
-          flex: 2,
-          child: Center(
-            child: InkWell(
-              onTap: () => _showToast(context, 'Not implemented'),
-              child: Container(
-                  height: 30,
+          flex: 3,
+          child: InkWell(
+            onTap: () => _showToast(context, 'Not implemented'),
+            child: Container(
+                height: 30,
+                child: Center(
                   child: RichText(
                     text: TextSpan(
                       style: Theme.of(context).textTheme.bodyText2.merge(
-                            TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black),
-                          ),
+                        TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                      ),
                       children: [
                         WidgetSpan(
                           child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 2.0),
-                            child: Icon(Icons.date_range),
+                            padding: EdgeInsets.only(right: 2.0),
+                            child: Icon(Icons.date_range, size: 20),
                           ),
                         ),
                         TextSpan(text: 'Date range'),
                       ],
                     ),
-                  )),
-            ),
+                  ),
+                )),
           )),
       Expanded(
+          flex: 2,
           child: Center(
         child: ButtonTheme(
             height: 30,
@@ -305,6 +320,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _pressMonthAttention = false;
                       _press3MonthAttention = false;
                       _press6MonthAttention = false;
+                      _pressYTDAttention = false;
+
+                      _graphAnimate = false;
                     }),
                 shape: RoundedRectangleBorder(
                     side: BorderSide(
@@ -316,6 +334,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     borderRadius: new BorderRadius.circular(20.0)))),
       )),
       Expanded(
+          flex: 2,
           child: Center(
         child: ButtonTheme(
           height: 30,
@@ -341,6 +360,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _pressWeekAttention = false;
                     _press3MonthAttention = false;
                     _press6MonthAttention = false;
+                    _pressYTDAttention = false;
+
+                    _graphAnimate = false;
                   }),
               shape: RoundedRectangleBorder(
                   side: BorderSide(
@@ -353,6 +375,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       )),
       Expanded(
+          flex: 2,
           child: Center(
         child: ButtonTheme(
           height: 30,
@@ -378,6 +401,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _pressWeekAttention = false;
                     _pressMonthAttention = false;
                     _press6MonthAttention = false;
+                    _pressYTDAttention = false;
+
+                    _graphAnimate = false;
                   }),
               shape: RoundedRectangleBorder(
                   side: BorderSide(
@@ -390,6 +416,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       )),
       Expanded(
+          flex: 2,
           child: Center(
         child: ButtonTheme(
             height: 30,
@@ -415,6 +442,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _pressWeekAttention = false;
                       _pressMonthAttention = false;
                       _press3MonthAttention = false;
+                      _pressYTDAttention = false;
+
+                      _graphAnimate = false;
                     }),
                 shape: RoundedRectangleBorder(
                     side: BorderSide(
@@ -426,26 +456,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     borderRadius: new BorderRadius.circular(20.0)))),
       )),
       Expanded(
+          flex: 2,
           child: Center(
-        child: ButtonTheme(
-            height: 30,
-            minWidth: 32,
-            child: FlatButton(
-                color: false ? Constants.faRed[900] : Colors.white,
-                child: Text('ytd',
-                    style: Theme.of(context).textTheme.bodyText2.merge(
+            child: ButtonTheme(
+                height: 30,
+                minWidth: 32,
+                child: FlatButton(
+                    color: _pressYTDAttention
+                        ? Constants.faRed[900]
+                        : Colors.white,
+                    child: Text(_ytd,
+                        style: Theme.of(context).textTheme.bodyText2.merge(
                           TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: false ? Colors.white : Colors.black),
+                              color: _pressYTDAttention
+                                  ? Colors.white
+                                  : Colors.black),
                         )),
-                onPressed: () => _showToast(context, 'Not implemented'),
-                shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                        color: false ? Constants.faRed[900] : Colors.black,
-                        width: 1,
-                        style: BorderStyle.solid),
-                    borderRadius: new BorderRadius.circular(20.0)))),
-      ))
+                    onPressed: () => setState(() {
+                      if (_pressYTDAttention)
+                        _graphDateCriteria = 'all';
+                      else
+                        _graphDateCriteria = _ytd;
+                      _pressYTDAttention = !_pressYTDAttention;
+                      _pressWeekAttention = false;
+                      _pressMonthAttention = false;
+                      _press3MonthAttention = false;
+                      _press6MonthAttention = false;
+
+                      _graphAnimate = false;
+                    }),
+                    shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                            color: _pressYTDAttention
+                                ? Constants.faRed[900]
+                                : Colors.black,
+                            width: 1,
+                            style: BorderStyle.solid),
+                        borderRadius: new BorderRadius.circular(20.0)))),
+          ))
     ]);
   }
 
@@ -458,10 +507,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Net asset value'),
-              _widgetHeadline6(
-                  context,
-                  portfolio.portfolio.portfolioReport.netAssetValue.toString() +
-                      ' €')
+              Center(
+                  child: Text(
+                    portfolio.portfolio.portfolioReport.netAssetValue.toString() + ' €',
+                    style: Theme.of(context).textTheme.headline6.merge(
+                      TextStyle(fontSize: 19)
+                    ),
+                  ))
             ],
           ),
         ),
@@ -469,10 +521,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Market value'),
-              _widgetHeadline6(
-                  context,
-                  portfolio.portfolio.portfolioReport.marketValue.toString() +
-                      ' €')
+              Center(
+                  child: Text(
+                    portfolio.portfolio.portfolioReport.marketValue.toString() + ' €',
+                      style: Theme.of(context).textTheme.headline6.merge(
+                          TextStyle(fontSize: 19)
+                      )
+                  ))
             ],
           ),
         ),
@@ -480,10 +535,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Cash balance'),
-              _widgetHeadline6(
-                  context,
-                  portfolio.portfolio.portfolioReport.cashBalance.toString() +
-                      ' €')
+              Center(
+                  child: Text(
+                    portfolio.portfolio.portfolioReport.cashBalance.toString() + ' €',
+                      style: Theme.of(context).textTheme.headline6.merge(
+                          TextStyle(fontSize: 19)
+                      )
+                  ))
             ],
           ),
         ),
@@ -528,7 +586,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 //    deviceList.sort((a, b) => b.deviceLocation.deviceTime.compareTo(a.deviceLocation.deviceTime));
 
     return Padding(
-        padding: EdgeInsets.all(12),
+        padding: EdgeInsets.only(top: 12, bottom: 12, left: 6, right: 6),
         child: ListView.builder(
             itemCount: investments.length,
             scrollDirection: Axis.vertical,
@@ -569,17 +627,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (_graphDateCriteria == 'all')
       comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
     if (_graphDateCriteria == _week)
-      comparisonDate =
-          DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
+      comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
     if (_graphDateCriteria == _month)
-      comparisonDate =
-          DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
+      comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
     if (_graphDateCriteria == _threeMonth)
-      comparisonDate =
-          DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
+      comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
     if (_graphDateCriteria == _sixMonth)
-      comparisonDate =
-          DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
+      comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
+    if (_graphDateCriteria == _ytd)
+      comparisonDate = DateTime(lastDate.year, 1, 1);
 
     for (var i = 0; i < graph.dailyValues.dailyValue.length; i++) {
       var v = graph.dailyValues.dailyValue[i];

@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// "Security" as in financial nomenclature, not data or information security.
 ///
@@ -34,6 +35,7 @@ query Security(\$securityCode: String) {
     marketData: latestMarketData {
       latestValue:close
     }
+    url
     graph:marketDataHistory(timePeriodCode:"YEARS-1") {
       date:obsDate
       price:close
@@ -52,16 +54,18 @@ class _SecurityScreenState extends State<SecurityScreen> {
   final SecurityBloc _securityBloc = SecurityBloc();
 
   //Graph globals
-  final bool _graphAnimate = false;
+  bool _graphAnimate = true;
   String _graphDateCriteria = 'all';
   bool _pressWeekAttention = false;
   bool _pressMonthAttention = false;
   bool _press3MonthAttention = false;
   bool _press6MonthAttention = false;
+  bool _pressYTDAttention = false;
   static const String _week = '1w';
   static const String _month = '1m';
   static const String _threeMonth = '3m';
   static const String _sixMonth = '6m';
+  static const String _ytd = 'YTD';
 
   @override
   void initState() {
@@ -124,14 +128,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
         client: _faClient,
         child: Scaffold(
           appBar: AppBar(
+            centerTitle: true,
             iconTheme: IconThemeData(color: Colors.white),
-            title: Center(
-              child: Text(
-                security.name,
-                style: Theme.of(context).textTheme.headline6.merge(
-                      TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
+            title: Text(
+              security.name,
+              style: Theme.of(context).textTheme.headline6.merge(
+                TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.white),
               ),
             ),
             backgroundColor: Constants.faRed[900],
@@ -197,14 +200,20 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                         _widgetSummary(context, securityBody),
                                         Divider(color: Colors.grey),
                                         _widgetDetail(context, securityBody),
-                                        _widgetDateChooser(context),
+                                        Padding(
+                                          padding: EdgeInsets.only(left: 2, right: 2),
+                                          child: _widgetDateChooser(context)
+                                        ),
                                         Container(
                                           height: 250,
-                                          child: charts.TimeSeriesChart(_chartData(securityBody.securities[0].graph),
-                                            animate: _graphAnimate,
-                                            defaultRenderer: charts.LineRendererConfig(),
-                                            customSeriesRenderers: [charts.PointRendererConfig(customRendererId: 'stocksPoint')],
-                                            dateTimeFactory: const charts.LocalDateTimeFactory(),
+                                          child: Padding(
+                                            padding: EdgeInsets.only(left: 4, right: 4),
+                                              child: charts.TimeSeriesChart(_chartData(securityBody.securities[0].graph),
+                                                animate: _graphAnimate,
+                                                defaultRenderer: charts.LineRendererConfig(),
+                                                customSeriesRenderers: [charts.PointRendererConfig(customRendererId: 'stocksPoint')],
+                                                dateTimeFactory: const charts.LocalDateTimeFactory(),
+                                              ),
                                           ),
                                         ),
                                         Container(
@@ -213,7 +222,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                             padding: EdgeInsets.only(left: 56, right: 56),
                                             child: Column(
                                                 children: <Widget>[
-                                                  _widgetInformation(context),
+                                                  _widgetInformation(context, securityBody.securities[0].url),
                                                   Divider(color: Colors.black),
                                                   _widgetRow(context, 'Ask', securityBody.securities[0].marketData.latestValue.toString()),
                                                   _widgetRow(context, 'Bid', securityBody.securities[0].marketData.latestValue.toString()),
@@ -314,12 +323,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
   Widget _widgetDateChooser(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
       Expanded(
-          flex: 2,
-          child: Center(
-            child: InkWell(
-              onTap: () => _showToast(context, 'Not implemented'),
-              child: Container(
-                  height: 30,
+          flex: 3,
+          child: InkWell(
+            onTap: () => _showToast(context, 'Not implemented'),
+            child: Container(
+                height: 30,
+                child: Center(
                   child: RichText(
                     text: TextSpan(
                       style: Theme.of(context).textTheme.bodyText2.merge(
@@ -330,18 +339,18 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       children: [
                         WidgetSpan(
                           child: Padding(
-                            padding:
-                            const EdgeInsets.symmetric(horizontal: 2.0),
-                            child: Icon(Icons.date_range),
+                            padding: EdgeInsets.only(right: 2.0),
+                            child: Icon(Icons.date_range, size: 20),
                           ),
                         ),
                         TextSpan(text: 'Date range'),
                       ],
                     ),
-                  )),
-            ),
+                  ),
+                )),
           )),
       Expanded(
+          flex: 2,
           child: Center(
             child: ButtonTheme(
                 height: 30,
@@ -367,6 +376,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       _pressMonthAttention = false;
                       _press3MonthAttention = false;
                       _press6MonthAttention = false;
+                      _pressYTDAttention = false;
+
+                      _graphAnimate = false;
                     }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
@@ -378,6 +390,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         borderRadius: new BorderRadius.circular(20.0)))),
           )),
       Expanded(
+          flex: 2,
           child: Center(
             child: ButtonTheme(
               height: 30,
@@ -403,6 +416,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     _pressWeekAttention = false;
                     _press3MonthAttention = false;
                     _press6MonthAttention = false;
+                    _pressYTDAttention = false;
+
+                    _graphAnimate = false;
                   }),
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
@@ -415,6 +431,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             ),
           )),
       Expanded(
+          flex: 2,
           child: Center(
             child: ButtonTheme(
               height: 30,
@@ -440,6 +457,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     _pressWeekAttention = false;
                     _pressMonthAttention = false;
                     _press6MonthAttention = false;
+                    _pressYTDAttention = false;
+
+                    _graphAnimate = false;
                   }),
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
@@ -452,6 +472,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             ),
           )),
       Expanded(
+          flex: 2,
           child: Center(
             child: ButtonTheme(
                 height: 30,
@@ -477,6 +498,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       _pressWeekAttention = false;
                       _pressMonthAttention = false;
                       _press3MonthAttention = false;
+                      _pressYTDAttention = false;
+
+                      _graphAnimate = false;
                     }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
@@ -488,22 +512,41 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         borderRadius: new BorderRadius.circular(20.0)))),
           )),
       Expanded(
+          flex: 2,
           child: Center(
             child: ButtonTheme(
                 height: 30,
                 minWidth: 32,
                 child: FlatButton(
-                    color: false ? Constants.faRed[900] : Colors.white,
-                    child: Text('ytd',
+                    color: _pressYTDAttention
+                        ? Constants.faRed[900]
+                        : Colors.white,
+                    child: Text(_ytd,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                           TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: false ? Colors.white : Colors.black),
+                              color: _pressYTDAttention
+                                  ? Colors.white
+                                  : Colors.black),
                         )),
-                    onPressed: () => _showToast(context, 'Not implemented'),
+                    onPressed: () => setState(() {
+                      if (_pressYTDAttention)
+                        _graphDateCriteria = 'all';
+                      else
+                        _graphDateCriteria = _ytd;
+                      _pressYTDAttention = !_pressYTDAttention;
+                      _pressWeekAttention = false;
+                      _pressMonthAttention = false;
+                      _press3MonthAttention = false;
+                      _press6MonthAttention = false;
+
+                      _graphAnimate = false;
+                    }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: false ? Constants.faRed[900] : Colors.black,
+                            color: _pressYTDAttention
+                                ? Constants.faRed[900]
+                                : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -591,26 +634,46 @@ class _SecurityScreenState extends State<SecurityScreen> {
     );
   }
 
-  Widget _widgetInformation(BuildContext context) {
+  Widget _widgetInformation(BuildContext context, String url) {
     return Padding(
         padding: EdgeInsets.only(top: 16, bottom: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Center(
-                child: Text(
-                  'INFORMATION',
-                  style: Theme.of(context).textTheme.headline6.merge(
-                    TextStyle(fontSize: 20),
-                  ),
-                )),
-            Center(
-                child: Text(
-                  _getCurrentTime(),
-                  style: Theme.of(context).textTheme.headline6.merge(
-                    TextStyle(fontSize: 20),
-                  ),
-                ))
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Center(
+                    child: Text(
+                      'INFORMATION',
+                      style: Theme.of(context).textTheme.headline6.merge(
+                        TextStyle(fontSize: 20),
+                      ),
+                    )),
+                Center(
+                    child: Text(
+                      _getCurrentTime(),
+                      style: Theme.of(context).textTheme.headline6.merge(
+                        TextStyle(fontSize: 20),
+                      ),
+                    ))
+              ],
+            ),
+            Visibility(
+              visible: (url == null || url == '') ? false : true,
+              child: InkWell(
+                child: IconButton(
+                  icon: Icon(Icons.info_outline),
+                  onPressed: () async {
+                    if (await canLaunch(url)) {
+                      await launch(url);
+                    } else {
+                      _showToast(context, 'Cannot open information');
+                    }
+                  },
+                ),
+              ),
+            )
           ],
         ));
   }
@@ -695,22 +758,19 @@ class _SecurityScreenState extends State<SecurityScreen> {
     if (_graphDateCriteria == 'all')
       comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
     if (_graphDateCriteria == _week)
-      comparisonDate =
-          DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
+      comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
     if (_graphDateCriteria == _month)
-      comparisonDate =
-          DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
+      comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
     if (_graphDateCriteria == _threeMonth)
-      comparisonDate =
-          DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
+      comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
     if (_graphDateCriteria == _sixMonth)
-      comparisonDate =
-          DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
+      comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
+    if (_graphDateCriteria == _ytd)
+      comparisonDate = DateTime(lastDate.year, 1, 1);
 
     for (var i = 0; i < graphs.length; i++) {
       if (graphs[i].date.isAfter(comparisonDate)) {
-        portfolioMinus100Series
-            .add(TimeSeries(graphs[i].date, graphs[i].price));
+        portfolioMinus100Series.add(TimeSeries(graphs[i].date, graphs[i].price));
 //        if (i % 100 == 0) portfolioMinus100Pointers.add(TimeSeries(graphs[i].date, graphs[i].price));
       }
     }

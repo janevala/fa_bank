@@ -9,11 +9,12 @@ part 'security.g.dart';
 class Security {
   String name;
   String securityCode;
+  String url;
   MarketData marketData;
   Currency currency;
   List<Graph> graph;
 
-  Security(this.name, this.securityCode, this.marketData, this.currency, this.graph);
+  Security(this.name, this.securityCode, this.url, this.marketData, this.currency, this.graph);
 
   factory Security.fromJson(Map<String, dynamic> json) => _$SecurityFromJson(json);
 
