@@ -1,19 +1,18 @@
+import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:fa_bank/bloc/security_bloc.dart';
+import 'package:fa_bank/constants.dart';
+import 'package:fa_bank/injector/injector.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/graph.dart';
 import 'package:fa_bank/podo/security/security.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
 import 'package:fa_bank/ui/investment_item.dart';
+import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/material.dart';
-import 'package:fa_bank/constants.dart';
-import 'package:fa_bank/injector/injector.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-
-import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:intl/intl.dart';
 
 /// "Security" as in financial nomenclature, not data or information security.
@@ -52,8 +51,8 @@ final SharedPreferencesManager _sharedPreferencesManager =
 class _SecurityScreenState extends State<SecurityScreen> {
   final SecurityBloc _securityBloc = SecurityBloc();
 
-  final bool animate = false;
-
+  //Graph globals
+  final bool _graphAnimate = false;
   String _graphDateCriteria = 'all';
   bool _pressWeekAttention = false;
   bool _pressMonthAttention = false;
@@ -68,40 +67,51 @@ class _SecurityScreenState extends State<SecurityScreen> {
   void initState() {
     super.initState();
 
-    doRefreshToken();
+    _doRefreshToken();
   }
 
-  static final HttpLink httpLink = HttpLink(uri: Constants.faAuthApi);
+  static final HttpLink _httpLink = HttpLink(uri: Constants.faAuthApi);
 
-  static final AuthLink authLink = AuthLink(
+  static final AuthLink _authLink = AuthLink(
       getToken: () async =>
           'Bearer ' +
           _sharedPreferencesManager
               .getString(SharedPreferencesManager.keyAccessToken));
 
-  static final Link link = authLink.concat(httpLink);
+  static final Link _link = _authLink.concat(_httpLink);
 
-  ValueNotifier<GraphQLClient> faClient = ValueNotifier(
+  ValueNotifier<GraphQLClient> _faClient = ValueNotifier(
     GraphQLClient(
       cache: InMemoryCache(),
-      link: link,
+      link: _link,
     ),
   );
 
-  doOnExpiry() async {
+  _doOnExpiry() async {
     if (_sharedPreferencesManager
         .isKeyExists(SharedPreferencesManager.keyAuthMSecs))
       await _sharedPreferencesManager
           .clearKey(SharedPreferencesManager.keyAuthMSecs);
   }
 
-  doRefreshToken() async {
+  _doRefreshToken() async {
     String refreshToken = _sharedPreferencesManager
         .getString(SharedPreferencesManager.keyRefreshToken);
     RefreshTokenBody refreshTokenBody =
         RefreshTokenBody('refresh_token', refreshToken);
     _securityBloc.add(SecurityEvent(refreshTokenBody));
   }
+
+  String _getCurrentTime() {
+    DateTime now = DateTime.now();
+    return DateFormat('d MMMM yyyy').format(now);
+  }
+
+  _showToast(BuildContext context, var text) {
+    Scaffold.of(context).showSnackBar(
+        SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +121,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     double heightScreen = mediaQueryData.size.height;
 
     return GraphQLProvider(
-        client: faClient,
+        client: _faClient,
         child: Scaffold(
           appBar: AppBar(
             iconTheme: IconThemeData(color: Colors.white),
@@ -124,7 +134,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ),
               ),
             ),
-            backgroundColor: Constants.faColorRed[900],
+            backgroundColor: Constants.faRed[900],
 /*            actions: <Widget>[
               IconButton(
                 icon: Icon(Icons.refresh),
@@ -139,7 +149,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             child: BlocListener<SecurityBloc, SecurityState>(
               listener: (context, state) {
                 if (state is SecurityFailure) {
-                  showToast(context, state.error);
+                  _showToast(context, state.error);
                 }
               },
               child: BlocBuilder<SecurityBloc, SecurityState>(
@@ -158,8 +168,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                             if (result.exception.clientException != null) {
                               String msg = result.exception.clientException.message;
                               if (msg.contains('Network Error: 401')) {
-                                doOnExpiry();
-                                doRefreshToken();
+                                _doOnExpiry();
+                                _doRefreshToken();
                               } else {
                                 return Center(child: Text(msg));
                               }
@@ -184,14 +194,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[
-                                        _buildSummary(context, securityBody),
+                                        _widgetSummary(context, securityBody),
                                         Divider(color: Colors.grey),
-                                        _buildDetail(context, securityBody),
-                                        _buildDateChooser(context),
+                                        _widgetDetail(context, securityBody),
+                                        _widgetDateChooser(context),
                                         Container(
                                           height: 250,
-                                          child: charts.TimeSeriesChart(_createChartData(securityBody.securities[0].graph),
-                                            animate: animate,
+                                          child: charts.TimeSeriesChart(_chartData(securityBody.securities[0].graph),
+                                            animate: _graphAnimate,
                                             defaultRenderer: charts.LineRendererConfig(),
                                             customSeriesRenderers: [charts.PointRendererConfig(customRendererId: 'stocksPoint')],
                                             dateTimeFactory: const charts.LocalDateTimeFactory(),
@@ -203,13 +213,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                             padding: EdgeInsets.only(left: 56, right: 56),
                                             child: Column(
                                                 children: <Widget>[
-                                                  _buildInformation(context),
+                                                  _widgetInformation(context),
                                                   Divider(color: Colors.black),
-                                                  _buildRow(context, 'Ask', securityBody.securities[0].marketData.latestValue.toString()),
-                                                  _buildRow(context, 'Bid', securityBody.securities[0].marketData.latestValue.toString()),
+                                                  _widgetRow(context, 'Ask', securityBody.securities[0].marketData.latestValue.toString()),
+                                                  _widgetRow(context, 'Bid', securityBody.securities[0].marketData.latestValue.toString()),
                                                   Divider(color: Colors.black),
-                                                  _buildRow(context, 'High', securityBody.securities[0].marketData.latestValue.toString()),
-                                                  _buildRow(context, 'Low', securityBody.securities[0].marketData.latestValue.toString()),
+                                                  _widgetRow(context, 'High', securityBody.securities[0].marketData.latestValue.toString()),
+                                                  _widgetRow(context, 'Low', securityBody.securities[0].marketData.latestValue.toString()),
                                                 ]),
                                           ),
                                         )
@@ -244,8 +254,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                                                             20),
                                                                   )),
                                                       color: Constants
-                                                          .faColorRed[900],
-                                                      onPressed: () => showToast(
+                                                          .faRed[900],
+                                                      onPressed: () => _showToast(
                                                           context,
                                                           'Not implemented'),
                                                       shape: RoundedRectangleBorder(
@@ -274,7 +284,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                                                             20),
                                                                   )),
                                                       color: Colors.green,
-                                                      onPressed: () => showToast(
+                                                      onPressed: () => _showToast(
                                                           context,
                                                           'Not implemented'),
                                                       shape: RoundedRectangleBorder(
@@ -301,13 +311,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _buildDateChooser(BuildContext context) {
+  Widget _widgetDateChooser(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
       Expanded(
           flex: 2,
           child: Center(
             child: InkWell(
-              onTap: () => showToast(context, 'Not implemented'),
+              onTap: () => _showToast(context, 'Not implemented'),
               child: Container(
                   height: 30,
                   child: RichText(
@@ -338,7 +348,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 minWidth: 32,
                 child: FlatButton(
                     color: _pressWeekAttention
-                        ? Constants.faColorRed[900]
+                        ? Constants.faRed[900]
                         : Colors.white,
                     child: Text(_week,
                         style: Theme.of(context).textTheme.bodyText2.merge(
@@ -361,7 +371,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
                             color: _pressWeekAttention
-                                ? Constants.faColorRed[900]
+                                ? Constants.faRed[900]
                                 : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
@@ -374,7 +384,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               minWidth: 32,
               child: FlatButton(
                   color: _pressMonthAttention
-                      ? Constants.faColorRed[900]
+                      ? Constants.faRed[900]
                       : Colors.white,
                   child: Text(_month,
                       style: Theme.of(context).textTheme.bodyText2.merge(
@@ -397,7 +407,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
                           color: _pressMonthAttention
-                              ? Constants.faColorRed[900]
+                              ? Constants.faRed[900]
                               : Colors.black,
                           width: 1,
                           style: BorderStyle.solid),
@@ -411,7 +421,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               minWidth: 32,
               child: FlatButton(
                   color: _press3MonthAttention
-                      ? Constants.faColorRed[900]
+                      ? Constants.faRed[900]
                       : Colors.white,
                   child: Text(_threeMonth,
                       style: Theme.of(context).textTheme.bodyText2.merge(
@@ -434,7 +444,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
                           color: _press3MonthAttention
-                              ? Constants.faColorRed[900]
+                              ? Constants.faRed[900]
                               : Colors.black,
                           width: 1,
                           style: BorderStyle.solid),
@@ -448,7 +458,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 minWidth: 32,
                 child: FlatButton(
                     color: _press6MonthAttention
-                        ? Constants.faColorRed[900]
+                        ? Constants.faRed[900]
                         : Colors.white,
                     child: Text(_sixMonth,
                         style: Theme.of(context).textTheme.bodyText2.merge(
@@ -471,7 +481,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
                             color: _press6MonthAttention
-                                ? Constants.faColorRed[900]
+                                ? Constants.faRed[900]
                                 : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
@@ -483,17 +493,17 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 height: 30,
                 minWidth: 32,
                 child: FlatButton(
-                    color: false ? Constants.faColorRed[900] : Colors.white,
+                    color: false ? Constants.faRed[900] : Colors.white,
                     child: Text('ytd',
                         style: Theme.of(context).textTheme.bodyText2.merge(
                           TextStyle(
                               fontWeight: FontWeight.bold,
                               color: false ? Colors.white : Colors.black),
                         )),
-                    onPressed: () => showToast(context, 'Not implemented'),
+                    onPressed: () => _showToast(context, 'Not implemented'),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: false ? Constants.faColorRed[900] : Colors.black,
+                            color: false ? Constants.faRed[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -501,7 +511,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ]);
   }
 
-  Widget _buildSummary(BuildContext context, SecurityBody portfolio) {
+  Widget _widgetSummary(BuildContext context, SecurityBody portfolio) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
       child:
@@ -509,8 +519,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _buildWidgetBodyText2(context, 'Total amount'),
-              _buildWidgetBoldHeadline6(
+              _widgetBodyText2(context, 'Total amount'),
+              _widgetBoldHeadline6(
                   context,
                   portfolio.securities[0].marketData.latestValue.toString() +
                       ' €',
@@ -521,8 +531,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _buildWidgetBodyText2(context, 'Total current value'),
-              _buildWidgetBoldHeadline6(
+              _widgetBodyText2(context, 'Total current value'),
+              _widgetBoldHeadline6(
                   context,
                   portfolio.securities[0].marketData.latestValue.toString() +
                       ' €',
@@ -534,7 +544,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     );
   }
 
-  Widget _buildDetail(BuildContext context, SecurityBody portfolio) {
+  Widget _widgetDetail(BuildContext context, SecurityBody portfolio) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
       child:
@@ -542,8 +552,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _buildWidgetBodyText2(context, 'Latest value (EUR)'),
-              _buildWidgetBoldHeadline6(
+              _widgetBodyText2(context, 'Latest value (EUR)'),
+              _widgetBoldHeadline6(
                   context,
                   portfolio.securities[0].marketData.latestValue.toString() +
                       ' €',
@@ -554,8 +564,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _buildWidgetBodyText2(context, 'Return'),
-              _buildWidgetBoldHeadline6(
+              _widgetBodyText2(context, 'Return'),
+              _widgetBoldHeadline6(
                   context,
                   portfolio.securities[0].marketData.latestValue.toString() +
                       ' €',
@@ -567,8 +577,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _buildWidgetBodyText2(context, 'Today'),
-              _buildWidgetBoldHeadline6(
+              _widgetBodyText2(context, 'Today'),
+              _widgetBoldHeadline6(
                   context,
                   portfolio.securities[0].marketData.latestValue.toString() +
                       ' €',
@@ -581,7 +591,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     );
   }
 
-  Widget _buildInformation(BuildContext context) {
+  Widget _widgetInformation(BuildContext context) {
     return Padding(
         padding: EdgeInsets.only(top: 16, bottom: 16),
         child: Column(
@@ -605,7 +615,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _buildRow(BuildContext context, String label, String text) {
+  Widget _widgetRow(BuildContext context, String label, String text) {
     return Padding(
         padding: EdgeInsets.only(top: 16, bottom: 16),
         child: Row(
@@ -637,7 +647,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _buildWidgetBoldHeadline6(
+  Widget _widgetBoldHeadline6(
       BuildContext context, String text, Color color) {
     return Center(
         child: Text(
@@ -648,7 +658,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ));
   }
 
-  Widget _buildWidgetHeadline6(BuildContext context, String text) {
+  Widget _widgetHeadline6(BuildContext context, String text) {
     return Center(
         child: Text(
       text,
@@ -656,7 +666,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ));
   }
 
-  Widget _buildWidgetSubtitle2(BuildContext context, String text) {
+  Widget _widgetSubtitle2(BuildContext context, String text) {
     return Center(
         child: Text(
       text,
@@ -664,7 +674,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ));
   }
 
-  Widget _buildWidgetBodyText2(BuildContext context, String text) {
+  Widget _widgetBodyText2(BuildContext context, String text) {
     return Center(
         child: Text(
       text,
@@ -674,12 +684,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ));
   }
 
-  String _getCurrentTime() {
-    DateTime now = DateTime.now();
-    return DateFormat('d MMMM yyyy').format(now);
-  }
-
-  List<charts.Series<TimeSeries, DateTime>> _createChartData(
+  List<charts.Series<TimeSeries, DateTime>> _chartData(
       List<Graph> graphs) {
     List<TimeSeries> portfolioMinus100Series = [];
     List<TimeSeries> portfolioMinus100Pointers = [];
@@ -727,11 +732,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ..setAttribute(charts.rendererIdKey, 'stocksPoint'),
     ];
   }
-}
-
-showToast(BuildContext context, var text) {
-  Scaffold.of(context).showSnackBar(
-      SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
 }
 
 class TimeSeries {

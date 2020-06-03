@@ -8,7 +8,7 @@ class Utils {
     if (d > 0)
       return Colors.green;
     else if (d < 0)
-      return Constants.faColorRed[900];
+      return Constants.faRed[900];
     else
       return Colors.black;
   }

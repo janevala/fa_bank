@@ -1,10 +1,9 @@
-import 'package:fa_bank/constants.dart';
-import 'package:fa_bank/ui/security_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:fa_bank/injector/injector.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
 import 'package:fa_bank/ui/login_screen.dart';
+import 'package:fa_bank/ui/security_screen.dart';
+import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class App extends StatelessWidget {
@@ -19,6 +18,7 @@ class App extends StatelessWidget {
         : false;
 
     return MaterialApp(
+      showPerformanceOverlay: false,
       theme: ThemeData(
           brightness: Brightness.light,
           primarySwatch: Colors.grey,

@@ -1,12 +1,10 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
-import '../constants.dart';
+import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
 import 'package:fa_bank/utils/dio_logging_interceptors.dart';
+import 'package:flutter/cupertino.dart';
 
 class ApiAuthProvider {
   final Dio _dio = new Dio();

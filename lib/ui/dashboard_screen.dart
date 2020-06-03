@@ -1,19 +1,18 @@
-import 'package:fa_bank/podo/portfolio/daily_value.dart';
-import 'package:fa_bank/podo/portfolio/graph.dart';
-import 'package:fa_bank/podo/portfolio/investment.dart';
-import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
-import 'package:fa_bank/ui/investment_item.dart';
-import 'package:fa_bank/ui/login_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:fa_bank/bloc/dashboard_bloc.dart';
 import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/injector/injector.dart';
+import 'package:fa_bank/podo/portfolio/graph.dart';
+import 'package:fa_bank/podo/portfolio/investment.dart';
+import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
+import 'package:fa_bank/ui/investment_item.dart';
+import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/widget/spinner.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
 
 class DashboardScreen extends StatefulWidget {
   static const String route = '/dashboard_screen';
@@ -71,8 +70,9 @@ final SharedPreferencesManager _sharedPreferencesManager =
 class _DashboardScreenState extends State<DashboardScreen> {
   final DashboardBloc _dashboardUserBloc = DashboardBloc();
 
-  final bool animate = false;
 
+  //Graph globals
+  final bool _graphAnimate = false;
   String _graphDateCriteria = 'all';
   bool _pressWeekAttention = false;
   bool _pressMonthAttention = false;
@@ -87,34 +87,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
 
-    doRefreshToken();
+    _doRefreshToken();
   }
 
-  static final HttpLink httpLink = HttpLink(uri: Constants.faAuthApi);
+  static final HttpLink _httpLink = HttpLink(uri: Constants.faAuthApi);
 
-  static final AuthLink authLink = AuthLink(
+  static final AuthLink _authLink = AuthLink(
       getToken: () async =>
           'Bearer ' +
           _sharedPreferencesManager
               .getString(SharedPreferencesManager.keyAccessToken));
 
-  static final Link link = authLink.concat(httpLink);
+  static final Link link = _authLink.concat(_httpLink);
 
-  ValueNotifier<GraphQLClient> faClient = ValueNotifier(
+  ValueNotifier<GraphQLClient> _faClient = ValueNotifier(
     GraphQLClient(
       cache: InMemoryCache(),
       link: link,
     ),
   );
 
-  doOnExpiry() async {
+  _doOnExpiry() async {
     if (_sharedPreferencesManager
         .isKeyExists(SharedPreferencesManager.keyAuthMSecs))
       await _sharedPreferencesManager
           .clearKey(SharedPreferencesManager.keyAuthMSecs);
   }
 
-  doRefreshToken() async {
+  _doRefreshToken() async {
     String refreshToken = _sharedPreferencesManager
         .getString(SharedPreferencesManager.keyRefreshToken);
     RefreshTokenBody refreshTokenBody =
@@ -122,16 +122,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _dashboardUserBloc.add(DashboardEvent(refreshTokenBody));
   }
 
+  _showToast(BuildContext context, var text) {
+    Scaffold.of(context).showSnackBar(
+        SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
+  }
+
   @override
   Widget build(BuildContext context) {
     return GraphQLProvider(
-        client: faClient,
+        client: _faClient,
         child: Scaffold(
           appBar: AppBar(
             iconTheme: IconThemeData(color: Colors.white),
             title: Image.asset('assets/images/fa-bank.png',
                 height: AppBar().preferredSize.height * 0.8),
-            backgroundColor: Constants.faColorRed[900],
+            backgroundColor: Constants.faRed[900],
             actions: <Widget>[
 /*              IconButton(
                 icon: Icon(Icons.refresh),
@@ -154,7 +159,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: BlocListener<DashboardBloc, DashboardState>(
               listener: (context, state) {
                 if (state is DashboardFailure) {
-                  showToast(context, state.error);
+                  _showToast(context, state.error);
                 }
               },
               child: BlocBuilder<DashboardBloc, DashboardState>(
@@ -174,8 +179,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               String msg =
                                   result.exception.clientException.message;
                               if (msg.contains('Network Error: 401')) {
-                                doOnExpiry();
-                                doRefreshToken();
+                                _doOnExpiry();
+                                _doRefreshToken();
                               } else {
                                 return Center(child: Text(msg));
                               }
@@ -199,22 +204,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  _buildTitle(context, portfolioBody),
+                                  _widgetTitle(context, portfolioBody),
                                   Container(height: 12, color: Colors.grey[300]),
-                                  _buildSummary(context, portfolioBody),
-                                  _buildDateChooser(context),
+                                  _widgetSummary(context, portfolioBody),
+                                  _widgetDateChooser(context),
                                   Container(
                                     height: 250,
-                                    child: charts.TimeSeriesChart(_createChartData(portfolioBody.portfolio.graph),
-                                      animate: animate,
+                                    child: charts.TimeSeriesChart(_chartData(portfolioBody.portfolio.graph),
+                                      animate: _graphAnimate,
                                       defaultRenderer: charts.LineRendererConfig(),
                                       customSeriesRenderers: [charts.PointRendererConfig(customRendererId: 'stocksPoint')],
                                       dateTimeFactory: const charts.LocalDateTimeFactory(),
                                     ),
                                   ),
-                                  _buildDescriptor(context),
+                                  _widgetDescriptor(context),
                                   Container(height: 12, color: Colors.grey[300]),
-                                  _buildInvestments(
+                                  _widgetInvestments(
                                       context,
                                       portfolioBody.portfolio.portfolioReport
                                           .investments)
@@ -233,24 +238,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ));
   }
 
-  Widget _buildTitle(BuildContext context, PortfolioBody portfolio) {
+  Widget _widgetTitle(BuildContext context, PortfolioBody portfolio) {
     return Padding(
         padding: EdgeInsets.only(top: 12, bottom: 12),
         child: Column(
           children: <Widget>[
-            _buildWidgetHeadline6(context, portfolio.portfolio.portfolioName),
-            _buildWidgetBodyText2(context, portfolio.portfolio.client.name),
+            _widgetHeadline6(context, portfolio.portfolio.portfolioName),
+            _widgetBodyText2(context, portfolio.portfolio.client.name),
           ],
         ));
   }
 
-  Widget _buildDateChooser(BuildContext context) {
+  Widget _widgetDateChooser(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
       Expanded(
           flex: 2,
           child: Center(
             child: InkWell(
-              onTap: () => showToast(context, 'Not implemented'),
+              onTap: () => _showToast(context, 'Not implemented'),
               child: Container(
                   height: 30,
                   child: RichText(
@@ -281,7 +286,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             minWidth: 32,
             child: FlatButton(
                 color: _pressWeekAttention
-                    ? Constants.faColorRed[900]
+                    ? Constants.faRed[900]
                     : Colors.white,
                 child: Text(_week,
                     style: Theme.of(context).textTheme.bodyText2.merge(
@@ -304,7 +309,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 shape: RoundedRectangleBorder(
                     side: BorderSide(
                         color: _pressWeekAttention
-                            ? Constants.faColorRed[900]
+                            ? Constants.faRed[900]
                             : Colors.black,
                         width: 1,
                         style: BorderStyle.solid),
@@ -317,7 +322,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           minWidth: 32,
           child: FlatButton(
               color: _pressMonthAttention
-                  ? Constants.faColorRed[900]
+                  ? Constants.faRed[900]
                   : Colors.white,
               child: Text(_month,
                   style: Theme.of(context).textTheme.bodyText2.merge(
@@ -340,7 +345,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               shape: RoundedRectangleBorder(
                   side: BorderSide(
                       color: _pressMonthAttention
-                          ? Constants.faColorRed[900]
+                          ? Constants.faRed[900]
                           : Colors.black,
                       width: 1,
                       style: BorderStyle.solid),
@@ -354,7 +359,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           minWidth: 32,
           child: FlatButton(
               color: _press3MonthAttention
-                  ? Constants.faColorRed[900]
+                  ? Constants.faRed[900]
                   : Colors.white,
               child: Text(_threeMonth,
                   style: Theme.of(context).textTheme.bodyText2.merge(
@@ -377,7 +382,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               shape: RoundedRectangleBorder(
                   side: BorderSide(
                       color: _press3MonthAttention
-                          ? Constants.faColorRed[900]
+                          ? Constants.faRed[900]
                           : Colors.black,
                       width: 1,
                       style: BorderStyle.solid),
@@ -391,7 +396,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             minWidth: 32,
             child: FlatButton(
                 color: _press6MonthAttention
-                    ? Constants.faColorRed[900]
+                    ? Constants.faRed[900]
                     : Colors.white,
                 child: Text(_sixMonth,
                     style: Theme.of(context).textTheme.bodyText2.merge(
@@ -414,7 +419,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 shape: RoundedRectangleBorder(
                     side: BorderSide(
                         color: _press6MonthAttention
-                            ? Constants.faColorRed[900]
+                            ? Constants.faRed[900]
                             : Colors.black,
                         width: 1,
                         style: BorderStyle.solid),
@@ -426,17 +431,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             height: 30,
             minWidth: 32,
             child: FlatButton(
-                color: false ? Constants.faColorRed[900] : Colors.white,
+                color: false ? Constants.faRed[900] : Colors.white,
                 child: Text('ytd',
                     style: Theme.of(context).textTheme.bodyText2.merge(
                           TextStyle(
                               fontWeight: FontWeight.bold,
                               color: false ? Colors.white : Colors.black),
                         )),
-                onPressed: () => showToast(context, 'Not implemented'),
+                onPressed: () => _showToast(context, 'Not implemented'),
                 shape: RoundedRectangleBorder(
                     side: BorderSide(
-                        color: false ? Constants.faColorRed[900] : Colors.black,
+                        color: false ? Constants.faRed[900] : Colors.black,
                         width: 1,
                         style: BorderStyle.solid),
                     borderRadius: new BorderRadius.circular(20.0)))),
@@ -444,7 +449,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ]);
   }
 
-  Widget _buildSummary(BuildContext context, PortfolioBody portfolio) {
+  Widget _widgetSummary(BuildContext context, PortfolioBody portfolio) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
       child:
@@ -452,8 +457,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _buildWidgetBodyText2(context, 'Net asset value'),
-              _buildWidgetHeadline6(
+              _widgetBodyText2(context, 'Net asset value'),
+              _widgetHeadline6(
                   context,
                   portfolio.portfolio.portfolioReport.netAssetValue.toString() +
                       ' €')
@@ -463,8 +468,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _buildWidgetBodyText2(context, 'Market value'),
-              _buildWidgetHeadline6(
+              _widgetBodyText2(context, 'Market value'),
+              _widgetHeadline6(
                   context,
                   portfolio.portfolio.portfolioReport.marketValue.toString() +
                       ' €')
@@ -474,8 +479,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _buildWidgetBodyText2(context, 'Cash balance'),
-              _buildWidgetHeadline6(
+              _widgetBodyText2(context, 'Cash balance'),
+              _widgetHeadline6(
                   context,
                   portfolio.portfolio.portfolioReport.cashBalance.toString() +
                       ' €')
@@ -486,7 +491,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDescriptor(BuildContext context) {
+  Widget _widgetDescriptor(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
       child:
@@ -506,7 +511,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Flexible(
           child: Padding(
             padding: EdgeInsets.only(left: 18, right: 18),
-            child: Divider(thickness: 3, color: Constants.faColorRed[900]),
+            child: Divider(thickness: 3, color: Constants.faRed[900]),
           ),
         ),
         Flexible(
@@ -519,7 +524,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildInvestments(BuildContext context, List<Investment> investments) {
+  Widget _widgetInvestments(BuildContext context, List<Investment> investments) {
 //    deviceList.sort((a, b) => b.deviceLocation.deviceTime.compareTo(a.deviceLocation.deviceTime));
 
     return Padding(
@@ -534,7 +539,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             }));
   }
 
-  Widget _buildWidgetHeadline6(BuildContext context, String text) {
+  Widget _widgetHeadline6(BuildContext context, String text) {
     return Center(
         child: Text(
       text,
@@ -542,7 +547,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ));
   }
 
-  Widget _buildWidgetBodyText2(BuildContext context, String text) {
+  Widget _widgetBodyText2(BuildContext context, String text) {
     return Center(
         child: Text(
       text,
@@ -552,7 +557,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ));
   }
 
-  List<charts.Series<TimeSeries, DateTime>> _createChartData(Graph graph) {
+  List<charts.Series<TimeSeries, DateTime>> _chartData(Graph graph) {
     List<TimeSeries> portfolioMinus100Series = [];
     List<TimeSeries> portfolioMinus100Pointers = [];
     List<TimeSeries> benchmarkMinus100Series = [];
@@ -609,11 +614,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ..setAttribute(charts.rendererIdKey, 'stocksPoint'),
     ];
   }
-}
-
-showToast(BuildContext context, var text) {
-  Scaffold.of(context).showSnackBar(
-      SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
 }
 
 class TimeSeries {

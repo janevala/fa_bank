@@ -1,14 +1,14 @@
 import 'dart:io';
 
+import 'package:fa_bank/bloc/login_bloc.dart';
 import 'package:fa_bank/constants.dart';
+import 'package:fa_bank/podo/login/login_body.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
+import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fa_bank/bloc/login_bloc.dart';
-import 'package:fa_bank/podo/login/login_body.dart';
-import 'package:fa_bank/widget/spinner.dart';
 
 class LoginScreen extends StatelessWidget {
   static const String route = '/login_screen';
@@ -57,21 +57,21 @@ class LoginScreen extends StatelessWidget {
                   children: <Widget>[
                     Container(
                       height: heightScreen,
-                      color: Constants.faColorRed[900],
+                      color: Constants.faRed[900],
                       child: Padding(
                         padding: EdgeInsets.all(32),
                         child: ListView(
                           children: <Widget>[
-                            _buildWidgetImageHeader(),
-                            _buildWidgetSizedBox(32),
-                            _buildWidgetLabel(context, 'USER NAME'),
-                            _buildWidgetTextFieldUserName(context),
-                            _buildWidgetSizedBox(32),
-                            _buildWidgetLabel(context, 'PASSWORD'),
-                            _buildWidgetTextFieldPassword(context),
-                            _buildWidgetSizedBox(64),
-                            _buildWidgetButtonSignin(context),
-                            _buildWidgetSizedBox(64),
+                            _widgetImageHeader(),
+                            _widgetSizedBox(32),
+                            _widgetLabel(context, 'USER NAME'),
+                            _widgetTextFieldUserName(context),
+                            _widgetSizedBox(32),
+                            _widgetLabel(context, 'PASSWORD'),
+                            _widgetTextFieldPassword(context),
+                            _widgetSizedBox(64),
+                            _widgetButtonSignIn(context),
+                            _widgetSizedBox(64),
                           ],
                         ),
                       ),
@@ -100,17 +100,17 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInformation(BuildContext context) {
+  Widget _widgetInformation(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _buildWidgetHeadline6(context, 'FORGOT PASSWORD?'),
-        _buildWidgetHeadline6(context, 'PRIVACY POLICY'),
+        _widgetHeadline6(context, 'FORGOT PASSWORD?'),
+        _widgetHeadline6(context, 'PRIVACY POLICY'),
       ],
     );
   }
 
-  Widget _buildWidgetHeadline6(BuildContext context, String text) {
+  Widget _widgetHeadline6(BuildContext context, String text) {
     return Center(
         child: Text(
           text,
@@ -118,7 +118,7 @@ class LoginScreen extends StatelessWidget {
         ));
   }
 
-  Widget _buildWidgetButtonSignin(BuildContext context) {
+  Widget _widgetButtonSignIn(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(left: 64, right: 64),
       child: FlatButton(
@@ -126,7 +126,7 @@ class LoginScreen extends StatelessWidget {
           'SIGN IN',
           style: Theme.of(context).textTheme.subtitle2.merge(
             TextStyle(
-                color: Constants.faColorRed[900],
+                color: Constants.faRed[900],
                 fontWeight: FontWeight.bold
             ),
           ),
@@ -152,7 +152,7 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWidgetTextFieldUserName(BuildContext context) {
+  Widget _widgetTextFieldUserName(BuildContext context) {
     return TextField(
         style: Theme.of(context).textTheme.subtitle2.merge(
           TextStyle(
@@ -175,7 +175,7 @@ class LoginScreen extends StatelessWidget {
         ));
   }
 
-  Widget _buildWidgetTextFieldPassword(BuildContext context) {
+  Widget _widgetTextFieldPassword(BuildContext context) {
     return TextField(
         style: Theme.of(context).textTheme.subtitle2.merge(
           TextStyle(
@@ -199,7 +199,7 @@ class LoginScreen extends StatelessWidget {
         ));
   }
 
-  Widget _buildWidgetLabel(BuildContext context, String label) {
+  Widget _widgetLabel(BuildContext context, String label) {
     return Text(
       label,
       style: Theme.of(context).textTheme.subtitle2.merge(
@@ -209,10 +209,8 @@ class LoginScreen extends StatelessWidget {
           ),
     );
   }
-
-  Widget _buildWidgetSizedBox(double height) => SizedBox(height: height);
-
-  Widget _buildWidgetImageHeader() {
+  
+  Widget _widgetImageHeader() {
     return Padding(
       padding: EdgeInsets.all(64),
       child: Container(
@@ -221,35 +219,5 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWidgetOverlayBackgroundImageHeader(double heightScreen) {
-    return Container(
-      height: heightScreen / 2.5,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [
-            Colors.white.withOpacity(1.0),
-            Colors.white.withOpacity(0.1),
-          ],
-          stops: [
-            0.1,
-            0.5,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWidgetRectangleWhite(double heightScreen) {
-    return Container(
-      height: heightScreen / 2.4,
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        width: double.infinity,
-        height: 20.0,
-        color: Colors.white,
-      ),
-    );
-  }
+  Widget _widgetSizedBox(double height) => SizedBox(height: height);
 }

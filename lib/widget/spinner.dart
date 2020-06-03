@@ -35,8 +35,8 @@ Widget _buildMaterialSpinner(BuildContext context) {
     height: 70,
     width: 70,
     child: CircularProgressIndicator(
-      valueColor: AlwaysStoppedAnimation<Color>(Constants.faColorRed[800]),
-      backgroundColor: Constants.faColorRed[300],
+      valueColor: AlwaysStoppedAnimation<Color>(Constants.faRed[800]),
+      backgroundColor: Constants.faRed[300],
     ),
   );
 }

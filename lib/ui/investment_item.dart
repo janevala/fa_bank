@@ -43,9 +43,9 @@ class InvestmentItem extends StatelessWidget {
                 flex: 5,
                 child: Column(
                   children: <Widget>[
-                    _buildWidgetHeadline6(
+                    _widgetHeadline6(
                         context, investment.security.name, Colors.black),
-                    _buildWidgetBodyText2(
+                    _widgetBodyText2(
                         context, investment.security.securityCode),
                   ],
                 )),
@@ -54,8 +54,8 @@ class InvestmentItem extends StatelessWidget {
                 flex: 4,
                 child: Column(
                   children: <Widget>[
-                    _buildWidgetBodyText2(context, 'Pos. value'),
-                    _buildWidgetHeadline6(context,
+                    _widgetBodyText2(context, 'Pos. value'),
+                    _widgetHeadline6(context,
                         investment.positionValue.toString() + ' €', Colors.black),
                   ],
                 )),
@@ -64,8 +64,8 @@ class InvestmentItem extends StatelessWidget {
               flex: 3,
               child: Column(
                 children: <Widget>[
-                  _buildWidgetBodyText2(context, 'Return'),
-                  _buildWidgetHeadline6(
+                  _widgetBodyText2(context, 'Return'),
+                  _widgetHeadline6(
                       context,
                       investment.changePercent.toStringAsFixed(2) + '%',
                       Utils.getColor(investment.changePercent)),
@@ -76,8 +76,8 @@ class InvestmentItem extends StatelessWidget {
                 flex: 3,
                 child: Column(
                   children: <Widget>[
-                    _buildWidgetBodyText2(context, 'Today'),
-                    _buildWidgetHeadline6(
+                    _widgetBodyText2(context, 'Today'),
+                    _widgetHeadline6(
                         context,
                         investment.changePercent.toStringAsFixed(2) + '%',
                         Utils.getColor(investment.changePercent)),
@@ -91,7 +91,7 @@ class InvestmentItem extends StatelessWidget {
     );
   }
 
-  Widget _buildWidgetHeadline6(BuildContext context, String text, Color color) {
+  Widget _widgetHeadline6(BuildContext context, String text, Color color) {
     return Align(
         alignment: Alignment.centerLeft,
         child: Text(
@@ -102,7 +102,7 @@ class InvestmentItem extends StatelessWidget {
         ));
   }
 
-  Widget _buildWidgetBodyText2(BuildContext context, String text) {
+  Widget _widgetBodyText2(BuildContext context, String text) {
     return Align(
         alignment: Alignment.centerLeft,
         child: Text(
