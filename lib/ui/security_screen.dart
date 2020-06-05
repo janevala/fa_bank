@@ -54,7 +54,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   final SecurityBloc _securityBloc = SecurityBloc();
 
   //Graph globals
-  bool _graphAnimate = true;
+  bool _animate = true;
   String _graphDateCriteria = 'all';
   bool _pressWeekAttention = false;
   bool _pressMonthAttention = false;
@@ -106,7 +106,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     _securityBloc.add(SecurityEvent(refreshTokenBody));
   }
 
-  String _getCurrentTime() {
+  String _getNow() {
     DateTime now = DateTime.now();
     return DateFormat('d MMMM yyyy').format(now);
   }
@@ -209,7 +209,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                           child: Padding(
                                             padding: EdgeInsets.only(left: 4, right: 4),
                                               child: charts.TimeSeriesChart(_chartData(securityBody.securities[0].graph),
-                                                animate: _graphAnimate,
+                                                animate: _animate,
                                                 defaultRenderer: charts.LineRendererConfig(),
                                                 customSeriesRenderers: [charts.PointRendererConfig(customRendererId: 'stocksPoint')],
                                                 dateTimeFactory: const charts.LocalDateTimeFactory(),
@@ -378,7 +378,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       _press6MonthAttention = false;
                       _pressYTDAttention = false;
 
-                      _graphAnimate = false;
+                      _animate = false;
                     }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
@@ -418,7 +418,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     _press6MonthAttention = false;
                     _pressYTDAttention = false;
 
-                    _graphAnimate = false;
+                    _animate = false;
                   }),
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
@@ -459,7 +459,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     _press6MonthAttention = false;
                     _pressYTDAttention = false;
 
-                    _graphAnimate = false;
+                    _animate = false;
                   }),
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
@@ -500,7 +500,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       _press3MonthAttention = false;
                       _pressYTDAttention = false;
 
-                      _graphAnimate = false;
+                      _animate = false;
                     }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
@@ -540,7 +540,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       _press3MonthAttention = false;
                       _press6MonthAttention = false;
 
-                      _graphAnimate = false;
+                      _animate = false;
                     }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
@@ -652,7 +652,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     )),
                 Center(
                     child: Text(
-                      _getCurrentTime(),
+                      _getNow(),
                       style: Theme.of(context).textTheme.headline6.merge(
                         TextStyle(fontSize: 20),
                       ),

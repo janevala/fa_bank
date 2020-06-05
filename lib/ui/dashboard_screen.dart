@@ -13,6 +13,7 @@ import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
   static const String route = '/dashboard_screen';
@@ -74,7 +75,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 
   //Graph globals
-  bool _graphAnimate = true;
+  bool _animate = true;
   String _graphDateCriteria = 'all';
   bool _pressWeekAttention = false;
   bool _pressMonthAttention = false;
@@ -86,6 +87,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static const String _threeMonth = '3m';
   static const String _sixMonth = '6m';
   static const String _ytd = 'YTD';
+
+  DateTime _dateTime = DateTime.now();
 
   @override
   void initState() {
@@ -129,6 +132,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   _showToast(BuildContext context, var text) {
     Scaffold.of(context).showSnackBar(
         SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
+  }
+
+  _onChanged(charts.SelectionModel<DateTime> model) {
+    setState(() {
+      _dateTime = model.selectedDatum.first.datum.time;
+      _animate = false;
+    });
+
   }
 
   @override
@@ -214,15 +225,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   _widgetSummary(context, portfolioBody),
                                   Padding(padding: EdgeInsets.only(left: 2, right: 2),
                                       child: _widgetDateChooser(context)),
+                                  _widgetDay(context),
                                   Container(
                                     height: 250,
                                     child: Padding(
                                       padding: EdgeInsets.only(left: 4, right: 4),
                                       child: charts.TimeSeriesChart(_chartData(portfolioBody.portfolio.graph),
-                                        animate: _graphAnimate,
+                                        animate: _animate,
                                         defaultRenderer: charts.LineRendererConfig(),
                                         customSeriesRenderers: [charts.PointRendererConfig(customRendererId: 'stocksPoint')],
-                                        dateTimeFactory: const charts.LocalDateTimeFactory(),
+                                        dateTimeFactory: charts.LocalDateTimeFactory(),
+                                        selectionModels: [
+                                          charts.SelectionModelConfig(
+                                              type: charts.SelectionModelType.info,
+                                              changedListener: _onChanged)
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -246,6 +263,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ));
   }
+
+
+  Widget _widgetDay(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.only(top: 12),
+        child: _widgetBodyText2(context, DateFormat('d MMMM yyyy').format(_dateTime)));
+  }
+
 
   Widget _widgetTitle(BuildContext context, PortfolioBody portfolio) {
     return Padding(
@@ -322,7 +347,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _press6MonthAttention = false;
                       _pressYTDAttention = false;
 
-                      _graphAnimate = false;
+                      _animate = false;
                     }),
                 shape: RoundedRectangleBorder(
                     side: BorderSide(
@@ -362,7 +387,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _press6MonthAttention = false;
                     _pressYTDAttention = false;
 
-                    _graphAnimate = false;
+                    _animate = false;
                   }),
               shape: RoundedRectangleBorder(
                   side: BorderSide(
@@ -403,7 +428,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _press6MonthAttention = false;
                     _pressYTDAttention = false;
 
-                    _graphAnimate = false;
+                    _animate = false;
                   }),
               shape: RoundedRectangleBorder(
                   side: BorderSide(
@@ -444,7 +469,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _press3MonthAttention = false;
                       _pressYTDAttention = false;
 
-                      _graphAnimate = false;
+                      _animate = false;
                     }),
                 shape: RoundedRectangleBorder(
                     side: BorderSide(
@@ -484,7 +509,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _press3MonthAttention = false;
                       _press6MonthAttention = false;
 
-                      _graphAnimate = false;
+                      _animate = false;
                     }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(

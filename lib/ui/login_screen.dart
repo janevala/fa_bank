@@ -56,7 +56,7 @@ class LoginScreen extends StatelessWidget {
                 ListView(
                   children: <Widget>[
                     Container(
-                      height: heightScreen,
+                      height: heightScreen * 0.8,
                       color: Constants.faRed[900],
                       child: Padding(
                         padding: EdgeInsets.all(32),
@@ -76,11 +76,11 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-/*                    Container(
-                      height: 150,
+                    Container(
+                      height: heightScreen * 0.2,
                       color: Colors.white,
-                      child: _buildInformation(context),
-                    )*/
+                      child: _widgetInformation(context),
+                    )
                   ],
                 ),
                 BlocBuilder<LoginBloc, LoginState>(
@@ -102,10 +102,17 @@ class LoginScreen extends StatelessWidget {
 
   Widget _widgetInformation(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        _widgetHeadline6(context, 'FORGOT PASSWORD?'),
-        _widgetHeadline6(context, 'PRIVACY POLICY'),
+        Text(
+          'FORGOT PASSWORD?',
+          style: Theme.of(context).textTheme.headline6,
+        ),
+        Text(
+          'PRIVACY POLICY',
+          style: Theme.of(context).textTheme.headline6,
+        )
       ],
     );
   }
