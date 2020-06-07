@@ -54,7 +54,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     await sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, true);
     await sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
     await sharedPreferencesManager.putString(SharedPreferencesManager.keyUsername, loginBody.username);
-    await sharedPreferencesManager.putDouble(SharedPreferencesManager.keyUid, 10527024); //10527075
+    await sharedPreferencesManager.putInt(SharedPreferencesManager.keyUid, 10527024); //10527075
     yield LoginSuccess();
   }
 }

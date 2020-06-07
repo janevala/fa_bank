@@ -1,17 +1,51 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
+import 'package:fa_bank/api/graphql.dart';
 import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
+import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
 import 'package:fa_bank/utils/dio_logging_interceptors.dart';
 import 'package:flutter/cupertino.dart';
 
-class ApiAuthProvider {
+class ApiProvider {
   final Dio _dio = new Dio();
 
-  ApiAuthProvider() {
+  ApiProvider() {
     _dio.options.baseUrl = Constants.faBaseUrl;
     _dio.interceptors.add(DioLoggingInterceptors(_dio));
+  }
+
+  Future<PortfolioBody> postPortfolioQuery(String authCookie, int uid) async {
+    try {
+      final response = await _dio.post('graphql',
+          data: getPortfolioQuery(uid),
+          options: Options(
+              contentType: "application/graphql",
+              headers: {
+                "Authorization": 'Bearer ' + authCookie,
+              },
+              followRedirects: false
+          ));
+
+      Map<String, dynamic> data = response.data;
+
+      if (response.statusCode == 200) {
+        if (data['errors'] != null) {
+          String s = jsonEncode(data['errors']['message']);
+          return PortfolioBody.withError(s);
+        } else {
+          return PortfolioBody.fromJson(data['data']);
+        }
+      } else {
+        return PortfolioBody.withError('Network Error');
+      }
+    } catch (error, stacktrace) {
+      _printError(error, stacktrace);
+      return PortfolioBody.withError('$error');
+    }
   }
 
   Future<Token> loginUser(LoginBody loginBody) async {
@@ -20,7 +54,7 @@ class ApiAuthProvider {
         'auth/realms/fa/protocol/openid-connect/token',
         data: loginBody.tokenString(),
         options: Options(
-          contentType:Headers.formUrlEncodedContentType,
+          contentType: Headers.formUrlEncodedContentType,
         ),
       );
       return Token.fromJson(response.data);
@@ -36,7 +70,7 @@ class ApiAuthProvider {
         'auth/realms/fa/protocol/openid-connect/token',
         data: refreshTokenBody.tokenString(),
         options: Options(
-          contentType:Headers.formUrlEncodedContentType,
+          contentType: Headers.formUrlEncodedContentType,
         ),
       );
       return Token.fromJson(response.data);

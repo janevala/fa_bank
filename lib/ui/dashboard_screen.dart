@@ -1,5 +1,4 @@
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:fa_bank/api/graphql.dart';
 import 'package:fa_bank/bloc/dashboard_bloc.dart';
 import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/injector/injector.dart';
@@ -16,7 +15,6 @@ import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 
@@ -59,35 +57,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _doRefreshToken();
   }
 
-  static final HttpLink _httpLink = HttpLink(uri: Constants.faAuthApi);
-
-  static final AuthLink _authLink = AuthLink(
-      getToken: () async => 'Bearer ' + _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken));
-
-  static final Link link = _authLink.concat(_httpLink);
-
-  ValueNotifier<GraphQLClient> _faClient = ValueNotifier(
-    GraphQLClient(
-      cache: InMemoryCache(),
-      link: link,
-    ),
-  );
-
   _doOnExpiry() async {
     if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs))
       await _sharedPreferencesManager.clearKey(SharedPreferencesManager.keyAuthMSecs);
   }
 
   _doRefreshToken() async {
-    String refreshToken =
-        _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
+    String refreshToken = _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
     RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
     _dashboardUserBloc.add(DashboardEvent(refreshTokenBody));
   }
 
   _showToast(BuildContext context, var text) {
-    Scaffold.of(context)
-        .showSnackBar(SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
+    Scaffold.of(context).showSnackBar(SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
   }
 
   Widget _dataTable(BuildContext context, List<TradeOrder> tradeOrders) {
@@ -229,84 +211,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     List<TradeOrder> tradeOrders = [];
-    return GraphQLProvider(
-        client: _faClient,
-        child: Scaffold(
-          appBar: AppBar(
-            iconTheme: IconThemeData(color: Colors.white),
-            title: Image.asset('assets/images/fa-bank.png',
-                height: AppBar().preferredSize.height * 0.8),
-            backgroundColor: Constants.faRed[900],
-            actions: <Widget>[
-              IconButton(
-                icon: Icon(Icons.refresh),
-                onPressed: () {
-                  _doRefreshToken();
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.format_list_numbered),
-                onPressed: () {
-                  if (tradeOrders.length > 0) _openTradeOrders(context, tradeOrders);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.exit_to_app),
-                onPressed: () {
-                  _logout();
-                },
-              ),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Image.asset('assets/images/fa-bank.png',
+            height: AppBar().preferredSize.height * 0.8),
+        backgroundColor: Constants.faRed[900],
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              _doRefreshToken();
+            },
           ),
-          body: BlocProvider<DashboardBloc>(
-            create: (context) => _dashboardUserBloc,
-            child: BlocListener<DashboardBloc, DashboardState>(
-              listener: (context, state) {
-                if (state is DashboardFailure) {
-                  _showToast(context, state.error);
-                }
-              },
-              child: BlocBuilder<DashboardBloc, DashboardState>(
-                builder: (context, state) {
-                  if (state is DashboardLoading) {
-                    return Spinner();
-                  } else if (state is DashboardSuccess) {
-                    return Query(
-                        options: QueryOptions(
-                            documentNode: gql(portfolioQuery),
-                            variables: {"id": _sharedPreferencesManager.getDouble(SharedPreferencesManager.keyUid)},
-                            pollInterval: 6000000),
-                        builder: (QueryResult result, {VoidCallback refetch, FetchMore fetchMore}) {
-                          if (result.hasException) {
-                            if (result.exception.clientException != null) {
-                              String msg = result.exception.clientException.message;
-                              if (msg.contains('Network Error: 401')) {
-                                _doOnExpiry();
-                                _doRefreshToken();
-                              } else {
-                                return Center(child: Text(msg));
-                              }
-                            } else if (result.exception.graphqlErrors[0] != null) {
-                              return Center(child: Text(result.exception.graphqlErrors[0].message));
-                            } else {
-                              return Center(child: Text('Network Error'));
-                            }
-                          }
-                          if (result.loading) return Spinner();
-
-                          PortfolioBody portfolioBody = PortfolioBody.fromJson(result.data);
-                          tradeOrders = portfolioBody.portfolio.tradeOrders;
-
-                          return _widgetMainView(context, portfolioBody);
-                        });
-                  } else {
-                    return Container();
-                  }
-                },
-              ),
-            ),
+          IconButton(
+            icon: Icon(Icons.format_list_numbered),
+            onPressed: () {
+              if (tradeOrders.length > 0) _openTradeOrders(context, tradeOrders);
+            },
           ),
-        ));
+          IconButton(
+            icon: Icon(Icons.exit_to_app),
+            onPressed: () {
+              _logout();
+            },
+          ),
+        ],
+      ),
+      body: BlocProvider<DashboardBloc>(
+        create: (context) => _dashboardUserBloc,
+        child: BlocListener<DashboardBloc, DashboardState>(
+          listener: (context, state) {
+            if (state is DashboardFailure) {
+              _showToast(context, state.error);
+            }
+          },
+          child: BlocBuilder<DashboardBloc, DashboardState>(
+            builder: (context, state) {
+              if (state is DashboardSuccess) {
+                return _widgetMainView(context, state.portfolioBody);
+              } else {
+                return Spinner();
+              }
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _widgetMainView(BuildContext context, PortfolioBody portfolioBody) {
