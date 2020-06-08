@@ -47,11 +47,13 @@ query Security(\$securityCode: String) {
 }
 """;
 
-final SharedPreferencesManager _sharedPreferencesManager =
-    locator<SharedPreferencesManager>();
+final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
 class _SecurityScreenState extends State<SecurityScreen> {
   final SecurityBloc _securityBloc = SecurityBloc();
+
+  final TextEditingController _controllerAmount = TextEditingController();
+  final TextEditingController _controllerDate = TextEditingController();
 
   //Graph globals
   bool _animate = true;
@@ -78,9 +80,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   static final AuthLink _authLink = AuthLink(
       getToken: () async =>
-          'Bearer ' +
-          _sharedPreferencesManager
-              .getString(SharedPreferencesManager.keyAccessToken));
+          'Bearer ' + _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken));
 
   static final Link _link = _authLink.concat(_httpLink);
 
@@ -92,17 +92,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
   );
 
   _doOnExpiry() async {
-    if (_sharedPreferencesManager
-        .isKeyExists(SharedPreferencesManager.keyAuthMSecs))
-      await _sharedPreferencesManager
-          .clearKey(SharedPreferencesManager.keyAuthMSecs);
+    if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs))
+      await _sharedPreferencesManager.clearKey(SharedPreferencesManager.keyAuthMSecs);
   }
 
   _doRefreshToken() async {
-    String refreshToken = _sharedPreferencesManager
-        .getString(SharedPreferencesManager.keyRefreshToken);
-    RefreshTokenBody refreshTokenBody =
-        RefreshTokenBody('refresh_token', refreshToken);
+    String refreshToken =
+        _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
+    RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
     _securityBloc.add(SecurityEvent(refreshTokenBody));
   }
 
@@ -112,10 +109,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   _showToast(BuildContext context, var text) {
-    Scaffold.of(context).showSnackBar(
-        SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
+    Scaffold.of(context)
+        .showSnackBar(SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -133,9 +129,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
             title: Text(
               security.name,
               style: Theme.of(context).textTheme.headline6.merge(
-                TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.white),
-              ),
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
             ),
             backgroundColor: Constants.faRed[900],
 /*            actions: <Widget>[
@@ -165,8 +160,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                             documentNode: gql(securityQuery),
                             variables: {"securityCode": security.securityCode},
                             pollInterval: 30000),
-                        builder: (QueryResult result,
-                            {VoidCallback refetch, FetchMore fetchMore}) {
+                        builder: (QueryResult result, {VoidCallback refetch, FetchMore fetchMore}) {
                           if (result.hasException) {
                             if (result.exception.clientException != null) {
                               String msg = result.exception.clientException.message;
@@ -176,8 +170,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                               } else {
                                 return Center(child: Text(msg));
                               }
-                            } else if (result.exception.graphqlErrors[0] !=
-                                null) {
+                            } else if (result.exception.graphqlErrors[0] != null) {
                               return Center(child: Text(result.exception.graphqlErrors[0].message));
                             } else {
                               return Center(child: Text('Network Error'));
@@ -201,35 +194,65 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                         Divider(color: Colors.grey),
                                         _widgetDetail(context, securityBody),
                                         Padding(
-                                          padding: EdgeInsets.only(left: 2, right: 2),
-                                          child: _widgetDateChooser(context)
-                                        ),
+                                            padding: EdgeInsets.only(left: 2, right: 2),
+                                            child: _widgetDateChooser(context)),
                                         Container(
                                           height: 250,
                                           child: Padding(
                                             padding: EdgeInsets.only(left: 4, right: 4),
-                                              child: charts.TimeSeriesChart(_chartData(securityBody.securities[0].graph),
-                                                animate: _animate,
-                                                defaultRenderer: charts.LineRendererConfig(),
-                                                customSeriesRenderers: [charts.PointRendererConfig(customRendererId: 'stocksPoint')],
-                                                dateTimeFactory: const charts.LocalDateTimeFactory(),
-                                              ),
+                                            child: charts.TimeSeriesChart(
+                                              _chartData(securityBody.securities[0].graph),
+                                              animate: _animate,
+                                              defaultRenderer: charts.LineRendererConfig(),
+                                              customSeriesRenderers: [
+                                                charts.PointRendererConfig(
+                                                    customRendererId: 'stocksPoint')
+                                              ],
+                                              dateTimeFactory: const charts.LocalDateTimeFactory(),
+                                            ),
                                           ),
                                         ),
                                         Container(
                                           color: Colors.grey[300],
                                           child: Padding(
                                             padding: EdgeInsets.only(left: 56, right: 56),
-                                            child: Column(
-                                                children: <Widget>[
-                                                  _widgetInformation(context, securityBody.securities[0].url),
-                                                  Divider(color: Colors.black),
-                                                  _widgetRow(context, 'Ask', securityBody.securities[0].marketData.latestValue.toString()),
-                                                  _widgetRow(context, 'Bid', securityBody.securities[0].marketData.latestValue.toString()),
-                                                  Divider(color: Colors.black),
-                                                  _widgetRow(context, 'High', securityBody.securities[0].marketData.latestValue.toString()),
-                                                  _widgetRow(context, 'Low', securityBody.securities[0].marketData.latestValue.toString()),
-                                                ]),
+                                            child: Column(children: <Widget>[
+                                              _widgetInformation(
+                                                  context, securityBody.securities[0].url),
+                                              Divider(color: Colors.black),
+                                              _widgetTextRow(
+                                                  context,
+                                                  'Ask',
+                                                  securityBody.securities[0].marketData.latestValue
+                                                      .toString()),
+                                              _widgetTextRow(
+                                                  context,
+                                                  'Bid',
+                                                  securityBody.securities[0].marketData.latestValue
+                                                      .toString()),
+                                              Divider(color: Colors.black),
+                                              _widgetTextRow(
+                                                  context,
+                                                  'High',
+                                                  securityBody.securities[0].marketData.latestValue
+                                                      .toString()),
+                                              _widgetTextRow(
+                                                  context,
+                                                  'Low',
+                                                  securityBody.securities[0].marketData.latestValue
+                                                      .toString()),
+                                              Divider(color: Colors.black),
+                                              _widgetTextRow(
+                                                  context,
+                                                  'Open',
+                                                  securityBody.securities[0].marketData.latestValue
+                                                      .toString()),
+                                              _widgetTextRow(
+                                                  context,
+                                                  'Close',
+                                                  securityBody.securities[0].marketData.latestValue
+                                                      .toString())
+                                            ]),
                                           ),
                                         )
                                       ],
@@ -242,8 +265,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                       height: 80,
                                       color: Colors.white,
                                       child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: <Widget>[
                                             Expanded(
                                               child: Padding(
@@ -251,27 +273,20 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                                 child: SizedBox.expand(
                                                   child: FlatButton(
                                                       child: Text('SELL',
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .headline6
-                                                                  .merge(
-                                                                    TextStyle(
-                                                                        color: Colors
-                                                                            .white,
-                                                                        fontSize:
-                                                                            20),
-                                                                  )),
-                                                      color: Constants
-                                                          .faRed[900],
-                                                      onPressed: () => _showToast(
-                                                          context,
-                                                          'Not implemented'),
+                                                          style: Theme.of(context)
+                                                              .textTheme
+                                                              .headline6
+                                                              .merge(
+                                                                TextStyle(
+                                                                    color: Colors.white,
+                                                                    fontSize: 20),
+                                                              )),
+                                                      color: Constants.faRed[900],
+                                                      onPressed: () =>
+                                                          _showToast(context, 'Not implemented'),
                                                       shape: RoundedRectangleBorder(
                                                           borderRadius:
-                                                              new BorderRadius
-                                                                      .circular(
-                                                                  5.0))),
+                                                              new BorderRadius.circular(5.0))),
                                                 ),
                                               ),
                                             ),
@@ -281,26 +296,19 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                                 child: SizedBox.expand(
                                                   child: FlatButton(
                                                       child: Text('BUY',
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .headline6
-                                                                  .merge(
-                                                                    TextStyle(
-                                                                        color: Colors
-                                                                            .white,
-                                                                        fontSize:
-                                                                            20),
-                                                                  )),
+                                                          style: Theme.of(context)
+                                                              .textTheme
+                                                              .headline6
+                                                              .merge(
+                                                                TextStyle(
+                                                                    color: Colors.white,
+                                                                    fontSize: 20),
+                                                              )),
                                                       color: Colors.green,
-                                                      onPressed: () => _showToast(
-                                                          context,
-                                                          'Not implemented'),
+                                                      onPressed: () => _showPurchaseDrawer(),
                                                       shape: RoundedRectangleBorder(
                                                           borderRadius:
-                                                              new BorderRadius
-                                                                      .circular(
-                                                                  5.0))),
+                                                              new BorderRadius.circular(5.0))),
                                                 ),
                                               ),
                                             ),
@@ -320,6 +328,66 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
+  _showPurchaseDrawer() {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: false,
+        builder: (context) {
+          return Container(
+            child: Padding(
+                padding: EdgeInsets.only(left: 32, right: 32),
+                child: Column(children: [
+                  Padding(
+                      padding: EdgeInsets.only(top: 16, bottom: 16),
+                      child: _widgetHeadline6(context, 'NEW TRANSACTION')),
+                  _widgetAmount(context),
+                  _widgetDate(context),
+                  _widgetTextRow(context, 'Ask:', '100 €'),
+                  _widgetTextRow(context, 'Estimated price:', '100 €'),
+                  _widgetTextRow(context, 'Current balance:', '100 €'),
+                  Container(height: 16),
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 6),
+                        child: FlatButton(
+                            child: Text('CANCEL',
+                                style: Theme.of(context).textTheme.headline6.merge(
+                                      TextStyle(color: Colors.white, fontSize: 20),
+                                    )),
+                            color: Constants.faRed[900],
+                            onPressed: () => Navigator.pop(context),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: new BorderRadius.circular(5.0))),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 6),
+                        child: FlatButton(
+                            child: Text('SEND BUY ORDER',
+                                style: Theme.of(context).textTheme.headline6.merge(
+                                      TextStyle(color: Colors.white, fontSize: 20),
+                                    )),
+                            color: Colors.green,
+                            onPressed: () {
+                              String amountString = _controllerAmount.text.trim();
+                              String dateString = _controllerDate.text.trim();
+                              if (amountString.isNotEmpty || dateString.isNotEmpty) {
+                              }
+                            },
+                            shape: RoundedRectangleBorder(
+                                borderRadius: new BorderRadius.circular(5.0))),
+                      ),
+                    ),
+                  ])
+                ])),
+          );
+        });
+  }
+
   Widget _widgetDateChooser(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
       Expanded(
@@ -332,10 +400,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   child: RichText(
                     text: TextSpan(
                       style: Theme.of(context).textTheme.bodyText2.merge(
-                        TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
+                            TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                          ),
                       children: [
                         WidgetSpan(
                           child: Padding(
@@ -356,35 +422,29 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 height: 30,
                 minWidth: 32,
                 child: FlatButton(
-                    color: _pressWeekAttention
-                        ? Constants.faRed[900]
-                        : Colors.white,
+                    color: _pressWeekAttention ? Constants.faRed[900] : Colors.white,
                     child: Text(_week,
                         style: Theme.of(context).textTheme.bodyText2.merge(
-                          TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _pressWeekAttention
-                                  ? Colors.white
-                                  : Colors.black),
-                        )),
+                              TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: _pressWeekAttention ? Colors.white : Colors.black),
+                            )),
                     onPressed: () => setState(() {
-                      if (_pressWeekAttention)
-                        _graphDateCriteria = 'all';
-                      else
-                        _graphDateCriteria = _week;
-                      _pressWeekAttention = !_pressWeekAttention;
-                      _pressMonthAttention = false;
-                      _press3MonthAttention = false;
-                      _press6MonthAttention = false;
-                      _pressYTDAttention = false;
+                          if (_pressWeekAttention)
+                            _graphDateCriteria = 'all';
+                          else
+                            _graphDateCriteria = _week;
+                          _pressWeekAttention = !_pressWeekAttention;
+                          _pressMonthAttention = false;
+                          _press3MonthAttention = false;
+                          _press6MonthAttention = false;
+                          _pressYTDAttention = false;
 
-                      _animate = false;
-                    }),
+                          _animate = false;
+                        }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: _pressWeekAttention
-                                ? Constants.faRed[900]
-                                : Colors.black,
+                            color: _pressWeekAttention ? Constants.faRed[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -396,35 +456,29 @@ class _SecurityScreenState extends State<SecurityScreen> {
               height: 30,
               minWidth: 32,
               child: FlatButton(
-                  color: _pressMonthAttention
-                      ? Constants.faRed[900]
-                      : Colors.white,
+                  color: _pressMonthAttention ? Constants.faRed[900] : Colors.white,
                   child: Text(_month,
                       style: Theme.of(context).textTheme.bodyText2.merge(
-                        TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: _pressMonthAttention
-                                ? Colors.white
-                                : Colors.black),
-                      )),
+                            TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: _pressMonthAttention ? Colors.white : Colors.black),
+                          )),
                   onPressed: () => setState(() {
-                    if (_pressMonthAttention)
-                      _graphDateCriteria = 'all';
-                    else
-                      _graphDateCriteria = _month;
-                    _pressMonthAttention = !_pressMonthAttention;
-                    _pressWeekAttention = false;
-                    _press3MonthAttention = false;
-                    _press6MonthAttention = false;
-                    _pressYTDAttention = false;
+                        if (_pressMonthAttention)
+                          _graphDateCriteria = 'all';
+                        else
+                          _graphDateCriteria = _month;
+                        _pressMonthAttention = !_pressMonthAttention;
+                        _pressWeekAttention = false;
+                        _press3MonthAttention = false;
+                        _press6MonthAttention = false;
+                        _pressYTDAttention = false;
 
-                    _animate = false;
-                  }),
+                        _animate = false;
+                      }),
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
-                          color: _pressMonthAttention
-                              ? Constants.faRed[900]
-                              : Colors.black,
+                          color: _pressMonthAttention ? Constants.faRed[900] : Colors.black,
                           width: 1,
                           style: BorderStyle.solid),
                       borderRadius: new BorderRadius.circular(20.0))),
@@ -437,35 +491,29 @@ class _SecurityScreenState extends State<SecurityScreen> {
               height: 30,
               minWidth: 32,
               child: FlatButton(
-                  color: _press3MonthAttention
-                      ? Constants.faRed[900]
-                      : Colors.white,
+                  color: _press3MonthAttention ? Constants.faRed[900] : Colors.white,
                   child: Text(_threeMonth,
                       style: Theme.of(context).textTheme.bodyText2.merge(
-                        TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: _press3MonthAttention
-                                ? Colors.white
-                                : Colors.black),
-                      )),
+                            TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: _press3MonthAttention ? Colors.white : Colors.black),
+                          )),
                   onPressed: () => setState(() {
-                    if (_press3MonthAttention)
-                      _graphDateCriteria = 'all';
-                    else
-                      _graphDateCriteria = _threeMonth;
-                    _press3MonthAttention = !_press3MonthAttention;
-                    _pressWeekAttention = false;
-                    _pressMonthAttention = false;
-                    _press6MonthAttention = false;
-                    _pressYTDAttention = false;
+                        if (_press3MonthAttention)
+                          _graphDateCriteria = 'all';
+                        else
+                          _graphDateCriteria = _threeMonth;
+                        _press3MonthAttention = !_press3MonthAttention;
+                        _pressWeekAttention = false;
+                        _pressMonthAttention = false;
+                        _press6MonthAttention = false;
+                        _pressYTDAttention = false;
 
-                    _animate = false;
-                  }),
+                        _animate = false;
+                      }),
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
-                          color: _press3MonthAttention
-                              ? Constants.faRed[900]
-                              : Colors.black,
+                          color: _press3MonthAttention ? Constants.faRed[900] : Colors.black,
                           width: 1,
                           style: BorderStyle.solid),
                       borderRadius: new BorderRadius.circular(20.0))),
@@ -478,35 +526,29 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 height: 30,
                 minWidth: 32,
                 child: FlatButton(
-                    color: _press6MonthAttention
-                        ? Constants.faRed[900]
-                        : Colors.white,
+                    color: _press6MonthAttention ? Constants.faRed[900] : Colors.white,
                     child: Text(_sixMonth,
                         style: Theme.of(context).textTheme.bodyText2.merge(
-                          TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _press6MonthAttention
-                                  ? Colors.white
-                                  : Colors.black),
-                        )),
+                              TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: _press6MonthAttention ? Colors.white : Colors.black),
+                            )),
                     onPressed: () => setState(() {
-                      if (_press6MonthAttention)
-                        _graphDateCriteria = 'all';
-                      else
-                        _graphDateCriteria = _sixMonth;
-                      _press6MonthAttention = !_press6MonthAttention;
-                      _pressWeekAttention = false;
-                      _pressMonthAttention = false;
-                      _press3MonthAttention = false;
-                      _pressYTDAttention = false;
+                          if (_press6MonthAttention)
+                            _graphDateCriteria = 'all';
+                          else
+                            _graphDateCriteria = _sixMonth;
+                          _press6MonthAttention = !_press6MonthAttention;
+                          _pressWeekAttention = false;
+                          _pressMonthAttention = false;
+                          _press3MonthAttention = false;
+                          _pressYTDAttention = false;
 
-                      _animate = false;
-                    }),
+                          _animate = false;
+                        }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: _press6MonthAttention
-                                ? Constants.faRed[900]
-                                : Colors.black,
+                            color: _press6MonthAttention ? Constants.faRed[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -518,35 +560,29 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 height: 30,
                 minWidth: 32,
                 child: FlatButton(
-                    color: _pressYTDAttention
-                        ? Constants.faRed[900]
-                        : Colors.white,
+                    color: _pressYTDAttention ? Constants.faRed[900] : Colors.white,
                     child: Text(_ytd,
                         style: Theme.of(context).textTheme.bodyText2.merge(
-                          TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _pressYTDAttention
-                                  ? Colors.white
-                                  : Colors.black),
-                        )),
+                              TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: _pressYTDAttention ? Colors.white : Colors.black),
+                            )),
                     onPressed: () => setState(() {
-                      if (_pressYTDAttention)
-                        _graphDateCriteria = 'all';
-                      else
-                        _graphDateCriteria = _ytd;
-                      _pressYTDAttention = !_pressYTDAttention;
-                      _pressWeekAttention = false;
-                      _pressMonthAttention = false;
-                      _press3MonthAttention = false;
-                      _press6MonthAttention = false;
+                          if (_pressYTDAttention)
+                            _graphDateCriteria = 'all';
+                          else
+                            _graphDateCriteria = _ytd;
+                          _pressYTDAttention = !_pressYTDAttention;
+                          _pressWeekAttention = false;
+                          _pressMonthAttention = false;
+                          _press3MonthAttention = false;
+                          _press6MonthAttention = false;
 
-                      _animate = false;
-                    }),
+                          _animate = false;
+                        }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: _pressYTDAttention
-                                ? Constants.faRed[900]
-                                : Colors.black,
+                            color: _pressYTDAttention ? Constants.faRed[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -557,17 +593,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
   Widget _widgetSummary(BuildContext context, SecurityBody portfolio) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
-      child:
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Flexible(
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Total amount'),
-              _widgetBoldHeadline6(
-                  context,
-                  portfolio.securities[0].marketData.latestValue.toString() +
-                      ' €',
-                  Colors.black)
+              _widgetBoldHeadline6(context,
+                  portfolio.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
             ],
           ),
         ),
@@ -575,11 +607,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Total current value'),
-              _widgetBoldHeadline6(
-                  context,
-                  portfolio.securities[0].marketData.latestValue.toString() +
-                      ' €',
-                  Colors.black)
+              _widgetBoldHeadline6(context,
+                  portfolio.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
             ],
           ),
         ),
@@ -587,20 +616,76 @@ class _SecurityScreenState extends State<SecurityScreen> {
     );
   }
 
+  Widget _widgetAmount(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.only(top: 8, bottom: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Amount:',
+                  style: Theme.of(context).textTheme.headline6.merge(
+                        TextStyle(fontSize: 20),
+                      ),
+                ),
+              ),
+            ),
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextField(
+                  controller: _controllerAmount,
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+            )
+          ],
+        ));
+  }
+
+  Widget _widgetDate(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.only(top: 8, bottom: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Valid:',
+                  style: Theme.of(context).textTheme.headline6.merge(
+                        TextStyle(fontSize: 20),
+                      ),
+                ),
+              ),
+            ),
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextField(
+                  controller: _controllerDate,
+                  keyboardType: TextInputType.datetime,
+                ),
+              ),
+            )
+          ],
+        ));
+  }
+
   Widget _widgetDetail(BuildContext context, SecurityBody portfolio) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
-      child:
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Flexible(
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Latest value (EUR)'),
-              _widgetBoldHeadline6(
-                  context,
-                  portfolio.securities[0].marketData.latestValue.toString() +
-                      ' €',
-                  Colors.black)
+              _widgetBoldHeadline6(context,
+                  portfolio.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
             ],
           ),
         ),
@@ -610,10 +695,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
               _widgetBodyText2(context, 'Return'),
               _widgetBoldHeadline6(
                   context,
-                  portfolio.securities[0].marketData.latestValue.toString() +
-                      ' €',
-                  Utils.getColor(
-                      portfolio.securities[0].marketData.latestValue))
+                  portfolio.securities[0].marketData.latestValue.toString() + ' €',
+                  Utils.getColor(portfolio.securities[0].marketData.latestValue))
             ],
           ),
         ),
@@ -623,10 +706,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
               _widgetBodyText2(context, 'Today'),
               _widgetBoldHeadline6(
                   context,
-                  portfolio.securities[0].marketData.latestValue.toString() +
-                      ' €',
-                  Utils.getColor(
-                      portfolio.securities[0].marketData.latestValue))
+                  portfolio.securities[0].marketData.latestValue.toString() + ' €',
+                  Utils.getColor(portfolio.securities[0].marketData.latestValue))
             ],
           ),
         ),
@@ -645,18 +726,18 @@ class _SecurityScreenState extends State<SecurityScreen> {
               children: <Widget>[
                 Center(
                     child: Text(
-                      'INFORMATION',
-                      style: Theme.of(context).textTheme.headline6.merge(
+                  'INFORMATION',
+                  style: Theme.of(context).textTheme.headline6.merge(
                         TextStyle(fontSize: 20),
                       ),
-                    )),
+                )),
                 Center(
                     child: Text(
-                      _getNow(),
-                      style: Theme.of(context).textTheme.headline6.merge(
+                  _getNow(),
+                  style: Theme.of(context).textTheme.headline6.merge(
                         TextStyle(fontSize: 20),
                       ),
-                    ))
+                ))
               ],
             ),
             Visibility(
@@ -678,9 +759,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _widgetRow(BuildContext context, String label, String text) {
+  Widget _widgetTextRow(BuildContext context, String label, String text) {
     return Padding(
-        padding: EdgeInsets.only(top: 16, bottom: 16),
+        padding: EdgeInsets.only(top: 8, bottom: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -690,8 +771,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 child: Text(
                   label,
                   style: Theme.of(context).textTheme.headline6.merge(
-                    TextStyle(fontSize: 20),
-                  ),
+                        TextStyle(fontSize: 20),
+                      ),
                 ),
               ),
             ),
@@ -701,8 +782,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 child: Text(
                   text,
                   style: Theme.of(context).textTheme.headline6.merge(
-                    TextStyle(fontSize: 20),
-                  ),
+                        TextStyle(fontSize: 20),
+                      ),
                 ),
               ),
             )
@@ -710,8 +791,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _widgetBoldHeadline6(
-      BuildContext context, String text, Color color) {
+  Widget _widgetBoldHeadline6(BuildContext context, String text, Color color) {
     return Center(
         child: Text(
       text,
@@ -747,8 +827,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ));
   }
 
-  List<charts.Series<TimeSeries, DateTime>> _chartData(
-      List<Graph> graphs) {
+  List<charts.Series<TimeSeries, DateTime>> _chartData(List<Graph> graphs) {
     List<TimeSeries> portfolioMinus100Series = [];
     List<TimeSeries> portfolioMinus100Pointers = [];
 
@@ -765,8 +844,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
       comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
     if (_graphDateCriteria == _sixMonth)
       comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
-    if (_graphDateCriteria == _ytd)
-      comparisonDate = DateTime(lastDate.year, 1, 1);
+    if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
 
     for (var i = 0; i < graphs.length; i++) {
       if (graphs[i].date.isAfter(comparisonDate)) {

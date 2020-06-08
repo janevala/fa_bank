@@ -23,17 +23,17 @@ class InvestmentItem extends StatelessWidget {
   Widget build(BuildContext context) {
     double rowHeight = 50;
     var iconForwardPlatform;
-    if (Platform.isIOS) iconForwardPlatform = Icon(Icons.arrow_forward_ios);
-    else iconForwardPlatform = Icon(Icons.arrow_forward);
+    if (Platform.isIOS)
+      iconForwardPlatform = Icon(Icons.arrow_forward_ios);
+    else
+      iconForwardPlatform = Icon(Icons.arrow_forward);
 
     return InkWell(
       onTap: () {
         Navigator.pushNamed(
           context,
           SecurityScreen.route,
-          arguments: SecurityArgument(
-              investment.security
-          ),
+          arguments: SecurityArgument(investment.security),
         );
       },
       child: Padding(
@@ -43,10 +43,8 @@ class InvestmentItem extends StatelessWidget {
                 flex: 5,
                 child: Column(
                   children: <Widget>[
-                    _widgetHeadline6(
-                        context, investment.security.name, Colors.black),
-                    _widgetBodyText2(
-                        context, investment.security.securityCode),
+                    _widgetHeadline6(context, investment.security.name, Colors.black),
+                    _widgetBodyText2(context, investment.security.securityCode),
                   ],
                 )),
             Container(height: rowHeight, width: 10, child: VerticalDivider(color: Colors.grey)),
@@ -55,8 +53,8 @@ class InvestmentItem extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     _widgetBodyText2(context, 'Pos. value'),
-                    _widgetHeadline6(context,
-                        investment.positionValue.toString() + ' €', Colors.black),
+                    _widgetHeadline6(
+                        context, investment.positionValue.toString() + ' €', Colors.black),
                   ],
                 )),
             Container(height: rowHeight, width: 10, child: VerticalDivider(color: Colors.grey)),
@@ -65,9 +63,7 @@ class InvestmentItem extends StatelessWidget {
               child: Column(
                 children: <Widget>[
                   _widgetBodyText2(context, 'Return'),
-                  _widgetHeadline6(
-                      context,
-                      investment.changePercent.toStringAsFixed(2) + '%',
+                  _widgetHeadline6(context, investment.changePercent.toStringAsFixed(2) + '%',
                       Utils.getColor(investment.changePercent)),
                 ],
               ),
@@ -77,17 +73,14 @@ class InvestmentItem extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     _widgetBodyText2(context, 'Today'),
-                    _widgetHeadline6(
-                        context,
-                        investment.changePercent.toStringAsFixed(2) + '%',
+                    _widgetHeadline6(context, investment.changePercent.toStringAsFixed(2) + '%',
                         Utils.getColor(investment.changePercent)),
                   ],
                 )),
             Expanded(
               child: iconForwardPlatform,
             )
-          ])
-      ),
+          ])),
     );
   }
 

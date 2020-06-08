@@ -67,12 +67,10 @@ query PortfolioOverview(\$id: Long!) {
 
 //note withoutPositionData false = slower query
 
-final SharedPreferencesManager _sharedPreferencesManager =
-    locator<SharedPreferencesManager>();
+final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final DashboardBloc _dashboardUserBloc = DashboardBloc();
-
 
   //Graph globals
   bool _animate = true;
@@ -101,9 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   static final AuthLink _authLink = AuthLink(
       getToken: () async =>
-          'Bearer ' +
-          _sharedPreferencesManager
-              .getString(SharedPreferencesManager.keyAccessToken));
+          'Bearer ' + _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken));
 
   static final Link link = _authLink.concat(_httpLink);
 
@@ -115,23 +111,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   );
 
   _doOnExpiry() async {
-    if (_sharedPreferencesManager
-        .isKeyExists(SharedPreferencesManager.keyAuthMSecs))
-      await _sharedPreferencesManager
-          .clearKey(SharedPreferencesManager.keyAuthMSecs);
+    if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs))
+      await _sharedPreferencesManager.clearKey(SharedPreferencesManager.keyAuthMSecs);
   }
 
   _doRefreshToken() async {
-    String refreshToken = _sharedPreferencesManager
-        .getString(SharedPreferencesManager.keyRefreshToken);
-    RefreshTokenBody refreshTokenBody =
-        RefreshTokenBody('refresh_token', refreshToken);
+    String refreshToken =
+        _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
+    RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
     _dashboardUserBloc.add(DashboardEvent(refreshTokenBody));
   }
 
   _showToast(BuildContext context, var text) {
-    Scaffold.of(context).showSnackBar(
-        SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
+    Scaffold.of(context)
+        .showSnackBar(SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
   }
 
   _onChanged(charts.SelectionModel<DateTime> model) {
@@ -139,7 +132,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _dateTime = model.selectedDatum.first.datum.time;
       _animate = false;
     });
-
   }
 
   @override
@@ -163,8 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icon(Icons.exit_to_app),
                 onPressed: () {
                   locator<SharedPreferencesManager>().clearAll();
-                  Navigator.pushNamedAndRemoveUntil(
-                      context, LoginScreen.route, (r) => false);
+                  Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
                 },
               ),
             ],
@@ -185,34 +176,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     return Query(
                         options: QueryOptions(
                             documentNode: gql(portfolioQuery),
-                            variables: {"id": 10527075},
-//                            variables: {"id": 10527024},
+                            variables: {"id": _sharedPreferencesManager.getInt(SharedPreferencesManager.keyUid)},
                             pollInterval: 30000),
-                        builder: (QueryResult result,
-                            {VoidCallback refetch, FetchMore fetchMore}) {
+                        builder: (QueryResult result, {VoidCallback refetch, FetchMore fetchMore}) {
                           if (result.hasException) {
                             if (result.exception.clientException != null) {
-                              String msg =
-                                  result.exception.clientException.message;
+                              String msg = result.exception.clientException.message;
                               if (msg.contains('Network Error: 401')) {
                                 _doOnExpiry();
                                 _doRefreshToken();
                               } else {
                                 return Center(child: Text(msg));
                               }
-                            } else if (result.exception.graphqlErrors[0] !=
-                                null) {
-                              return Center(
-                                  child: Text(result
-                                      .exception.graphqlErrors[0].message));
+                            } else if (result.exception.graphqlErrors[0] != null) {
+                              return Center(child: Text(result.exception.graphqlErrors[0].message));
                             } else {
                               return Center(child: Text('Network Error'));
                             }
                           }
                           if (result.loading) return Spinner();
 
-                          var portfolioBody =
-                              PortfolioBody.fromJson(result.data);
+                          var portfolioBody = PortfolioBody.fromJson(result.data);
 
                           return SafeArea(
                             child: SingleChildScrollView(
@@ -223,22 +207,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   _widgetTitle(context, portfolioBody),
                                   Container(height: 12, color: Colors.grey[300]),
                                   _widgetSummary(context, portfolioBody),
-                                  Padding(padding: EdgeInsets.only(left: 2, right: 2),
+                                  Padding(
+                                      padding: EdgeInsets.only(left: 2, right: 2),
                                       child: _widgetDateChooser(context)),
-                                  _widgetDay(context),
+//                                  _widgetDayTitle(context),
                                   Container(
                                     height: 250,
                                     child: Padding(
                                       padding: EdgeInsets.only(left: 4, right: 4),
-                                      child: charts.TimeSeriesChart(_chartData(portfolioBody.portfolio.graph),
+                                      child: charts.TimeSeriesChart(
+                                        _chartData(portfolioBody.portfolio.graph),
                                         animate: _animate,
                                         defaultRenderer: charts.LineRendererConfig(),
-                                        customSeriesRenderers: [charts.PointRendererConfig(customRendererId: 'stocksPoint')],
+                                        customSeriesRenderers: [
+                                          charts.PointRendererConfig(
+                                              customRendererId: 'stocksPoint')
+                                        ],
                                         dateTimeFactory: charts.LocalDateTimeFactory(),
                                         selectionModels: [
                                           charts.SelectionModelConfig(
-                                              type: charts.SelectionModelType.info,
-                                              changedListener: _onChanged)
+                                              type: charts.SelectionModelType.info)
+//                                              changedListener: _onChanged)
                                         ],
                                       ),
                                     ),
@@ -246,9 +235,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   _widgetDescriptor(context),
                                   Container(height: 12, color: Colors.grey[300]),
                                   _widgetInvestments(
-                                      context,
-                                      portfolioBody.portfolio.portfolioReport
-                                          .investments)
+                                      context, portfolioBody.portfolio.portfolioReport.investments)
                                 ],
                               ),
                             ),
@@ -264,13 +251,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ));
   }
 
-
-  Widget _widgetDay(BuildContext context) {
+  Widget _widgetDayTitle(BuildContext context) {
     return Padding(
         padding: EdgeInsets.only(top: 12),
         child: _widgetBodyText2(context, DateFormat('d MMMM yyyy').format(_dateTime)));
   }
-
 
   Widget _widgetTitle(BuildContext context, PortfolioBody portfolio) {
     return Padding(
@@ -280,11 +265,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _widgetHeadline6(context, portfolio.portfolio.portfolioName),
             Center(
                 child: Text(
-                  portfolio.portfolio.client.name,
-                  style: Theme.of(context).textTheme.bodyText2.merge(
+              portfolio.portfolio.client.name,
+              style: Theme.of(context).textTheme.bodyText2.merge(
                     TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.grey[600]),
                   ),
-                ))
+            ))
           ],
         ));
   }
@@ -301,10 +286,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: RichText(
                     text: TextSpan(
                       style: Theme.of(context).textTheme.bodyText2.merge(
-                        TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
+                            TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                          ),
                       children: [
                         WidgetSpan(
                           child: Padding(
@@ -321,165 +304,107 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Expanded(
           flex: 2,
           child: Center(
-        child: ButtonTheme(
-            height: 30,
-            minWidth: 32,
-            child: FlatButton(
-                color: _pressWeekAttention
-                    ? Constants.faRed[900]
-                    : Colors.white,
-                child: Text(_week,
-                    style: Theme.of(context).textTheme.bodyText2.merge(
-                          TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _pressWeekAttention
-                                  ? Colors.white
-                                  : Colors.black),
-                        )),
-                onPressed: () => setState(() {
-                      if (_pressWeekAttention)
-                        _graphDateCriteria = 'all';
-                      else
-                        _graphDateCriteria = _week;
-                      _pressWeekAttention = !_pressWeekAttention;
-                      _pressMonthAttention = false;
-                      _press3MonthAttention = false;
-                      _press6MonthAttention = false;
-                      _pressYTDAttention = false;
+            child: ButtonTheme(
+                height: 30,
+                minWidth: 32,
+                child: FlatButton(
+                    color: _pressWeekAttention ? Constants.faRed[900] : Colors.white,
+                    child: Text(_week,
+                        style: Theme.of(context).textTheme.bodyText2.merge(
+                              TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: _pressWeekAttention ? Colors.white : Colors.black),
+                            )),
+                    onPressed: () => setState(() {
+                          if (_pressWeekAttention)
+                            _graphDateCriteria = 'all';
+                          else
+                            _graphDateCriteria = _week;
+                          _pressWeekAttention = !_pressWeekAttention;
+                          _pressMonthAttention = false;
+                          _press3MonthAttention = false;
+                          _press6MonthAttention = false;
+                          _pressYTDAttention = false;
 
-                      _animate = false;
-                    }),
-                shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                        color: _pressWeekAttention
-                            ? Constants.faRed[900]
-                            : Colors.black,
-                        width: 1,
-                        style: BorderStyle.solid),
-                    borderRadius: new BorderRadius.circular(20.0)))),
-      )),
+                          _animate = false;
+                        }),
+                    shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                            color: _pressWeekAttention ? Constants.faRed[900] : Colors.black,
+                            width: 1,
+                            style: BorderStyle.solid),
+                        borderRadius: new BorderRadius.circular(20.0)))),
+          )),
       Expanded(
           flex: 2,
           child: Center(
-        child: ButtonTheme(
-          height: 30,
-          minWidth: 32,
-          child: FlatButton(
-              color: _pressMonthAttention
-                  ? Constants.faRed[900]
-                  : Colors.white,
-              child: Text(_month,
-                  style: Theme.of(context).textTheme.bodyText2.merge(
-                        TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: _pressMonthAttention
-                                ? Colors.white
-                                : Colors.black),
-                      )),
-              onPressed: () => setState(() {
-                    if (_pressMonthAttention)
-                      _graphDateCriteria = 'all';
-                    else
-                      _graphDateCriteria = _month;
-                    _pressMonthAttention = !_pressMonthAttention;
-                    _pressWeekAttention = false;
-                    _press3MonthAttention = false;
-                    _press6MonthAttention = false;
-                    _pressYTDAttention = false;
+            child: ButtonTheme(
+              height: 30,
+              minWidth: 32,
+              child: FlatButton(
+                  color: _pressMonthAttention ? Constants.faRed[900] : Colors.white,
+                  child: Text(_month,
+                      style: Theme.of(context).textTheme.bodyText2.merge(
+                            TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: _pressMonthAttention ? Colors.white : Colors.black),
+                          )),
+                  onPressed: () => setState(() {
+                        if (_pressMonthAttention)
+                          _graphDateCriteria = 'all';
+                        else
+                          _graphDateCriteria = _month;
+                        _pressMonthAttention = !_pressMonthAttention;
+                        _pressWeekAttention = false;
+                        _press3MonthAttention = false;
+                        _press6MonthAttention = false;
+                        _pressYTDAttention = false;
 
-                    _animate = false;
-                  }),
-              shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                      color: _pressMonthAttention
-                          ? Constants.faRed[900]
-                          : Colors.black,
-                      width: 1,
-                      style: BorderStyle.solid),
-                  borderRadius: new BorderRadius.circular(20.0))),
-        ),
-      )),
+                        _animate = false;
+                      }),
+                  shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                          color: _pressMonthAttention ? Constants.faRed[900] : Colors.black,
+                          width: 1,
+                          style: BorderStyle.solid),
+                      borderRadius: new BorderRadius.circular(20.0))),
+            ),
+          )),
       Expanded(
           flex: 2,
           child: Center(
-        child: ButtonTheme(
-          height: 30,
-          minWidth: 32,
-          child: FlatButton(
-              color: _press3MonthAttention
-                  ? Constants.faRed[900]
-                  : Colors.white,
-              child: Text(_threeMonth,
-                  style: Theme.of(context).textTheme.bodyText2.merge(
-                        TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: _press3MonthAttention
-                                ? Colors.white
-                                : Colors.black),
-                      )),
-              onPressed: () => setState(() {
-                    if (_press3MonthAttention)
-                      _graphDateCriteria = 'all';
-                    else
-                      _graphDateCriteria = _threeMonth;
-                    _press3MonthAttention = !_press3MonthAttention;
-                    _pressWeekAttention = false;
-                    _pressMonthAttention = false;
-                    _press6MonthAttention = false;
-                    _pressYTDAttention = false;
+            child: ButtonTheme(
+              height: 30,
+              minWidth: 32,
+              child: FlatButton(
+                  color: _press3MonthAttention ? Constants.faRed[900] : Colors.white,
+                  child: Text(_threeMonth,
+                      style: Theme.of(context).textTheme.bodyText2.merge(
+                            TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: _press3MonthAttention ? Colors.white : Colors.black),
+                          )),
+                  onPressed: () => setState(() {
+                        if (_press3MonthAttention)
+                          _graphDateCriteria = 'all';
+                        else
+                          _graphDateCriteria = _threeMonth;
+                        _press3MonthAttention = !_press3MonthAttention;
+                        _pressWeekAttention = false;
+                        _pressMonthAttention = false;
+                        _press6MonthAttention = false;
+                        _pressYTDAttention = false;
 
-                    _animate = false;
-                  }),
-              shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                      color: _press3MonthAttention
-                          ? Constants.faRed[900]
-                          : Colors.black,
-                      width: 1,
-                      style: BorderStyle.solid),
-                  borderRadius: new BorderRadius.circular(20.0))),
-        ),
-      )),
-      Expanded(
-          flex: 2,
-          child: Center(
-        child: ButtonTheme(
-            height: 30,
-            minWidth: 32,
-            child: FlatButton(
-                color: _press6MonthAttention
-                    ? Constants.faRed[900]
-                    : Colors.white,
-                child: Text(_sixMonth,
-                    style: Theme.of(context).textTheme.bodyText2.merge(
-                          TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _press6MonthAttention
-                                  ? Colors.white
-                                  : Colors.black),
-                        )),
-                onPressed: () => setState(() {
-                      if (_press6MonthAttention)
-                        _graphDateCriteria = 'all';
-                      else
-                        _graphDateCriteria = _sixMonth;
-                      _press6MonthAttention = !_press6MonthAttention;
-                      _pressWeekAttention = false;
-                      _pressMonthAttention = false;
-                      _press3MonthAttention = false;
-                      _pressYTDAttention = false;
-
-                      _animate = false;
-                    }),
-                shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                        color: _press6MonthAttention
-                            ? Constants.faRed[900]
-                            : Colors.black,
-                        width: 1,
-                        style: BorderStyle.solid),
-                    borderRadius: new BorderRadius.circular(20.0)))),
-      )),
+                        _animate = false;
+                      }),
+                  shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                          color: _press3MonthAttention ? Constants.faRed[900] : Colors.black,
+                          width: 1,
+                          style: BorderStyle.solid),
+                      borderRadius: new BorderRadius.circular(20.0))),
+            ),
+          )),
       Expanded(
           flex: 2,
           child: Center(
@@ -487,35 +412,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 height: 30,
                 minWidth: 32,
                 child: FlatButton(
-                    color: _pressYTDAttention
-                        ? Constants.faRed[900]
-                        : Colors.white,
-                    child: Text(_ytd,
+                    color: _press6MonthAttention ? Constants.faRed[900] : Colors.white,
+                    child: Text(_sixMonth,
                         style: Theme.of(context).textTheme.bodyText2.merge(
-                          TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _pressYTDAttention
-                                  ? Colors.white
-                                  : Colors.black),
-                        )),
+                              TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: _press6MonthAttention ? Colors.white : Colors.black),
+                            )),
                     onPressed: () => setState(() {
-                      if (_pressYTDAttention)
-                        _graphDateCriteria = 'all';
-                      else
-                        _graphDateCriteria = _ytd;
-                      _pressYTDAttention = !_pressYTDAttention;
-                      _pressWeekAttention = false;
-                      _pressMonthAttention = false;
-                      _press3MonthAttention = false;
-                      _press6MonthAttention = false;
+                          if (_press6MonthAttention)
+                            _graphDateCriteria = 'all';
+                          else
+                            _graphDateCriteria = _sixMonth;
+                          _press6MonthAttention = !_press6MonthAttention;
+                          _pressWeekAttention = false;
+                          _pressMonthAttention = false;
+                          _press3MonthAttention = false;
+                          _pressYTDAttention = false;
 
-                      _animate = false;
-                    }),
+                          _animate = false;
+                        }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: _pressYTDAttention
-                                ? Constants.faRed[900]
-                                : Colors.black,
+                            color: _press6MonthAttention ? Constants.faRed[900] : Colors.black,
+                            width: 1,
+                            style: BorderStyle.solid),
+                        borderRadius: new BorderRadius.circular(20.0)))),
+          )),
+      Expanded(
+          flex: 2,
+          child: Center(
+            child: ButtonTheme(
+                height: 30,
+                minWidth: 32,
+                child: FlatButton(
+                    color: _pressYTDAttention ? Constants.faRed[900] : Colors.white,
+                    child: Text(_ytd,
+                        style: Theme.of(context).textTheme.bodyText2.merge(
+                              TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: _pressYTDAttention ? Colors.white : Colors.black),
+                            )),
+                    onPressed: () => setState(() {
+                          if (_pressYTDAttention)
+                            _graphDateCriteria = 'all';
+                          else
+                            _graphDateCriteria = _ytd;
+                          _pressYTDAttention = !_pressYTDAttention;
+                          _pressWeekAttention = false;
+                          _pressMonthAttention = false;
+                          _press3MonthAttention = false;
+                          _press6MonthAttention = false;
+
+                          _animate = false;
+                        }),
+                    shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                            color: _pressYTDAttention ? Constants.faRed[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -526,19 +479,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _widgetSummary(BuildContext context, PortfolioBody portfolio) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
-      child:
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Flexible(
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Net asset value'),
               Center(
                   child: Text(
-                    portfolio.portfolio.portfolioReport.netAssetValue.toString() + ' €',
-                    style: Theme.of(context).textTheme.headline6.merge(
-                      TextStyle(fontSize: 19)
-                    ),
-                  ))
+                portfolio.portfolio.portfolioReport.netAssetValue.toString() + ' €',
+                style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19)),
+              ))
             ],
           ),
         ),
@@ -547,12 +497,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Market value'),
               Center(
-                  child: Text(
-                    portfolio.portfolio.portfolioReport.marketValue.toString() + ' €',
-                      style: Theme.of(context).textTheme.headline6.merge(
-                          TextStyle(fontSize: 19)
-                      )
-                  ))
+                  child: Text(portfolio.portfolio.portfolioReport.marketValue.toString() + ' €',
+                      style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19))))
             ],
           ),
         ),
@@ -561,12 +507,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Cash balance'),
               Center(
-                  child: Text(
-                    portfolio.portfolio.portfolioReport.cashBalance.toString() + ' €',
-                      style: Theme.of(context).textTheme.headline6.merge(
-                          TextStyle(fontSize: 19)
-                      )
-                  ))
+                  child: Text(portfolio.portfolio.portfolioReport.cashBalance.toString() + ' €',
+                      style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19))))
             ],
           ),
         ),
@@ -577,8 +519,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _widgetDescriptor(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
-      child:
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Flexible(
           child: Padding(
             padding: EdgeInsets.only(left: 18, right: 18),
@@ -645,8 +586,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     List<TimeSeries> portfolioMinus100Pointers = [];
     List<TimeSeries> benchmarkMinus100Series = [];
 
-    var lastDate = graph
-        .dailyValues.dailyValue[graph.dailyValues.dailyValue.length - 1].date;
+    var lastDate = graph.dailyValues.dailyValue[graph.dailyValues.dailyValue.length - 1].date;
     var firstDate = graph.dailyValues.dailyValue[0].date;
     var comparisonDate;
     if (_graphDateCriteria == 'all')
@@ -659,8 +599,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
     if (_graphDateCriteria == _sixMonth)
       comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
-    if (_graphDateCriteria == _ytd)
-      comparisonDate = DateTime(lastDate.year, 1, 1);
+    if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
 
     for (var i = 0; i < graph.dailyValues.dailyValue.length; i++) {
       var v = graph.dailyValues.dailyValue[i];

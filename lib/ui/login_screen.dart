@@ -17,11 +17,13 @@ class LoginScreen extends StatelessWidget {
   final TextEditingController _controllerUserName = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
 
+  _showToast(BuildContext context, var text) {
+    Scaffold.of(context)
+        .showSnackBar(SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
+  }
+
   @override
   Widget build(BuildContext context) {
-    MediaQueryData mediaQueryData = MediaQuery.of(context);
-    double heightScreen = mediaQueryData.size.height;
-
     return Scaffold(
       body: BlocProvider<LoginBloc>(
         create: (context) => _loginBloc,
@@ -46,38 +48,39 @@ class LoginScreen extends StatelessWidget {
                 },
               );
             } else if (state is LoginSuccess) {
-              Navigator.pushNamedAndRemoveUntil(
-                  context, DashboardScreen.route, (r) => false);
+              Navigator.pushNamedAndRemoveUntil(context, DashboardScreen.route, (r) => false);
             }
           },
           child: SafeArea(
             child: Stack(
               children: <Widget>[
-                ListView(
+                Column(
                   children: <Widget>[
-                    Container(
-                      height: heightScreen * 0.8,
-                      color: Constants.faRed[900],
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: ListView(
-                          children: <Widget>[
-                            _widgetImageHeader(),
-                            _widgetSizedBox(32),
-                            _widgetLabel(context, 'USER NAME'),
-                            _widgetTextFieldUserName(context),
-                            _widgetSizedBox(32),
-                            _widgetLabel(context, 'PASSWORD'),
-                            _widgetTextFieldPassword(context),
-                            _widgetSizedBox(64),
-                            _widgetButtonSignIn(context),
-                            _widgetSizedBox(64),
-                          ],
+                    Expanded(
+                      child: Container(
+                        color: Constants.faRed[900],
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: ListView(
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: <Widget>[
+                              _widgetImageHeader(),
+                              _widgetSizedBox(16),
+                              _widgetLabel(context, 'USER NAME'),
+                              _widgetTextFieldUserName(context),
+                              _widgetSizedBox(16),
+                              _widgetLabel(context, 'PASSWORD'),
+                              _widgetTextFieldPassword(context),
+                              _widgetSizedBox(64),
+                              _widgetButtonSignIn(context),
+                              _widgetSizedBox(64),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                     Container(
-                      height: heightScreen * 0.2,
+                      padding: EdgeInsets.only(top: 32, bottom: 32),
                       color: Colors.white,
                       child: _widgetInformation(context),
                     )
@@ -105,14 +108,27 @@ class LoginScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Text(
-          'FORGOT PASSWORD?',
-          style: Theme.of(context).textTheme.headline6,
+        Builder(
+            builder: (sillyToastContext) => InkWell(
+                onTap: () => _showToast(sillyToastContext, 'Not implemented'),
+                child: Text(
+                  'FORGOT PASSWORD?',
+                  style: Theme.of(context).textTheme.subtitle2.merge(
+                        TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                ))),
+        Container(
+          height: 32,
         ),
-        Text(
-          'PRIVACY POLICY',
-          style: Theme.of(context).textTheme.headline6,
-        )
+        Builder(
+            builder: (sillyToastContext) => InkWell(
+                onTap: () => _showToast(sillyToastContext, 'Not implemented'),
+                child: Text(
+                  'PRIVACY POLICY',
+                  style: Theme.of(context).textTheme.subtitle2.merge(
+                        TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                ))),
       ],
     );
   }
@@ -120,52 +136,42 @@ class LoginScreen extends StatelessWidget {
   Widget _widgetHeadline6(BuildContext context, String text) {
     return Center(
         child: Text(
-          text,
-          style: Theme.of(context).textTheme.headline6,
-        ));
+      text,
+      style: Theme.of(context).textTheme.headline6,
+    ));
   }
 
   Widget _widgetButtonSignIn(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(left: 64, right: 64),
       child: FlatButton(
-        child: Text(
-          'SIGN IN',
-          style: Theme.of(context).textTheme.subtitle2.merge(
-            TextStyle(
-                color: Constants.faRed[900],
-                fontWeight: FontWeight.bold
-            ),
+          child: Text(
+            'SIGN IN',
+            style: Theme.of(context).textTheme.subtitle2.merge(
+                  TextStyle(color: Constants.faRed[900], fontWeight: FontWeight.bold),
+                ),
           ),
-        ),
-        onPressed: () {
-          String username = _controllerUserName.text.trim();
-          String password = _controllerPassword.text.trim();
-          if (username.isEmpty || password.isEmpty) {
-            _loginBloc.add(
-                LoginEvent(LoginBody('codemate', 'sNY5x18tfy4W', 'password')));
-          } else {
-            _loginBloc
-                .add(LoginEvent(LoginBody(username, password, 'password')));
-          }
-        },
-        color: Colors.white,
-          shape: RoundedRectangleBorder(
-              borderRadius:
-              new BorderRadius
-                  .circular(
-                  5.0))
-      ),
+          onPressed: () {
+            String username = _controllerUserName.text.trim();
+            String password = _controllerPassword.text.trim();
+            if (username.isEmpty || password.isEmpty) {
+              _loginBloc.add(LoginEvent(LoginBody('codemate', 'sNY5x18tfy4W', 'password')));
+            } else {
+              _loginBloc.add(LoginEvent(LoginBody(username, password, 'password')));
+            }
+          },
+          color: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))),
     );
   }
 
   Widget _widgetTextFieldUserName(BuildContext context) {
     return TextField(
         style: Theme.of(context).textTheme.subtitle2.merge(
-          TextStyle(
-            color: Colors.white,
-          ),
-        ),
+              TextStyle(
+                color: Colors.white,
+              ),
+            ),
         controller: _controllerUserName,
         keyboardType: TextInputType.text,
         cursorColor: Colors.white,
@@ -185,10 +191,10 @@ class LoginScreen extends StatelessWidget {
   Widget _widgetTextFieldPassword(BuildContext context) {
     return TextField(
         style: Theme.of(context).textTheme.subtitle2.merge(
-          TextStyle(
-            color: Colors.white,
-          ),
-        ),
+              TextStyle(
+                color: Colors.white,
+              ),
+            ),
         controller: _controllerPassword,
         keyboardType: TextInputType.text,
         obscureText: true,
@@ -216,10 +222,10 @@ class LoginScreen extends StatelessWidget {
           ),
     );
   }
-  
+
   Widget _widgetImageHeader() {
     return Padding(
-      padding: EdgeInsets.all(64),
+      padding: EdgeInsets.only(left: 64, right: 64, top: 32, bottom: 32),
       child: Container(
         child: Image.asset('assets/images/fa-bank-login.png'),
       ),
