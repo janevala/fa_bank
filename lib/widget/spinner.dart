@@ -32,8 +32,8 @@ class Spinner extends StatelessWidget {
 
 Widget _buildMaterialSpinner(BuildContext context) {
   return SizedBox(
-    height: 70,
-    width: 70,
+    height: 60,
+    width: 60,
     child: CircularProgressIndicator(
       valueColor: AlwaysStoppedAnimation<Color>(Constants.faRed[800]),
       backgroundColor: Constants.faRed[300],
@@ -43,8 +43,6 @@ Widget _buildMaterialSpinner(BuildContext context) {
 
 Widget _buildCupertinoSpinner(BuildContext context) {
   return SizedBox(
-    height: 70,
-    width: 70,
-    child: CupertinoActivityIndicator()
+    child: CupertinoActivityIndicator(radius: 18)
   );
 }
