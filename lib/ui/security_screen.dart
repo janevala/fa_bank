@@ -1,4 +1,5 @@
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:fa_bank/api/graphql.dart';
 import 'package:fa_bank/bloc/security_bloc.dart';
 import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/injector/injector.dart';
@@ -10,11 +11,14 @@ import 'package:fa_bank/ui/investment_item.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
 
 /// "Security" as in financial nomenclature, not data or information security.
 ///
@@ -27,32 +31,13 @@ class SecurityScreen extends StatefulWidget {
   _SecurityScreenState createState() => _SecurityScreenState();
 }
 
-String securityQuery = """
-query Security(\$securityCode: String) {
-  securities( securityCode: \$securityCode ) {
-    name
-    securityCode
-    marketData: latestMarketData {
-      latestValue:close
-    }
-    url
-    graph:marketDataHistory(timePeriodCode:"YEARS-1") {
-      date:obsDate
-      price:close
-    }
-    currency {
-      currencyCode:securityCode
-    }
-  }
-}
-""";
-
 final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
 class _SecurityScreenState extends State<SecurityScreen> {
   final SecurityBloc _securityBloc = SecurityBloc();
 
   final TextEditingController _controllerAmount = TextEditingController();
+  String _controllerOnChanged;
   final TextEditingController _controllerDate = TextEditingController();
 
   //Graph globals
@@ -67,7 +52,10 @@ class _SecurityScreenState extends State<SecurityScreen> {
   static const String _month = '1m';
   static const String _threeMonth = '3m';
   static const String _sixMonth = '6m';
-  static const String _ytd = 'YTD';
+  static const String _ytd = 'ytd';
+
+  bool _dialogVisible = false;
+  String _transactionType = '';
 
   @override
   void initState() {
@@ -108,17 +96,62 @@ class _SecurityScreenState extends State<SecurityScreen> {
     return DateFormat('d MMMM yyyy').format(now);
   }
 
+  String _getNowAgain() {
+    DateTime now = DateTime.now();
+    return DateFormat('yyyy-MM-dd').format(now);
+  }
+
+  bool _isNumeric(String str) {
+    if(str == null) {
+      return false;
+    }
+    return double.tryParse(str) != null;
+  }
+
   _showToast(BuildContext context, var text) {
     Scaffold.of(context)
         .showSnackBar(SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
+  }
+
+  _showDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        if (Platform.isIOS) {
+          return CupertinoAlertDialog(
+            title: Text(title, style: Theme.of(context).textTheme.headline6),
+            content: Text(content, style: Theme.of(context).textTheme.subtitle2),
+            actions: [
+              FlatButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text('Ok', style: Theme.of(context).textTheme.subtitle2),
+              ),
+            ],
+          );
+        } else {
+          return AlertDialog(
+            title: Text(title, style: Theme.of(context).textTheme.headline6),
+            content: Text(content, style: Theme.of(context).textTheme.subtitle2),
+            actions: [
+              FlatButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text('Ok', style: Theme.of(context).textTheme.subtitle2),
+              ),
+            ],
+          );
+        }
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final SecurityArgument arg = ModalRoute.of(context).settings.arguments;
     final Security security = arg.security;
+    final String shortName = arg.shortName;
     MediaQueryData mediaQueryData = MediaQuery.of(context);
     double heightScreen = mediaQueryData.size.height;
+    _controllerDate.text = _getNowAgain();
 
     return GraphQLProvider(
         client: _faClient,
@@ -159,7 +192,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         options: QueryOptions(
                             documentNode: gql(securityQuery),
                             variables: {"securityCode": security.securityCode},
-                            pollInterval: 30000),
+                            pollInterval: 1000),
                         builder: (QueryResult result, {VoidCallback refetch, FetchMore fetchMore}) {
                           if (result.hasException) {
                             if (result.exception.clientException != null) {
@@ -282,8 +315,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                                                     fontSize: 20),
                                                               )),
                                                       color: Constants.faRed[900],
-                                                      onPressed: () =>
-                                                          _showToast(context, 'Not implemented'),
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          _controllerAmount.text = '';
+                                                          _controllerOnChanged = '';
+                                                          _dialogVisible = true;
+                                                          _transactionType = 'M'; //logical, sell in Finnish
+                                                        });
+                                                      },
                                                       shape: RoundedRectangleBorder(
                                                           borderRadius:
                                                               new BorderRadius.circular(5.0))),
@@ -305,7 +344,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                                                     fontSize: 20),
                                                               )),
                                                       color: Colors.green,
-                                                      onPressed: () => _showPurchaseDrawer(),
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          _controllerAmount.text = '';
+                                                          _controllerOnChanged = '';
+                                                          _dialogVisible = true;
+                                                          _transactionType = 'B';
+                                                        });
+                                                      },
                                                       shape: RoundedRectangleBorder(
                                                           borderRadius:
                                                               new BorderRadius.circular(5.0))),
@@ -313,7 +359,10 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                               ),
                                             ),
                                           ]),
-                                    ))
+                                    )),
+
+                                _widgetPurchaseScreen(context, securityBody, shortName)
+
                               ],
                             ),
                           );
@@ -328,64 +377,150 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  _showPurchaseDrawer() {
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: false,
-        builder: (context) {
-          return Container(
-            child: Padding(
-                padding: EdgeInsets.only(left: 32, right: 32),
-                child: Column(children: [
-                  Padding(
-                      padding: EdgeInsets.only(top: 16, bottom: 16),
-                      child: _widgetHeadline6(context, 'NEW TRANSACTION')),
-                  _widgetAmount(context),
-                  _widgetDate(context),
-                  _widgetTextRow(context, 'Ask:', '100 €'),
-                  _widgetTextRow(context, 'Estimated price:', '100 €'),
-                  _widgetTextRow(context, 'Current balance:', '100 €'),
-                  Container(height: 16),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 6),
-                        child: FlatButton(
-                            child: Text('CANCEL',
-                                style: Theme.of(context).textTheme.headline6.merge(
-                                      TextStyle(color: Colors.white, fontSize: 20),
-                                    )),
-                            color: Constants.faRed[900],
-                            onPressed: () => Navigator.pop(context),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(5.0))),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 6),
-                        child: FlatButton(
-                            child: Text('SEND BUY ORDER',
-                                style: Theme.of(context).textTheme.headline6.merge(
-                                      TextStyle(color: Colors.white, fontSize: 20),
-                                    )),
-                            color: Colors.green,
-                            onPressed: () {
-                              String amountString = _controllerAmount.text.trim();
-                              String dateString = _controllerDate.text.trim();
-                              if (amountString.isNotEmpty || dateString.isNotEmpty) {
-                              }
-                            },
-                            shape: RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(5.0))),
-                      ),
-                    ),
-                  ])
-                ])),
-          );
-        });
+  double _calculateOnChanged(double askPrice) {
+    if (_controllerOnChanged == null || _controllerOnChanged.isEmpty) return 0;
+    return askPrice * double.parse(_controllerOnChanged);
+  }
+
+  Widget _widgetPurchaseScreen(BuildContext context, SecurityBody securityBody, String shortName) {
+    return IgnorePointer(
+        ignoring: !_dialogVisible,
+        child: AnimatedOpacity(
+          opacity: _dialogVisible ? 1 : 0,
+          duration: Duration(milliseconds: 500),
+          child: SizedBox.expand(
+            child: Container(
+              color: Colors.white,
+              child: Padding(
+                  padding: EdgeInsets.only(left: 32, right: 32),
+                  child: SingleChildScrollView(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Padding(
+                              padding: EdgeInsets.only(top: 16, bottom: 16),
+                              child: _widgetHeadline6(context, 'NEW TRANSACTION')),
+                          _widgetAmount(context),
+                          _widgetDate(context),
+                          _widgetTextRow(context, 'Ask:', securityBody.securities[0].marketData.latestValue.toString() + ' €'),
+                          _widgetTextRow(context, 'Estimated price:', _calculateOnChanged(securityBody.securities[0].marketData.latestValue).toStringAsFixed(2) + ' €'),
+                          _widgetTextRow(context, 'Current balance:', '-'),
+                          Container(height: 16),
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(right: 6),
+                                  child: FlatButton(
+                                      child: Text('CANCEL',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline6
+                                              .merge(
+                                            TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 20),
+                                          )),
+                                      color: Colors.white,
+                                      onPressed: () {
+                                        FocusScope.of(context).unfocus();
+
+                                        setState(() {
+                                          _dialogVisible = false;
+                                        });
+                                      },
+                                      shape: RoundedRectangleBorder(
+                                          side: BorderSide(
+                                              color: Colors.black,
+                                              width: 1,
+                                              style: BorderStyle.solid),
+                                          borderRadius: BorderRadius.circular(5.0))),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                      padding: EdgeInsets.only(left: 6),
+                                      child: _widgetMutation(context, securityBody, shortName)),
+                                ),
+                              ])
+                        ]),
+                  )),
+            ),
+          ),
+        ));
+  }
+
+  Widget _widgetMutation(BuildContext context, SecurityBody securityBody, String shortName) {
+    return Mutation(
+      options: MutationOptions(
+        documentNode:
+        gql(transactionMutation),
+        update: (Cache cache, QueryResult result) {
+          if (result.hasException) {
+            if (result.exception.clientException != null) {
+              String msg = result.exception.clientException.message;
+              if (msg.contains('Network Error: 401')) {
+                _doOnExpiry();
+                _doRefreshToken();
+                _showDialog(context, 'Updated', 'Please try again');
+              }
+            }
+          } else {
+            bool resultOk = false;
+            List<dynamic> list = result.data['importTradeOrders'];
+            for (var i = 0; i < list.length; i++) {
+              Map<String, dynamic> v = list[i];
+              if (v.containsKey( 'importStatus') && v.containsValue('OK')) {
+                resultOk = true;
+              }
+            }
+
+            if (resultOk) {
+              //refetch();
+              setState(() {
+                _dialogVisible = false;
+              });
+              _showDialog(context, 'Success', 'New transaction was submitted successfully');
+            } else {
+              _showDialog(context, 'Error', result.data.toString());
+            }
+          }
+
+          return cache;
+        },
+      ),
+      builder: (RunMutation runMutation, QueryResult result) {
+        return FlatButton(
+            child: Text(_transactionType == 'B' ? 'SEND BUY ORDER' : 'SEND SELL ORDER',
+                style: Theme.of(context).textTheme.headline6.merge(
+                  TextStyle(
+                      color:
+                      Colors.white,
+                      fontSize: 20),
+                )),
+            color: _transactionType == 'B' ? Colors.green : Constants.faRed[900],
+            onPressed: () {
+              FocusScope.of(context).unfocus();
+
+              String _amount = _controllerAmount.text.trim();
+              String _date = _controllerDate.text.trim();
+              if (_amount.isEmpty || _date.isEmpty) {
+                _showToast(context, 'Please correct input and try again');
+              } else {
+                runMutation({
+                  'parentPortfolio': shortName,
+                  'security': securityBody.securities[0].securityCode,
+                  'amount': double.parse(_amount),
+                  'price': securityBody.securities[0].marketData.latestValue,
+                  'currency': securityBody.securities[0].currency.currencyCode,
+                  'type': _transactionType,
+                  'dateString': _date
+                });
+              }
+            },
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)));
+      },
+    );
   }
 
   Widget _widgetDateChooser(BuildContext context) {
@@ -395,7 +530,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: InkWell(
             onTap: () => _showToast(context, 'Not implemented'),
             child: Container(
-                height: 30,
+                height: 28,
                 child: Center(
                   child: RichText(
                     text: TextSpan(
@@ -419,7 +554,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 30,
+                height: 28,
                 minWidth: 32,
                 child: FlatButton(
                     color: _pressWeekAttention ? Constants.faRed[900] : Colors.white,
@@ -453,7 +588,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-              height: 30,
+              height: 28,
               minWidth: 32,
               child: FlatButton(
                   color: _pressMonthAttention ? Constants.faRed[900] : Colors.white,
@@ -488,7 +623,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-              height: 30,
+              height: 28,
               minWidth: 32,
               child: FlatButton(
                   color: _press3MonthAttention ? Constants.faRed[900] : Colors.white,
@@ -523,7 +658,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 30,
+                height: 28,
                 minWidth: 32,
                 child: FlatButton(
                     color: _press6MonthAttention ? Constants.faRed[900] : Colors.white,
@@ -557,7 +692,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 30,
+                height: 28,
                 minWidth: 32,
                 child: FlatButton(
                     color: _pressYTDAttention ? Constants.faRed[900] : Colors.white,
@@ -590,7 +725,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ]);
   }
 
-  Widget _widgetSummary(BuildContext context, SecurityBody portfolio) {
+  Widget _widgetSummary(BuildContext context, SecurityBody securityBody) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
@@ -599,7 +734,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Total amount'),
               _widgetBoldHeadline6(context,
-                  portfolio.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
+                  securityBody.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
             ],
           ),
         ),
@@ -608,7 +743,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Total current value'),
               _widgetBoldHeadline6(context,
-                  portfolio.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
+                  securityBody.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
             ],
           ),
         ),
@@ -637,8 +772,19 @@ class _SecurityScreenState extends State<SecurityScreen> {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextField(
+                  textAlign: TextAlign.end,
+                  style: Theme.of(context).textTheme.subtitle2,
                   controller: _controllerAmount,
                   keyboardType: TextInputType.number,
+                  onChanged: (text) {
+                    setState(() {
+                      _controllerOnChanged = text;
+                    });
+                  },
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(6),
+                    WhitelistingTextInputFormatter(RegExp("[0-9]"))
+                  ],
                 ),
               ),
             )
@@ -667,6 +813,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextField(
+                  textAlign: TextAlign.end,
+                  style: Theme.of(context).textTheme.subtitle2,
+                  enabled: false,
                   controller: _controllerDate,
                   keyboardType: TextInputType.datetime,
                 ),
@@ -676,7 +825,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _widgetDetail(BuildContext context, SecurityBody portfolio) {
+  Widget _widgetDetail(BuildContext context, SecurityBody securityBody) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
@@ -685,7 +834,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Latest value (EUR)'),
               _widgetBoldHeadline6(context,
-                  portfolio.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
+                  securityBody.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
             ],
           ),
         ),
@@ -695,8 +844,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
               _widgetBodyText2(context, 'Return'),
               _widgetBoldHeadline6(
                   context,
-                  portfolio.securities[0].marketData.latestValue.toString() + ' €',
-                  Utils.getColor(portfolio.securities[0].marketData.latestValue))
+                  securityBody.securities[0].marketData.latestValue.toString() + ' €',
+                  Utils.getColor(securityBody.securities[0].marketData.latestValue))
             ],
           ),
         ),
@@ -706,8 +855,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
               _widgetBodyText2(context, 'Today'),
               _widgetBoldHeadline6(
                   context,
-                  portfolio.securities[0].marketData.latestValue.toString() + ' €',
-                  Utils.getColor(portfolio.securities[0].marketData.latestValue))
+                  securityBody.securities[0].marketData.latestValue.toString() + ' €',
+                  Utils.getColor(securityBody.securities[0].marketData.latestValue))
             ],
           ),
         ),
@@ -761,7 +910,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   Widget _widgetTextRow(BuildContext context, String label, String text) {
     return Padding(
-        padding: EdgeInsets.only(top: 8, bottom: 8),
+        padding: EdgeInsets.only(top: 12, bottom: 12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[

@@ -11,6 +11,7 @@ Investment _$InvestmentFromJson(Map<String, dynamic> json) {
     json['security'] == null
         ? null
         : Security.fromJson(json['security'] as Map<String, dynamic>),
+    (json['amount'] as num)?.toDouble(),
     (json['positionValue'] as num)?.toDouble(),
     (json['changePercent'] as num)?.toDouble(),
   );
@@ -19,6 +20,7 @@ Investment _$InvestmentFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> _$InvestmentToJson(Investment instance) =>
     <String, dynamic>{
       'security': instance.security,
+      'amount': instance.amount,
       'positionValue': instance.positionValue,
       'changePercent': instance.changePercent,
     };

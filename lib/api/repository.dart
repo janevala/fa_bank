@@ -1,4 +1,4 @@
-import 'package:fa_bank/api/api_auth_provider.dart';
+import 'package:fa_bank/api/auth_provider.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/token/token.dart';

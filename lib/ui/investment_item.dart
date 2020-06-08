@@ -9,15 +9,17 @@ import 'package:flutter/material.dart';
 enum ConfirmAction { CANCEL, ACCEPT }
 
 class SecurityArgument {
+  final String shortName;
   final Security security;
 
-  SecurityArgument(this.security);
+  SecurityArgument(this.security, this.shortName);
 }
 
 class InvestmentItem extends StatelessWidget {
   final Investment investment;
+  final String shortName;
 
-  const InvestmentItem({Key key, this.investment}) : super(key: key);
+  const InvestmentItem({Key key, this.investment, this.shortName}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,7 @@ class InvestmentItem extends StatelessWidget {
         Navigator.pushNamed(
           context,
           SecurityScreen.route,
-          arguments: SecurityArgument(investment.security),
+          arguments: SecurityArgument(investment.security, shortName),
         );
       },
       child: Padding(
@@ -59,6 +61,15 @@ class InvestmentItem extends StatelessWidget {
                 )),
             Container(height: rowHeight, width: 10, child: VerticalDivider(color: Colors.grey)),
             Expanded(
+                flex: 3,
+                child: Column(
+                  children: <Widget>[
+                    _widgetBodyText2(context, 'Amount'),
+                    _widgetHeadline6(context, investment.amount.toStringAsFixed(2),
+                        Colors.black),
+                  ],
+                )),
+            Expanded(
               flex: 3,
               child: Column(
                 children: <Widget>[
@@ -68,15 +79,6 @@ class InvestmentItem extends StatelessWidget {
                 ],
               ),
             ),
-            Expanded(
-                flex: 3,
-                child: Column(
-                  children: <Widget>[
-                    _widgetBodyText2(context, 'Today'),
-                    _widgetHeadline6(context, investment.changePercent.toStringAsFixed(2) + '%',
-                        Utils.getColor(investment.changePercent)),
-                  ],
-                )),
             Expanded(
               child: iconForwardPlatform,
             )

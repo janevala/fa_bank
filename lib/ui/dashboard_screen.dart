@@ -1,19 +1,24 @@
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:fa_bank/api/graphql.dart';
 import 'package:fa_bank/bloc/dashboard_bloc.dart';
 import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/injector/injector.dart';
 import 'package:fa_bank/podo/portfolio/graph.dart';
 import 'package:fa_bank/podo/portfolio/investment.dart';
 import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
+import 'package:fa_bank/podo/portfolio/trade_order.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/ui/investment_item.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
 
 class DashboardScreen extends StatefulWidget {
   static const String route = '/dashboard_screen';
@@ -21,51 +26,6 @@ class DashboardScreen extends StatefulWidget {
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
 }
-
-String portfolioQuery = """
-query PortfolioOverview(\$id: Long!) {
-  portfolio(id: \$id) {
-    client: primaryContact {
-      name
-    }
-    portfolioName: name
-    portfolioReport: portfolioReport(use15minDelayedPrice: true,
-      calculateExpectedAmountBasedOpenTradeOrders: true) {
-      marketValue: positionMarketValue
-      cashBalance: accountBalance
-      netAssetValue: marketValue
-      investments: portfolioReportItems {
-        security {
-          name
-          securityCode
-        }
-        positionValue: marketTradeAmount
-        changePercent: valueChangeRelative
-      }
-    }
-    graph:analytics(withoutPositionData:false,
-      parameters: {
-        paramsSet: {
-          timePeriodCodes:"GIVEN"
-          includeData:true
-          drilldownEnabled:false
-          limit: 0
-        },
-        includeDrilldownPositions:false
-      }) {
-      dailyValues:grouppedAnalytics(key:"1") {
-        dailyValue:indexedReturnData {
-          date
-          portfolioMinus100:indexedValue
-          benchmarkMinus100:benchmarkIndexedValue
-        }
-      }
-    }
-  }
-}
-""";
-
-//note withoutPositionData false = slower query
 
 final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
@@ -84,13 +44,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static const String _month = '1m';
   static const String _threeMonth = '3m';
   static const String _sixMonth = '6m';
-  static const String _ytd = 'YTD';
+  static const String _ytd = 'ytd';
 
   DateTime _dateTime = DateTime.now();
 
   @override
   void initState() {
     super.initState();
+
+    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyUid)) _logout();
 
     _doRefreshToken();
   }
@@ -127,6 +89,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .showSnackBar(SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
   }
 
+  _openTradeOrders(BuildContext context, List<TradeOrder> tradeOrders) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        int numOfOrders = tradeOrders.length + 1;
+        String title = 'Trade Orders ($numOfOrders)';
+
+        if (Platform.isIOS) {
+          return CupertinoAlertDialog(
+            title: Text(title, style: Theme.of(context).textTheme.headline6),
+            content: _widgetTradeOrderList(context, tradeOrders),
+            actions: [
+              FlatButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text('Ok', style: Theme.of(context).textTheme.subtitle2),
+              ),
+            ],
+          );
+        } else {
+          return AlertDialog(
+            title: Text(title, style: Theme.of(context).textTheme.headline6),
+            content: _widgetTradeOrderList(context, tradeOrders),
+            actions: [
+              FlatButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text('Ok', style: Theme.of(context).textTheme.subtitle2),
+              ),
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  Widget _widgetTradeOrderList(BuildContext context, List<TradeOrder> tradeOrders) {
+    double width = MediaQuery.of(context).size.width;
+    return Container(
+      width: width,
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: tradeOrders.length,
+        itemBuilder: (BuildContext context, int index) {
+          return _widgetTradeOrder(context, tradeOrders[index]);
+        },
+      ),
+    );
+  }
+
+  Widget _widgetTradeOrder(BuildContext context,  TradeOrder tradeOrder) {
+    Color typeColor = Utils.getColor(tradeOrder.typeName == 'Buy' ? 1 : -1);
+    String dateText = DateFormat('dd.MM.yyyy').format(tradeOrder.transactionDate);
+
+    return Padding(
+      padding: EdgeInsets.only(top: 4, bottom: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(tradeOrder.securityName + ' (' + tradeOrder.securityCode + ')',
+              style: Theme.of(context).textTheme.subtitle2.merge(
+                TextStyle(fontSize: 20),
+              )),
+          Row(
+            children: <Widget>[
+              Padding(padding: EdgeInsets.only(right: 8), child: Icon(Icons.date_range, size: 20)),
+              Padding(padding: EdgeInsets.only(right: 28), child: Text(dateText,
+                  style: Theme.of(context).textTheme.subtitle2)),
+              Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName,
+                  style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor)))),
+              Text(tradeOrder.amount.toString(),
+                  style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor))),
+            ],
+          ),
+          Divider(color: Colors.grey)
+        ],
+      ),
+    );
+  }
+
   _onChanged(charts.SelectionModel<DateTime> model) {
     setState(() {
       _dateTime = model.selectedDatum.first.datum.time;
@@ -134,8 +174,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  _logout() {
+    locator<SharedPreferencesManager>().clearAll();
+    Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
+    List<TradeOrder> tradeOrders = [];
     return GraphQLProvider(
         client: _faClient,
         child: Scaffold(
@@ -145,17 +191,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 height: AppBar().preferredSize.height * 0.8),
             backgroundColor: Constants.faRed[900],
             actions: <Widget>[
-/*              IconButton(
-                icon: Icon(Icons.refresh),
+              IconButton(
+                icon: Icon(Icons.format_list_numbered),
                 onPressed: () {
-                  doRefreshToken();
+                  if (tradeOrders.length > 0) _openTradeOrders(context, tradeOrders);
                 },
-              ),*/
+              ),
               IconButton(
                 icon: Icon(Icons.exit_to_app),
                 onPressed: () {
-                  locator<SharedPreferencesManager>().clearAll();
-                  Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
+                  _logout();
                 },
               ),
             ],
@@ -176,8 +221,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     return Query(
                         options: QueryOptions(
                             documentNode: gql(portfolioQuery),
-                            variables: {"id": _sharedPreferencesManager.getInt(SharedPreferencesManager.keyUid)},
-                            pollInterval: 30000),
+                            variables: {"id": _sharedPreferencesManager.getDouble(SharedPreferencesManager.keyUid)},
+                            pollInterval: 1000),
                         builder: (QueryResult result, {VoidCallback refetch, FetchMore fetchMore}) {
                           if (result.hasException) {
                             if (result.exception.clientException != null) {
@@ -197,6 +242,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           if (result.loading) return Spinner();
 
                           var portfolioBody = PortfolioBody.fromJson(result.data);
+                          tradeOrders = portfolioBody.portfolio.tradeOrders;
 
                           return SafeArea(
                             child: SingleChildScrollView(
@@ -235,7 +281,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   _widgetDescriptor(context),
                                   Container(height: 12, color: Colors.grey[300]),
                                   _widgetInvestments(
-                                      context, portfolioBody.portfolio.portfolioReport.investments)
+                                      context, portfolioBody.portfolio.portfolioReport.investments, portfolioBody.portfolio.shortName)
                                 ],
                               ),
                             ),
@@ -281,7 +327,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: InkWell(
             onTap: () => _showToast(context, 'Not implemented'),
             child: Container(
-                height: 30,
+                height: 28,
                 child: Center(
                   child: RichText(
                     text: TextSpan(
@@ -305,7 +351,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 30,
+                height: 28,
                 minWidth: 32,
                 child: FlatButton(
                     color: _pressWeekAttention ? Constants.faRed[900] : Colors.white,
@@ -339,7 +385,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-              height: 30,
+              height: 28,
               minWidth: 32,
               child: FlatButton(
                   color: _pressMonthAttention ? Constants.faRed[900] : Colors.white,
@@ -374,7 +420,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-              height: 30,
+              height: 28,
               minWidth: 32,
               child: FlatButton(
                   color: _press3MonthAttention ? Constants.faRed[900] : Colors.white,
@@ -409,7 +455,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 30,
+                height: 28,
                 minWidth: 32,
                 child: FlatButton(
                     color: _press6MonthAttention ? Constants.faRed[900] : Colors.white,
@@ -443,7 +489,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 30,
+                height: 28,
                 minWidth: 32,
                 child: FlatButton(
                     color: _pressYTDAttention ? Constants.faRed[900] : Colors.white,
@@ -548,7 +594,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _widgetInvestments(BuildContext context, List<Investment> investments) {
+  Widget _widgetInvestments(BuildContext context, List<Investment> investments, String shortName) {
 //    deviceList.sort((a, b) => b.deviceLocation.deviceTime.compareTo(a.deviceLocation.deviceTime));
 
     return Padding(
@@ -559,7 +605,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (BuildContext context, int i) {
-              return InvestmentItem(investment: investments[i]);
+              return InvestmentItem(investment: investments[i], shortName: shortName);
             }));
   }
 

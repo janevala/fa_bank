@@ -22,6 +22,25 @@ class LoginScreen extends StatelessWidget {
         .showSnackBar(SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
   }
 
+  _showDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        if (Platform.isIOS) {
+          return CupertinoAlertDialog(
+            title: Text(title),
+            content: Text(content),
+          );
+        } else {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(content),
+          );
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,23 +49,8 @@ class LoginScreen extends StatelessWidget {
         child: BlocListener<LoginBloc, LoginState>(
           listener: (context, state) {
             if (state is LoginFailure) {
-              String title = 'Info';
-              showDialog(
-                context: context,
-                builder: (context) {
-                  if (Platform.isIOS) {
-                    return CupertinoAlertDialog(
-                      title: Text(title),
-                      content: Text(state.error),
-                    );
-                  } else {
-                    return AlertDialog(
-                      title: Text(title),
-                      content: Text(state.error),
-                    );
-                  }
-                },
-              );
+              _showDialog(context, 'Error', state.error);
+              ;
             } else if (state is LoginSuccess) {
               Navigator.pushNamedAndRemoveUntil(context, DashboardScreen.route, (r) => false);
             }

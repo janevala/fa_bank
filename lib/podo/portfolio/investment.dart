@@ -6,10 +6,11 @@ part 'investment.g.dart';
 @JsonSerializable()
 class Investment {
   Security security;
+  double amount;
   double positionValue;
   double changePercent;
 
-  Investment(this.security, this.positionValue, this.changePercent);
+  Investment(this.security, this.amount, this.positionValue, this.changePercent);
 
   factory Investment.fromJson(Map<String, dynamic> json) => _$InvestmentFromJson(json);
 
