@@ -44,9 +44,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static const String _month = '1m';
   static const String _threeMonth = '3m';
   static const String _sixMonth = '6m';
-  static const String _ytd = 'ytd';
+  static const String _ytd = 'YTD';
 
   DateTime _dateTime = DateTime.now();
+  DateTime _dateRangeFirst = DateTime.now();
+  DateTime _dateRangeLast = DateTime.now();
 
   @override
   void initState() {
@@ -60,8 +62,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static final HttpLink _httpLink = HttpLink(uri: Constants.faAuthApi);
 
   static final AuthLink _authLink = AuthLink(
-      getToken: () async =>
-          'Bearer ' + _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken));
+      getToken: () async => 'Bearer ' + _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken));
 
   static final Link link = _authLink.concat(_httpLink);
 
@@ -89,6 +90,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .showSnackBar(SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
   }
 
+  Widget _dataTable(BuildContext context, List<TradeOrder> tradeOrders) {
+    return DataTable(
+      columns: const <DataColumn>[
+        DataColumn(
+          label: Text(
+            'Date',
+            style: TextStyle(fontStyle: FontStyle.italic),
+          ),
+        ),
+        DataColumn(
+          label: Text(
+            'Stock',
+            style: TextStyle(fontStyle: FontStyle.italic),
+          ),
+        ),
+        DataColumn(
+          label: Text(
+            'Buy/Sell',
+            style: TextStyle(fontStyle: FontStyle.italic),
+          ),
+        ),
+        DataColumn(
+          label: Text(
+            'Amount',
+            style: TextStyle(fontStyle: FontStyle.italic),
+          ),
+        ),
+      ],
+
+      rows: _getDataRows(tradeOrders),
+    );
+  }
+
+  List<DataRow> _getDataRows(List<TradeOrder> tradeOrders) {
+    List<DataRow> dataRows = [];
+    for (var i = 0; i < tradeOrders.length; i++) {
+      dataRows.add(DataRow(
+        cells: <DataCell>[
+          DataCell(Text(DateFormat('dd.MM.yyyy').format(tradeOrders[i].transactionDate))),
+          DataCell(Text(tradeOrders[i].securityName)),
+          DataCell(Text(tradeOrders[i].typeName)),
+          DataCell(Text(tradeOrders[i].amount.toString())),
+        ],
+      ));
+    }
+
+    return dataRows;
+  }
+
   _openTradeOrders(BuildContext context, List<TradeOrder> tradeOrders) {
     showDialog(
       context: context,
@@ -99,7 +149,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (Platform.isIOS) {
           return CupertinoAlertDialog(
             title: Text(title, style: Theme.of(context).textTheme.headline6),
-            content: _widgetTradeOrderList(context, tradeOrders),
+            content: _dataTable(context, tradeOrders),
             actions: [
               FlatButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -110,7 +160,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         } else {
           return AlertDialog(
             title: Text(title, style: Theme.of(context).textTheme.headline6),
-            content: _widgetTradeOrderList(context, tradeOrders),
+            content: _dataTable(context, tradeOrders),
             actions: [
               FlatButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -153,15 +203,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             children: <Widget>[
               Padding(padding: EdgeInsets.only(right: 8), child: Icon(Icons.date_range, size: 20)),
-              Padding(padding: EdgeInsets.only(right: 28), child: Text(dateText,
-                  style: Theme.of(context).textTheme.subtitle2)),
-              Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName,
-                  style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor)))),
-              Text(tradeOrder.amount.toString(),
-                  style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor))),
+              Padding(padding: EdgeInsets.only(right: 12), child: Text(dateText, style: Theme.of(context).textTheme.subtitle2)),
+              Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor)))),
+              Text(tradeOrder.amount.toString(), style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor))),
             ],
           ),
-          Divider(color: Colors.grey)
+          Divider(color: Colors.grey, thickness: 2)
         ],
       ),
     );
@@ -191,6 +238,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 height: AppBar().preferredSize.height * 0.8),
             backgroundColor: Constants.faRed[900],
             actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.refresh),
+                onPressed: () {
+                  _doRefreshToken();
+                },
+              ),
               IconButton(
                 icon: Icon(Icons.format_list_numbered),
                 onPressed: () {
@@ -222,7 +275,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         options: QueryOptions(
                             documentNode: gql(portfolioQuery),
                             variables: {"id": _sharedPreferencesManager.getDouble(SharedPreferencesManager.keyUid)},
-                            pollInterval: 1000),
+                            pollInterval: 6000000),
                         builder: (QueryResult result, {VoidCallback refetch, FetchMore fetchMore}) {
                           if (result.hasException) {
                             if (result.exception.clientException != null) {
@@ -241,51 +294,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }
                           if (result.loading) return Spinner();
 
-                          var portfolioBody = PortfolioBody.fromJson(result.data);
+                          PortfolioBody portfolioBody = PortfolioBody.fromJson(result.data);
                           tradeOrders = portfolioBody.portfolio.tradeOrders;
 
-                          return SafeArea(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.vertical,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  _widgetTitle(context, portfolioBody),
-                                  Container(height: 12, color: Colors.grey[300]),
-                                  _widgetSummary(context, portfolioBody),
-                                  Padding(
-                                      padding: EdgeInsets.only(left: 2, right: 2),
-                                      child: _widgetDateChooser(context)),
-//                                  _widgetDayTitle(context),
-                                  Container(
-                                    height: 250,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(left: 4, right: 4),
-                                      child: charts.TimeSeriesChart(
-                                        _chartData(portfolioBody.portfolio.graph),
-                                        animate: _animate,
-                                        defaultRenderer: charts.LineRendererConfig(),
-                                        customSeriesRenderers: [
-                                          charts.PointRendererConfig(
-                                              customRendererId: 'stocksPoint')
-                                        ],
-                                        dateTimeFactory: charts.LocalDateTimeFactory(),
-                                        selectionModels: [
-                                          charts.SelectionModelConfig(
-                                              type: charts.SelectionModelType.info)
-//                                              changedListener: _onChanged)
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  _widgetDescriptor(context),
-                                  Container(height: 12, color: Colors.grey[300]),
-                                  _widgetInvestments(
-                                      context, portfolioBody.portfolio.portfolioReport.investments, portfolioBody.portfolio.shortName)
-                                ],
-                              ),
-                            ),
-                          );
+                          return _widgetMainView(context, portfolioBody);
                         });
                   } else {
                     return Container();
@@ -297,10 +309,68 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ));
   }
 
+  Widget _widgetMainView(BuildContext context, PortfolioBody portfolioBody) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _widgetTitle(context, portfolioBody),
+            Container(height: 12, color: Colors.grey[300]),
+            _widgetSummary(context, portfolioBody),
+            Divider(thickness: 2, color: Colors.grey[300]),
+            Padding(
+                padding: EdgeInsets.only(left: 2, right: 2),
+                child: _widgetDateChooser(context)),
+            _widgetDayTitle(context),
+            Container(
+              height: 250,
+              child: Padding(
+                padding: EdgeInsets.only(left: 4, right: 4),
+                child: charts.TimeSeriesChart(
+                  _chartData(portfolioBody.portfolio.graph),
+                  animate: _animate,
+                  defaultRenderer: charts.LineRendererConfig(),
+                  customSeriesRenderers: [
+                    charts.PointRendererConfig(
+                        customRendererId: 'stocksPoint')
+                  ],
+                  dateTimeFactory: charts.LocalDateTimeFactory(),
+                  selectionModels: [
+                    charts.SelectionModelConfig(
+                        type: charts.SelectionModelType.info)
+                        //changedListener: _onChanged)
+                  ],
+                ),
+              ),
+            ),
+            _widgetDescriptor(context),
+            Container(height: 12, color: Colors.grey[300]),
+            _widgetInvestments(
+                context, portfolioBody.portfolio.portfolioReport.investments, portfolioBody.portfolio.shortName)
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _widgetDayTitle(BuildContext context) {
-    return Padding(
-        padding: EdgeInsets.only(top: 12),
-        child: _widgetBodyText2(context, DateFormat('d MMMM yyyy').format(_dateTime)));
+    DateTime dateFirst = DateTime(_dateRangeFirst.year, _dateRangeFirst.month, _dateRangeFirst.day);
+    DateTime dateLast = DateTime(_dateRangeLast.year, _dateRangeLast.month, _dateRangeLast.day);
+    bool visible = !(dateFirst.isAtSameMomentAs(dateLast));
+    DateFormat fmt = DateFormat('dd.MM.yyyy');
+    String s = fmt.format(_dateRangeFirst) + ' - ' + fmt.format(_dateRangeLast);
+    return Container(
+      color: Colors.white,
+      height: 24,
+      child: Visibility(
+        visible: visible,
+        child: Center(
+          child: _widgetBodyText2(context, s),
+        ),
+      ),
+    );
   }
 
   Widget _widgetTitle(BuildContext context, PortfolioBody portfolio) {
@@ -352,7 +422,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Center(
             child: ButtonTheme(
                 height: 28,
-                minWidth: 32,
+                minWidth: 30,
                 child: FlatButton(
                     color: _pressWeekAttention ? Constants.faRed[900] : Colors.white,
                     child: Text(_week,
@@ -386,7 +456,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Center(
             child: ButtonTheme(
               height: 28,
-              minWidth: 32,
+              minWidth: 30,
               child: FlatButton(
                   color: _pressMonthAttention ? Constants.faRed[900] : Colors.white,
                   child: Text(_month,
@@ -421,7 +491,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Center(
             child: ButtonTheme(
               height: 28,
-              minWidth: 32,
+              minWidth: 30,
               child: FlatButton(
                   color: _press3MonthAttention ? Constants.faRed[900] : Colors.white,
                   child: Text(_threeMonth,
@@ -456,7 +526,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Center(
             child: ButtonTheme(
                 height: 28,
-                minWidth: 32,
+                minWidth: 30,
                 child: FlatButton(
                     color: _press6MonthAttention ? Constants.faRed[900] : Colors.white,
                     child: Text(_sixMonth,
@@ -490,7 +560,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Center(
             child: ButtonTheme(
                 height: 28,
-                minWidth: 32,
+                minWidth: 30,
                 child: FlatButton(
                     color: _pressYTDAttention ? Constants.faRed[900] : Colors.white,
                     child: Text(_ytd,
@@ -522,39 +592,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ]);
   }
 
+  Widget _widgetParsedNumberText(BuildContext context, String str) {
+    final formatter = NumberFormat("#,###");// using comma here will not work, even by escaping with back slash
+    String newString = formatter.format(int.parse(str));
+    return Text('€' + newString.replaceAll(',', '.'), style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19)));
+  }
+
   Widget _widgetSummary(BuildContext context, PortfolioBody portfolio) {
+
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Net asset value'),
+              _widgetBodyText2(context, 'Total Value'),
               Center(
-                  child: Text(
-                portfolio.portfolio.portfolioReport.netAssetValue.toString() + ' €',
-                style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19)),
-              ))
+                  child: _widgetParsedNumberText(context, portfolio.portfolio.portfolioReport.netAssetValue.toStringAsFixed(0)),
+              ),
             ],
           ),
         ),
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Market value'),
+              _widgetBodyText2(context, 'Market Value'),
               Center(
-                  child: Text(portfolio.portfolio.portfolioReport.marketValue.toString() + ' €',
-                      style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19))))
+                  child: _widgetParsedNumberText(context, portfolio.portfolio.portfolioReport.marketValue.toStringAsFixed(0)))
             ],
           ),
         ),
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Cash balance'),
+              _widgetBodyText2(context, 'Cash Balance'),
               Center(
-                  child: Text(portfolio.portfolio.portfolioReport.cashBalance.toString() + ' €',
-                      style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19))))
+                  child: _widgetParsedNumberText(context, portfolio.portfolio.portfolioReport.cashBalance.toStringAsFixed(0)))
             ],
           ),
         ),
@@ -598,7 +671,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 //    deviceList.sort((a, b) => b.deviceLocation.deviceTime.compareTo(a.deviceLocation.deviceTime));
 
     return Padding(
-        padding: EdgeInsets.only(top: 12, bottom: 12, left: 6, right: 6),
+        padding: EdgeInsets.only(top: 12, bottom: 12),
         child: ListView.builder(
             itemCount: investments.length,
             scrollDirection: Axis.vertical,
@@ -632,27 +705,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
     List<TimeSeries> portfolioMinus100Pointers = [];
     List<TimeSeries> benchmarkMinus100Series = [];
 
-    var lastDate = graph.dailyValues.dailyValue[graph.dailyValues.dailyValue.length - 1].date;
-    var firstDate = graph.dailyValues.dailyValue[0].date;
-    var comparisonDate;
-    if (_graphDateCriteria == 'all')
-      comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
-    if (_graphDateCriteria == _week)
-      comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
-    if (_graphDateCriteria == _month)
-      comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
-    if (_graphDateCriteria == _threeMonth)
-      comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
-    if (_graphDateCriteria == _sixMonth)
-      comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
-    if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
+    if (graph.dailyValues.dailyValue.length > 0) {
+      var lastDate = graph.dailyValues.dailyValue[graph.dailyValues.dailyValue.length - 1].date;
+      var firstDate = graph.dailyValues.dailyValue[0].date;
+      var comparisonDate;
+      if (_graphDateCriteria == 'all')
+        comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
+      if (_graphDateCriteria == _week)
+        comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
+      if (_graphDateCriteria == _month)
+        comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
+      if (_graphDateCriteria == _threeMonth)
+        comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
+      if (_graphDateCriteria == _sixMonth)
+        comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
+      if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
 
-    for (var i = 0; i < graph.dailyValues.dailyValue.length; i++) {
-      var v = graph.dailyValues.dailyValue[i];
-      if (v.date.isAfter(comparisonDate)) {
-        portfolioMinus100Series.add(TimeSeries(v.date, v.portfolioMinus100));
+      for (var i = 0; i < graph.dailyValues.dailyValue.length; i++) {
+        var v = graph.dailyValues.dailyValue[i];
+        if (v.date.isAfter(comparisonDate)) {
+          portfolioMinus100Series.add(TimeSeries(v.date, v.portfolioMinus100));
 //      if (i % 1000 == 0) portfolioMinus100Pointers.add(TimeSeriesSales(v.date, v.portfolioMinus100));
-        benchmarkMinus100Series.add(TimeSeries(v.date, v.benchmarkMinus100));
+          benchmarkMinus100Series.add(TimeSeries(v.date, v.benchmarkMinus100));
+        }
+      }
+
+      if (portfolioMinus100Series.length > 0) {
+        _dateRangeFirst = portfolioMinus100Series[0].time;
+        _dateRangeLast = portfolioMinus100Series[portfolioMinus100Series.length -1].time;
       }
     }
 

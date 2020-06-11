@@ -10,9 +10,9 @@ enum ConfirmAction { CANCEL, ACCEPT }
 
 class SecurityArgument {
   final String shortName;
-  final Security security;
+  final Investment investment;
 
-  SecurityArgument(this.security, this.shortName);
+  SecurityArgument(this.investment, this.shortName);
 }
 
 class InvestmentItem extends StatelessWidget {
@@ -30,59 +30,66 @@ class InvestmentItem extends StatelessWidget {
     else
       iconForwardPlatform = Icon(Icons.arrow_forward);
 
-    return InkWell(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          SecurityScreen.route,
-          arguments: SecurityArgument(investment.security, shortName),
-        );
-      },
-      child: Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-            Expanded(
-                flex: 5,
-                child: Column(
-                  children: <Widget>[
-                    _widgetHeadline6(context, investment.security.name, Colors.black),
-                    _widgetBodyText2(context, investment.security.securityCode),
-                  ],
-                )),
-            Container(height: rowHeight, width: 10, child: VerticalDivider(color: Colors.grey)),
-            Expanded(
-                flex: 4,
-                child: Column(
-                  children: <Widget>[
-                    _widgetBodyText2(context, 'Pos. value'),
-                    _widgetHeadline6(
-                        context, investment.positionValue.toString() + ' €', Colors.black),
-                  ],
-                )),
-            Container(height: rowHeight, width: 10, child: VerticalDivider(color: Colors.grey)),
-            Expanded(
-                flex: 3,
-                child: Column(
-                  children: <Widget>[
-                    _widgetBodyText2(context, 'Amount'),
-                    _widgetHeadline6(context, investment.amount.toStringAsFixed(2),
-                        Colors.black),
-                  ],
-                )),
-            Expanded(
-              flex: 3,
-              child: Column(
-                children: <Widget>[
-                  _widgetBodyText2(context, 'Return'),
-                  _widgetHeadline6(context, investment.changePercent.toStringAsFixed(2) + '%',
-                      Utils.getColor(investment.changePercent)),
-                ],
-              ),
-            ),
-            Expanded(
-              child: iconForwardPlatform,
-            )
-          ])),
+    return Column(
+      children: <Widget>[
+        InkWell(
+          onTap: () {
+            Navigator.pushNamed(context, SecurityScreen.route,
+              arguments: SecurityArgument(investment, shortName),
+            );
+          },
+          child: Padding(
+              padding: EdgeInsets.only(left: 6, right: 6, top: 4, bottom: 4),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+                Expanded(
+                    flex: 5,
+                    child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          investment.security.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.headline6.merge(
+                            TextStyle(fontSize: 17, color: Colors.black),
+                          ),
+                        ))
+                ),
+                Container(height: rowHeight, width: 10, child: VerticalDivider(thickness: 2, color: Colors.grey[300])),
+                Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: <Widget>[
+                        _widgetBodyText2(context, 'Pos. value'),
+                        _widgetHeadline6(
+                            context, '€' + investment.positionValue.toStringAsFixed(0), Colors.black),
+                      ],
+                    )),
+                Container(height: rowHeight, width: 10, child: VerticalDivider(thickness: 2,color: Colors.grey[300])),
+                Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: <Widget>[
+                        _widgetBodyText2(context, 'Amount'),
+                        _widgetHeadline6(context, investment.amount.toStringAsFixed(0),
+                            Colors.black),
+                      ],
+                    )),
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    children: <Widget>[
+                      _widgetBodyText2(context, 'Return'),
+                      _widgetHeadline6(context, investment.changePercent.toStringAsFixed(2) + '%',
+                          Utils.getColor(investment.changePercent)),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: iconForwardPlatform,
+                )
+              ])),
+        ),
+        Container(height: 8, color: Colors.grey[300]),
+      ],
     );
   }
 
@@ -92,7 +99,7 @@ class InvestmentItem extends StatelessWidget {
         child: Text(
           text,
           style: Theme.of(context).textTheme.headline6.merge(
-                TextStyle(fontSize: 17, color: color),
+                TextStyle(fontSize: 16, color: color, fontWeight: FontWeight.bold),
               ),
         ));
   }
@@ -103,7 +110,7 @@ class InvestmentItem extends StatelessWidget {
         child: Text(
           text,
           style: Theme.of(context).textTheme.bodyText2.merge(
-                TextStyle(fontSize: 15, color: Colors.grey[600]),
+                TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
         ));
   }

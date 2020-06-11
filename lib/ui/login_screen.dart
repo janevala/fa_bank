@@ -58,14 +58,15 @@ class LoginScreen extends StatelessWidget {
           child: SafeArea(
             child: Stack(
               children: <Widget>[
-                Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
+                SingleChildScrollView(
+                  child: Column(
+                    children: <Widget>[
+                      Container(
                         color: Constants.faRed[900],
                         child: Padding(
                           padding: EdgeInsets.all(32),
                           child: ListView(
+                            shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             children: <Widget>[
                               _widgetImageHeader(),
@@ -77,18 +78,44 @@ class LoginScreen extends StatelessWidget {
                               _widgetTextFieldPassword(context),
                               _widgetSizedBox(64),
                               _widgetButtonSignIn(context),
-                              _widgetSizedBox(64),
+                              _widgetSizedBox(32),
                             ],
                           ),
                         ),
                       ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.only(top: 32, bottom: 32),
-                      color: Colors.white,
-                      child: _widgetInformation(context),
-                    )
-                  ],
+                      Container(//centering can be issue on unusually tall/short displays. height of this should be remainder of screen
+                        padding: EdgeInsets.only(top: 32, bottom: 64),
+                        color: Colors.white,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Builder(
+                                builder: (stupidToastContext) => InkWell(
+                                    onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                                    child: Text(
+                                      'FORGOT PASSWORD?',
+                                      style: Theme.of(context).textTheme.subtitle2.merge(
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ))),
+                            Container(
+                              height: 32,
+                            ),
+                            Builder(
+                                builder: (stupidToastContext) => InkWell(
+                                    onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                                    child: Text(
+                                      'PRIVACY POLICY',
+                                      style: Theme.of(context).textTheme.subtitle2.merge(
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ))),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
                 BlocBuilder<LoginBloc, LoginState>(
                   builder: (context, state) {
@@ -104,36 +131,6 @@ class LoginScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _widgetInformation(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Builder(
-            builder: (sillyToastContext) => InkWell(
-                onTap: () => _showToast(sillyToastContext, 'Not implemented'),
-                child: Text(
-                  'FORGOT PASSWORD?',
-                  style: Theme.of(context).textTheme.subtitle2.merge(
-                        TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                ))),
-        Container(
-          height: 32,
-        ),
-        Builder(
-            builder: (sillyToastContext) => InkWell(
-                onTap: () => _showToast(sillyToastContext, 'Not implemented'),
-                child: Text(
-                  'PRIVACY POLICY',
-                  style: Theme.of(context).textTheme.subtitle2.merge(
-                        TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                ))),
-      ],
     );
   }
 

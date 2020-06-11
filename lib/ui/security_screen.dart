@@ -3,6 +3,7 @@ import 'package:fa_bank/api/graphql.dart';
 import 'package:fa_bank/bloc/security_bloc.dart';
 import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/injector/injector.dart';
+import 'package:fa_bank/podo/portfolio/investment.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/graph.dart';
 import 'package:fa_bank/podo/security/security.dart';
@@ -52,10 +53,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
   static const String _month = '1m';
   static const String _threeMonth = '3m';
   static const String _sixMonth = '6m';
-  static const String _ytd = 'ytd';
+  static const String _ytd = 'YTD';
 
   bool _dialogVisible = false;
   String _transactionType = '';
+
+  DateTime _dateRangeFirst = DateTime.now();
+  DateTime _dateRangeLast = DateTime.now();
 
   @override
   void initState() {
@@ -147,10 +151,10 @@ class _SecurityScreenState extends State<SecurityScreen> {
   @override
   Widget build(BuildContext context) {
     final SecurityArgument arg = ModalRoute.of(context).settings.arguments;
-    final Security security = arg.security;
+    final Investment investment = arg.investment;
+    final Security security = arg.investment.security;
     final String shortName = arg.shortName;
-    MediaQueryData mediaQueryData = MediaQuery.of(context);
-    double heightScreen = mediaQueryData.size.height;
+
     _controllerDate.text = _getNowAgain();
 
     return GraphQLProvider(
@@ -189,10 +193,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     return Spinner();
                   } else if (state is SecuritySuccess) {
                     return Query(
-                        options: QueryOptions(
-                            documentNode: gql(securityQuery),
-                            variables: {"securityCode": security.securityCode},
-                            pollInterval: 1000),
+                        options: QueryOptions(documentNode: gql(securityQuery), variables: {"securityCode": security.securityCode}, pollInterval: 60000),
                         builder: (QueryResult result, {VoidCallback refetch, FetchMore fetchMore}) {
                           if (result.hasException) {
                             if (result.exception.clientException != null) {
@@ -211,161 +212,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           }
                           if (result.loading) return Spinner();
 
-                          var securityBody = SecurityBody.fromJson(result.data);
+                          SecurityBody securityBody = SecurityBody.fromJson(result.data);
 
-                          return SafeArea(
-                            child: Stack(
-                              children: <Widget>[
-                                Container(
-                                  height: heightScreen - 160, //fix this mess
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.vertical,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        _widgetSummary(context, securityBody),
-                                        Divider(color: Colors.grey),
-                                        _widgetDetail(context, securityBody),
-                                        Padding(
-                                            padding: EdgeInsets.only(left: 2, right: 2),
-                                            child: _widgetDateChooser(context)),
-                                        Container(
-                                          height: 250,
-                                          child: Padding(
-                                            padding: EdgeInsets.only(left: 4, right: 4),
-                                            child: charts.TimeSeriesChart(
-                                              _chartData(securityBody.securities[0].graph),
-                                              animate: _animate,
-                                              defaultRenderer: charts.LineRendererConfig(),
-                                              customSeriesRenderers: [
-                                                charts.PointRendererConfig(
-                                                    customRendererId: 'stocksPoint')
-                                              ],
-                                              dateTimeFactory: const charts.LocalDateTimeFactory(),
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          color: Colors.grey[300],
-                                          child: Padding(
-                                            padding: EdgeInsets.only(left: 56, right: 56),
-                                            child: Column(children: <Widget>[
-                                              _widgetInformation(
-                                                  context, securityBody.securities[0].url),
-                                              Divider(color: Colors.black),
-                                              _widgetTextRow(
-                                                  context,
-                                                  'Ask',
-                                                  securityBody.securities[0].marketData.latestValue
-                                                      .toString()),
-                                              _widgetTextRow(
-                                                  context,
-                                                  'Bid',
-                                                  securityBody.securities[0].marketData.latestValue
-                                                      .toString()),
-                                              Divider(color: Colors.black),
-                                              _widgetTextRow(
-                                                  context,
-                                                  'High',
-                                                  securityBody.securities[0].marketData.latestValue
-                                                      .toString()),
-                                              _widgetTextRow(
-                                                  context,
-                                                  'Low',
-                                                  securityBody.securities[0].marketData.latestValue
-                                                      .toString()),
-                                              Divider(color: Colors.black),
-                                              _widgetTextRow(
-                                                  context,
-                                                  'Open',
-                                                  securityBody.securities[0].marketData.latestValue
-                                                      .toString()),
-                                              _widgetTextRow(
-                                                  context,
-                                                  'Close',
-                                                  securityBody.securities[0].marketData.latestValue
-                                                      .toString())
-                                            ]),
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                    alignment: Alignment.bottomCenter,
-                                    child: Container(
-                                      height: 80,
-                                      color: Colors.white,
-                                      child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: <Widget>[
-                                            Expanded(
-                                              child: Padding(
-                                                padding: EdgeInsets.all(20),
-                                                child: SizedBox.expand(
-                                                  child: FlatButton(
-                                                      child: Text('SELL',
-                                                          style: Theme.of(context)
-                                                              .textTheme
-                                                              .headline6
-                                                              .merge(
-                                                                TextStyle(
-                                                                    color: Colors.white,
-                                                                    fontSize: 20),
-                                                              )),
-                                                      color: Constants.faRed[900],
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          _controllerAmount.text = '';
-                                                          _controllerOnChanged = '';
-                                                          _dialogVisible = true;
-                                                          _transactionType = 'M'; //logical, sell in Finnish
-                                                        });
-                                                      },
-                                                      shape: RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              new BorderRadius.circular(5.0))),
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Padding(
-                                                padding: EdgeInsets.all(20),
-                                                child: SizedBox.expand(
-                                                  child: FlatButton(
-                                                      child: Text('BUY',
-                                                          style: Theme.of(context)
-                                                              .textTheme
-                                                              .headline6
-                                                              .merge(
-                                                                TextStyle(
-                                                                    color: Colors.white,
-                                                                    fontSize: 20),
-                                                              )),
-                                                      color: Colors.green,
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          _controllerAmount.text = '';
-                                                          _controllerOnChanged = '';
-                                                          _dialogVisible = true;
-                                                          _transactionType = 'B';
-                                                        });
-                                                      },
-                                                      shape: RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              new BorderRadius.circular(5.0))),
-                                                ),
-                                              ),
-                                            ),
-                                          ]),
-                                    )),
-
-                                _widgetPurchaseScreen(context, securityBody, shortName)
-
-                              ],
-                            ),
-                          );
+                          return _widgetMainView(context, securityBody, investment, shortName);
                         });
                   } else {
                     return Container();
@@ -377,8 +226,160 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
+  Widget _widgetMainView(BuildContext context, SecurityBody securityBody, Investment investment, String shortName) {
+    MediaQueryData mediaQueryData = MediaQuery.of(context);
+    double heightScreen = mediaQueryData.size.height;
+
+    return SafeArea(
+      child: Stack(
+        children: <Widget>[
+          Container(
+            height: heightScreen - 160, //fix this mess
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  _widgetSummary(context, securityBody, investment),
+                  Divider(color: Colors.grey),
+                  _widgetDetail(context, securityBody, investment),
+                  Padding(
+                      padding: EdgeInsets.only(left: 2, right: 2),
+                      child: _widgetDateChooser(context)),
+                  _widgetDayTitle(context),
+                  Container(
+                    height: 250,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 4, right: 4),
+                      child: charts.TimeSeriesChart(
+                        _chartData(securityBody.securities[0].graph),
+                        animate: _animate,
+                        defaultRenderer: charts.LineRendererConfig(),
+                        customSeriesRenderers: [
+                          charts.PointRendererConfig(
+                              customRendererId: 'stocksPoint')
+                        ],
+                        dateTimeFactory: const charts.LocalDateTimeFactory(),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    color: Colors.grey[300],
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 56, right: 56),
+                      child: Column(children: <Widget>[
+                        _widgetInformation(
+                            context, securityBody.securities[0].url),
+                        Divider(color: Colors.black),
+                        _widgetTextRow(
+                            context,
+                            'Market Value', securityBody.securities[0].marketData.latestValue.toString()),
+                        _widgetTextRow(
+                            context,
+                            'Purchase Value', securityBody.securities[0].marketData.latestValue.toString()),
+                        _widgetTextRow(
+                            context,
+                            'Return', securityBody.securities[0].marketData.latestValue.toString()),
+                        _widgetTextRow(
+                            context,
+                            'EGS Rating', securityBody.securities[0].marketData.latestValue.toString()),
+                        _widgetTextRow(
+                            context,
+                            'Risk Score', securityBody.securities[0].marketData.latestValue.toString()),
+                        _widgetTextRow(
+                            context,
+                            'Purchase Value', securityBody.securities[0].marketData.latestValue.toString()),
+                        _widgetTextRow(
+                            context,
+                            'Ticker', investment.security.securityCode),
+
+
+                      ]),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+          Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                height: 80,
+                color: Colors.white,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: SizedBox.expand(
+                            child: FlatButton(
+                                child: Text('SELL',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headline6
+                                        .merge(
+                                      TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20),
+                                    )),
+                                color: Constants.faRed[900],
+                                onPressed: () {
+                                  setState(() {
+                                    _controllerAmount.text = '';
+                                    _controllerOnChanged = '';
+                                    _dialogVisible = true;
+                                    _transactionType = 'M'; //logical, sell in Finnish
+                                  });
+                                },
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                    new BorderRadius.circular(5.0))),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: SizedBox.expand(
+                            child: FlatButton(
+                                child: Text('BUY',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headline6
+                                        .merge(
+                                      TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20),
+                                    )),
+                                color: Colors.green,
+                                onPressed: () {
+                                  setState(() {
+                                    _controllerAmount.text = '';
+                                    _controllerOnChanged = '';
+                                    _dialogVisible = true;
+                                    _transactionType = 'B';
+                                  });
+                                },
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                    new BorderRadius.circular(5.0))),
+                          ),
+                        ),
+                      ),
+                    ]),
+              )),
+
+          _widgetPurchaseScreen(context, securityBody, shortName)
+
+        ],
+      ),
+    );
+  }
+
   double _calculateOnChanged(double askPrice) {
     if (_controllerOnChanged == null || _controllerOnChanged.isEmpty) return 0;
+    if (!_isNumeric(_controllerOnChanged)) return 0;
     return askPrice * double.parse(_controllerOnChanged);
   }
 
@@ -480,7 +481,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               setState(() {
                 _dialogVisible = false;
               });
-              _showDialog(context, 'Success', 'New transaction was submitted successfully');
+              _showDialog(context, 'Success', 'Transaction was submitted successfully.\n\nIt will be added to Open Orders shortly');
             } else {
               _showDialog(context, 'Error', result.data.toString());
             }
@@ -555,7 +556,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Center(
             child: ButtonTheme(
                 height: 28,
-                minWidth: 32,
+                minWidth: 30,
                 child: FlatButton(
                     color: _pressWeekAttention ? Constants.faRed[900] : Colors.white,
                     child: Text(_week,
@@ -589,7 +590,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Center(
             child: ButtonTheme(
               height: 28,
-              minWidth: 32,
+              minWidth: 30,
               child: FlatButton(
                   color: _pressMonthAttention ? Constants.faRed[900] : Colors.white,
                   child: Text(_month,
@@ -624,7 +625,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Center(
             child: ButtonTheme(
               height: 28,
-              minWidth: 32,
+              minWidth: 30,
               child: FlatButton(
                   color: _press3MonthAttention ? Constants.faRed[900] : Colors.white,
                   child: Text(_threeMonth,
@@ -659,7 +660,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Center(
             child: ButtonTheme(
                 height: 28,
-                minWidth: 32,
+                minWidth: 30,
                 child: FlatButton(
                     color: _press6MonthAttention ? Constants.faRed[900] : Colors.white,
                     child: Text(_sixMonth,
@@ -693,7 +694,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Center(
             child: ButtonTheme(
                 height: 28,
-                minWidth: 32,
+                minWidth: 30,
                 child: FlatButton(
                     color: _pressYTDAttention ? Constants.faRed[900] : Colors.white,
                     child: Text(_ytd,
@@ -725,7 +726,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ]);
   }
 
-  Widget _widgetSummary(BuildContext context, SecurityBody securityBody) {
+  Widget _widgetParsedNumberText(BuildContext context, String str) {
+    final formatter = NumberFormat("#,###");// using comma here will not work, even by escaping with back slash
+    String newString = formatter.format(int.parse(str));
+    return Text('€' + newString.replaceAll(',', '.'), style: Theme.of(context).textTheme.headline6);
+  }
+
+  Widget _widgetSummary(BuildContext context, SecurityBody securityBody, Investment investment) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
@@ -734,7 +741,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Total amount'),
               _widgetBoldHeadline6(context,
-                  securityBody.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
+                  investment.amount.toStringAsFixed(0), Colors.black)
             ],
           ),
         ),
@@ -742,12 +749,29 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Total current value'),
-              _widgetBoldHeadline6(context,
-                  securityBody.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
+              _widgetParsedNumberText(context, (investment.amount * securityBody.securities[0].marketData.latestValue).toStringAsFixed(0))
             ],
           ),
         ),
       ]),
+    );
+  }
+
+  Widget _widgetDayTitle(BuildContext context) {
+    DateTime dateFirst = DateTime(_dateRangeFirst.year, _dateRangeFirst.month, _dateRangeFirst.day);
+    DateTime dateLast = DateTime(_dateRangeLast.year, _dateRangeLast.month, _dateRangeLast.day);
+    bool visible = !(dateFirst.isAtSameMomentAs(dateLast));
+    DateFormat fmt = DateFormat('dd.MM.yyyy');
+    String s = fmt.format(_dateRangeFirst) + ' - ' + fmt.format(_dateRangeLast);
+    return Container(
+      color: Colors.white,
+      height: 24,
+      child: Visibility(
+        visible: visible,
+        child: Center(
+          child: _widgetBodyText2(context, s),
+        ),
+      ),
     );
   }
 
@@ -825,16 +849,16 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _widgetDetail(BuildContext context, SecurityBody securityBody) {
+  Widget _widgetDetail(BuildContext context, SecurityBody securityBody, Investment investment) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Latest value (EUR)'),
+              _widgetBodyText2(context, 'Latest value'),
               _widgetBoldHeadline6(context,
-                  securityBody.securities[0].marketData.latestValue.toString() + ' €', Colors.black)
+                  '€' + securityBody.securities[0].marketData.latestValue.toString(), Colors.black)
             ],
           ),
         ),
@@ -844,8 +868,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
               _widgetBodyText2(context, 'Return'),
               _widgetBoldHeadline6(
                   context,
-                  securityBody.securities[0].marketData.latestValue.toString() + ' €',
-                  Utils.getColor(securityBody.securities[0].marketData.latestValue))
+                  investment.changePercent.toStringAsFixed(2) + '%',
+                  Utils.getColor(investment.changePercent))
             ],
           ),
         ),
@@ -855,8 +879,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
               _widgetBodyText2(context, 'Today'),
               _widgetBoldHeadline6(
                   context,
-                  securityBody.securities[0].marketData.latestValue.toString() + ' €',
-                  Utils.getColor(securityBody.securities[0].marketData.latestValue))
+                  'n/a',
+                  Colors.black)
             ],
           ),
         ),
@@ -871,39 +895,34 @@ class _SecurityScreenState extends State<SecurityScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Center(
                     child: Text(
-                  'INFORMATION',
-                  style: Theme.of(context).textTheme.headline6.merge(
-                        TextStyle(fontSize: 20),
+                  'Investment Details',
+                  style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20),
                       ),
                 )),
-                Center(
+                Visibility(
+                  visible: (url == null || url == '') ? false : true,
+                  child: InkWell(
+                    onTap: () async {
+                      if (await canLaunch(url)) {
+                        await launch(url);
+                      } else {
+                        _showToast(context, 'Cannot open information');
+                      }
+                    },
                     child: Text(
-                  _getNow(),
-                  style: Theme.of(context).textTheme.headline6.merge(
-                        TextStyle(fontSize: 20),
+                      'More Details Here',
+                      style: Theme.of(context).textTheme.subtitle1.merge(TextStyle(color: Colors.blue),
                       ),
-                ))
+                    ),
+                  ),
+                )
               ],
             ),
-            Visibility(
-              visible: (url == null || url == '') ? false : true,
-              child: InkWell(
-                child: IconButton(
-                  icon: Icon(Icons.info_outline),
-                  onPressed: () async {
-                    if (await canLaunch(url)) {
-                      await launch(url);
-                    } else {
-                      _showToast(context, 'Cannot open information');
-                    }
-                  },
-                ),
-              ),
-            )
+
           ],
         ));
   }
@@ -980,25 +999,32 @@ class _SecurityScreenState extends State<SecurityScreen> {
     List<TimeSeries> portfolioMinus100Series = [];
     List<TimeSeries> portfolioMinus100Pointers = [];
 
-    var lastDate = graphs[graphs.length - 1].date;
-    var firstDate = graphs[0].date;
-    var comparisonDate;
-    if (_graphDateCriteria == 'all')
-      comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
-    if (_graphDateCriteria == _week)
-      comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
-    if (_graphDateCriteria == _month)
-      comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
-    if (_graphDateCriteria == _threeMonth)
-      comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
-    if (_graphDateCriteria == _sixMonth)
-      comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
-    if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
+    if (graphs.length > 0) {
+      var lastDate = graphs[graphs.length - 1].date;
+      var firstDate = graphs[0].date;
+      var comparisonDate;
+      if (_graphDateCriteria == 'all')
+        comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
+      if (_graphDateCriteria == _week)
+        comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
+      if (_graphDateCriteria == _month)
+        comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
+      if (_graphDateCriteria == _threeMonth)
+        comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
+      if (_graphDateCriteria == _sixMonth)
+        comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
+      if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
 
-    for (var i = 0; i < graphs.length; i++) {
-      if (graphs[i].date.isAfter(comparisonDate)) {
-        portfolioMinus100Series.add(TimeSeries(graphs[i].date, graphs[i].price));
+      for (var i = 0; i < graphs.length; i++) {
+        if (graphs[i].date.isAfter(comparisonDate)) {
+          portfolioMinus100Series.add(TimeSeries(graphs[i].date, graphs[i].price));
 //        if (i % 100 == 0) portfolioMinus100Pointers.add(TimeSeries(graphs[i].date, graphs[i].price));
+        }
+      }
+
+      if (portfolioMinus100Series.length > 0) {
+        _dateRangeFirst = portfolioMinus100Series[0].time;
+        _dateRangeLast = portfolioMinus100Series[portfolioMinus100Series.length -1].time;
       }
     }
 
