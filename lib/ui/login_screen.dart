@@ -18,8 +18,7 @@ class LoginScreen extends StatelessWidget {
   final TextEditingController _controllerPassword = TextEditingController();
 
   _showToast(BuildContext context, var text) {
-    Scaffold.of(context)
-        .showSnackBar(SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
+    Scaffold.of(context).showSnackBar(SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
   }
 
   _showDialog(BuildContext context, String title, String content) {
@@ -43,6 +42,11 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //https://stackoverflow.com/questions/49553402/flutter-screen-size
+    double height = MediaQuery.of(context).size.height;
+    EdgeInsets padding = MediaQuery.of(context).padding;
+    double screen = height - padding.top - padding.bottom;
+
     return Scaffold(
       body: BlocProvider<LoginBloc>(
         create: (context) => _loginBloc,
@@ -62,6 +66,7 @@ class LoginScreen extends StatelessWidget {
                   child: Column(
                     children: <Widget>[
                       Container(
+                        height: screen * 0.80,
                         color: Constants.faRed[900],
                         child: Padding(
                           padding: EdgeInsets.all(32),
@@ -78,13 +83,12 @@ class LoginScreen extends StatelessWidget {
                               _widgetTextFieldPassword(context),
                               _widgetSizedBox(64),
                               _widgetButtonSignIn(context),
-                              _widgetSizedBox(32),
                             ],
                           ),
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.only(top: 32, bottom: 64),
+                        height: screen * 0.20,
                         color: Colors.white,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,

@@ -56,61 +56,31 @@ query PortfolioOverview {
 },
 """;
 }
+//note withoutPositionData false = slower query
 
-  final String portfolioQuery = """
-query PortfolioOverview(\$id: Long!) {
-  portfolio(id: \$id) {
-    client: primaryContact {
-      name
+String getSecurityQuery(String securityCode) {
+  return """
+query Security {
+  securities(securityCode: """
++ securityCode +
+""") {
+    name
+    securityCode
+    marketData: latestMarketData {
+      latestValue:close
     }
-    portfolioName: name
-    shortName
-    portfolioReport: portfolioReport(use15minDelayedPrice: true,
-      calculateExpectedAmountBasedOpenTradeOrders: true) {
-      marketValue: positionMarketValue
-      cashBalance: accountBalance
-      netAssetValue: marketValue
-      investments: portfolioReportItems {
-        security {
-          name
-          securityCode
-        }
-        amount
-        positionValue: marketTradeAmount
-        changePercent: valueChangeRelative
-      }
+    url
+    graph:marketDataHistory(timePeriodCode:"YEARS-1") {
+      date:obsDate
+      price:close
     }
-    graph:analytics(withoutPositionData:false,
-      parameters: {
-        paramsSet: {
-          timePeriodCodes:"GIVEN"
-          includeData:true
-          drilldownEnabled:false
-          limit: 0
-        },
-        includeDrilldownPositions:false
-      }) {
-      dailyValues:grouppedAnalytics(key:"1") {
-        dailyValue:indexedReturnData {
-          date
-          portfolioMinus100:indexedValue
-          benchmarkMinus100:benchmarkIndexedValue
-        }
-      }
-    }
-    tradeOrders(orderStatus:"4") {
-      securityCode
-      securityName
-      amount
-      typeName
-      orderStatus
-      transactionDate
+    currency {
+      currencyCode:securityCode
     }
   }
 }
 """;
-//note withoutPositionData false = slower query
-
+}
   final String securityQuery = """
 query Security(\$securityCode: String) {
   securities( securityCode: \$securityCode ) {

@@ -113,8 +113,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   _showToast(BuildContext context, var text) {
-    Scaffold.of(context)
-        .showSnackBar(SnackBar(duration: Duration(milliseconds: 400), content: Text(text)));
+    Scaffold.of(context).showSnackBar(SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
   }
 
   _showDialog(BuildContext context, String title, String content) {
@@ -241,12 +240,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   _widgetSummary(context, securityBody, investment),
-                  Divider(color: Colors.grey),
+                  Divider(thickness: 2, color: Colors.grey[300]),
                   _widgetDetail(context, securityBody, investment),
+                  Divider(thickness: 2, color: Colors.grey[300]),
                   Padding(
                       padding: EdgeInsets.only(left: 2, right: 2),
                       child: _widgetDateChooser(context)),
-                  _widgetDayTitle(context),
                   Container(
                     height: 250,
                     child: Padding(
@@ -263,6 +262,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       ),
                     ),
                   ),
+                  _widgetDateTitle(context),
                   Container(
                     color: Colors.grey[300],
                     child: Padding(
@@ -401,13 +401,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         children: [
                           Padding(
                               padding: EdgeInsets.only(top: 16, bottom: 16),
-                              child: _widgetHeadline6(context, 'NEW TRANSACTION')),
+                              child: _widgetHeadline6(context, 'New Transaction')),
                           _widgetAmount(context),
                           _widgetDate(context),
                           _widgetTextRow(context, 'Ask:', securityBody.securities[0].marketData.latestValue.toString() + ' €'),
-                          _widgetTextRow(context, 'Estimated price:', _calculateOnChanged(securityBody.securities[0].marketData.latestValue).toStringAsFixed(2) + ' €'),
-                          _widgetTextRow(context, 'Current balance:', '-'),
-                          Container(height: 16),
+                          _widgetTextRow(context, 'Estimated Price:', _calculateOnChanged(securityBody.securities[0].marketData.latestValue).toStringAsFixed(2) + ' €'),
+                          _widgetTextRow(context, 'Current Balance:', 'n/a'),
+                          Container(height: 8),
+                          Container(height: 2, color: Colors.grey[300]),
+                          Container(height: 12),
                           Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
@@ -481,7 +483,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               setState(() {
                 _dialogVisible = false;
               });
-              _showDialog(context, 'Success', 'Transaction was submitted successfully.\n\nIt will be added to Open Orders shortly');
+              _showDialog(context, 'Success', 'Trade order was submitted successfully.');
             } else {
               _showDialog(context, 'Error', result.data.toString());
             }
@@ -739,7 +741,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Total amount'),
+              _widgetBodyText2(context, 'Total Amount'),
               _widgetBoldHeadline6(context,
                   investment.amount.toStringAsFixed(0), Colors.black)
             ],
@@ -748,7 +750,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Total current value'),
+              _widgetBodyText2(context, 'Total Current Value'),
               Text('€' + _widgetParsedNumberText(context, (investment.amount * securityBody.securities[0].marketData.latestValue).toStringAsFixed(0)), style: Theme.of(context).textTheme.headline6)
             ],
           ),
@@ -757,19 +759,22 @@ class _SecurityScreenState extends State<SecurityScreen> {
     );
   }
 
-  Widget _widgetDayTitle(BuildContext context) {
+  Widget _widgetDateTitle(BuildContext context) {
     DateTime dateFirst = DateTime(_dateRangeFirst.year, _dateRangeFirst.month, _dateRangeFirst.day);
     DateTime dateLast = DateTime(_dateRangeLast.year, _dateRangeLast.month, _dateRangeLast.day);
     bool visible = !(dateFirst.isAtSameMomentAs(dateLast));
     DateFormat fmt = DateFormat('dd.MM.yyyy');
-    String s = fmt.format(_dateRangeFirst) + ' - ' + fmt.format(_dateRangeLast);
+    String str = fmt.format(_dateRangeFirst) + ' - ' + fmt.format(_dateRangeLast);
     return Container(
       color: Colors.white,
       height: 24,
       child: Visibility(
         visible: visible,
         child: Center(
-          child: _widgetBodyText2(context, s),
+          child: Text(
+            str,
+            style: Theme.of(context).textTheme.bodyText2,
+          ),
         ),
       ),
     );
@@ -856,7 +861,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Latest value'),
+              _widgetBodyText2(context, 'Latest Value'),
               _widgetBoldHeadline6(context,
                   '€' + securityBody.securities[0].marketData.latestValue.toString(), Colors.black)
             ],

@@ -130,8 +130,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         if (Platform.isIOS) {
           return CupertinoAlertDialog(
-            title: Text(title, style: Theme.of(context).textTheme.headline6),
-            content: _dataTable(context, tradeOrders),
+            title: Text(title, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20))),
+            content: _widgetTradeOrderList(context, tradeOrders),
             actions: [
               FlatButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -141,8 +141,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         } else {
           return AlertDialog(
-            title: Text(title, style: Theme.of(context).textTheme.headline6),
-            content: _dataTable(context, tradeOrders),
+            title: Text(title, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20))),
+            content: _widgetTradeOrderList(context, tradeOrders),
             actions: [
               FlatButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -169,28 +169,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _widgetTradeOrder(BuildContext context,  TradeOrder tradeOrder) {
+  Widget _widgetTradeOrder(BuildContext context, TradeOrder tradeOrder) {
     Color typeColor = Utils.getColor(tradeOrder.typeName == 'Buy' ? 1 : -1);
     String dateText = DateFormat('dd.MM.yyyy').format(tradeOrder.transactionDate);
 
     return Padding(
-      padding: EdgeInsets.only(top: 4, bottom: 4),
+      padding: EdgeInsets.only(bottom: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(tradeOrder.securityName + ' (' + tradeOrder.securityCode + ')',
-              style: Theme.of(context).textTheme.subtitle2.merge(
-                TextStyle(fontSize: 20),
-              )),
+              style: Theme.of(context).textTheme.subtitle2,
+              overflow: TextOverflow.ellipsis),
+          Container(height: 4),
           Row(
             children: <Widget>[
-              Padding(padding: EdgeInsets.only(right: 8), child: Icon(Icons.date_range, size: 20)),
-              Padding(padding: EdgeInsets.only(right: 12), child: Text(dateText, style: Theme.of(context).textTheme.subtitle2)),
-              Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor)))),
-              Text(tradeOrder.amount.toString(), style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor))),
+              Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.date_range, size: 20)),
+              Padding(padding: EdgeInsets.only(right: 4), child: Text(dateText, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16)))),
+              Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.business_center, size: 20)),
+              Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: typeColor)))),
+              Text(tradeOrder.amount.toString(), style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: typeColor))),
             ],
           ),
-          Divider(color: Colors.grey, thickness: 2)
+          Divider(color: Colors.grey[300], thickness: 2)
         ],
       ),
     );
@@ -249,6 +250,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: BlocBuilder<DashboardBloc, DashboardState>(
             builder: (context, state) {
               if (state is DashboardSuccess) {
+                tradeOrders = state.portfolioBody.portfolio.tradeOrders;
                 return _widgetMainView(context, state.portfolioBody);
               } else {
                 return Spinner();
@@ -274,7 +276,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Padding(
                 padding: EdgeInsets.only(left: 2, right: 2),
                 child: _widgetDateChooser(context)),
-            _widgetDayTitle(context),
             Container(
               height: 250,
               child: Padding(
@@ -296,6 +297,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
+            _widgetDateTitle(context),
             _widgetDescriptor(context),
             Container(height: 12, color: Colors.grey[300]),
             _widgetInvestments(
@@ -306,19 +308,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _widgetDayTitle(BuildContext context) {
+  Widget _widgetDateTitle(BuildContext context) {
     DateTime dateFirst = DateTime(_dateRangeFirst.year, _dateRangeFirst.month, _dateRangeFirst.day);
     DateTime dateLast = DateTime(_dateRangeLast.year, _dateRangeLast.month, _dateRangeLast.day);
     bool visible = !(dateFirst.isAtSameMomentAs(dateLast));
     DateFormat fmt = DateFormat('dd.MM.yyyy');
-    String s = fmt.format(_dateRangeFirst) + ' - ' + fmt.format(_dateRangeLast);
+    String str = fmt.format(_dateRangeFirst) + ' - ' + fmt.format(_dateRangeLast);
     return Container(
       color: Colors.white,
       height: 24,
       child: Visibility(
         visible: visible,
         child: Center(
-          child: _widgetBodyText2(context, s),
+          child: Text(
+            str,
+            style: Theme.of(context).textTheme.bodyText2,
+          ),
         ),
       ),
     );

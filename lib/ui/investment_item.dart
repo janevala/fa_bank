@@ -5,6 +5,7 @@ import 'package:fa_bank/podo/security/security.dart';
 import 'package:fa_bank/ui/security_screen.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 enum ConfirmAction { CANCEL, ACCEPT }
 
@@ -58,9 +59,9 @@ class InvestmentItem extends StatelessWidget {
                     flex: 3,
                     child: Column(
                       children: <Widget>[
-                        _widgetBodyText2(context, 'Pos. value'),
-                        _widgetHeadline6(
-                            context, '€' + investment.positionValue.toStringAsFixed(0), Colors.black),
+                        _widgetBodyText2(context, 'Pos. Value'),
+                        _widgetHeadline6Currency(
+                            context, investment.positionValue.toStringAsFixed(0), Colors.black),
                       ],
                     )),
                 Container(height: rowHeight, width: 10, child: VerticalDivider(thickness: 2,color: Colors.grey[300])),
@@ -101,6 +102,20 @@ class InvestmentItem extends StatelessWidget {
           style: Theme.of(context).textTheme.headline6.merge(
                 TextStyle(fontSize: 16, color: color, fontWeight: FontWeight.bold),
               ),
+        ));
+  }
+
+  Widget _widgetHeadline6Currency(BuildContext context, String text, Color color) {
+    final formatter = NumberFormat("#,###");// using comma here will not work, even by escaping with back slash
+    String newString = formatter.format(int.parse(text));
+
+    return Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          '€' + newString.replaceAll(',', '.'),
+          style: Theme.of(context).textTheme.headline6.merge(
+            TextStyle(fontSize: 16, color: color, fontWeight: FontWeight.bold),
+          ),
         ));
   }
 
