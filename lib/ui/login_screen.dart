@@ -83,7 +83,7 @@ class LoginScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Container(//centering can be issue on unusually tall/short displays. height of this should be remainder of screen
+                      Container(
                         padding: EdgeInsets.only(top: 32, bottom: 64),
                         color: Colors.white,
                         child: Column(

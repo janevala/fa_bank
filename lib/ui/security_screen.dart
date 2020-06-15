@@ -273,22 +273,22 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         Divider(color: Colors.black),
                         _widgetTextRow(
                             context,
-                            'Market Value', securityBody.securities[0].marketData.latestValue.toString()),
+                            'Market Value', '€' + _widgetParsedNumberText(context, investment.positionValue.toStringAsFixed(0))),
                         _widgetTextRow(
                             context,
-                            'Purchase Value', securityBody.securities[0].marketData.latestValue.toString()),
+                            'Purchase Value', 'n/a'),
                         _widgetTextRow(
                             context,
-                            'Return', securityBody.securities[0].marketData.latestValue.toString()),
+                            'Return', 'n/a'),
                         _widgetTextRow(
                             context,
-                            'EGS Rating', securityBody.securities[0].marketData.latestValue.toString()),
+                            'EGS Rating', 'n/a'),
                         _widgetTextRow(
                             context,
-                            'Risk Score', securityBody.securities[0].marketData.latestValue.toString()),
+                            'Risk Score', 'n/a'),
                         _widgetTextRow(
                             context,
-                            'Purchase Value', securityBody.securities[0].marketData.latestValue.toString()),
+                            'Purchase Value', 'n/a'),
                         _widgetTextRow(
                             context,
                             'Ticker', investment.security.securityCode),
@@ -726,10 +726,10 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ]);
   }
 
-  Widget _widgetParsedNumberText(BuildContext context, String str) {
+  String _widgetParsedNumberText(BuildContext context, String str) {
     final formatter = NumberFormat("#,###");// using comma here will not work, even by escaping with back slash
     String newString = formatter.format(int.parse(str));
-    return Text('€' + newString.replaceAll(',', '.'), style: Theme.of(context).textTheme.headline6);
+    return newString.replaceAll(',', '.');
   }
 
   Widget _widgetSummary(BuildContext context, SecurityBody securityBody, Investment investment) {
@@ -749,7 +749,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Total current value'),
-              _widgetParsedNumberText(context, (investment.amount * securityBody.securities[0].marketData.latestValue).toStringAsFixed(0))
+              Text('€' + _widgetParsedNumberText(context, (investment.amount * securityBody.securities[0].marketData.latestValue).toStringAsFixed(0)), style: Theme.of(context).textTheme.headline6)
             ],
           ),
         ),
