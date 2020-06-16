@@ -23,6 +23,7 @@ dependencies:
   intl:
   charts_flutter:
   url_launcher:
+  date_range_picker:
 
 dev_dependencies:
   flutter_test:

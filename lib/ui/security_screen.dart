@@ -20,6 +20,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
+import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 
 /// "Security" as in financial nomenclature, not data or information security.
 ///
@@ -49,6 +50,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   bool _press3MonthAttention = false;
   bool _press6MonthAttention = false;
   bool _pressYTDAttention = false;
+  List<DateTime> _pressRangeAttention = [];
   static const String _week = '1w';
   static const String _month = '1m';
   static const String _threeMonth = '3m';
@@ -531,7 +533,27 @@ class _SecurityScreenState extends State<SecurityScreen> {
       Expanded(
           flex: 3,
           child: InkWell(
-            onTap: () => _showToast(context, 'Not implemented'),
+              onTap: () async {
+                DateTime now = DateTime.now();
+                final List<DateTime> picked = await DateRangePicker.showDatePicker(
+                    context: context,
+                    initialFirstDate: DateTime(now.year, now.month - 1, now.day),
+                    initialLastDate: DateTime(now.year, now.month, now.day),
+                    firstDate: DateTime(2016),
+                    lastDate: DateTime(now.year, now.month, now.day)
+                );
+                if (picked != null && picked.length == 2) {
+                  setState(() {
+                    _pressRangeAttention = picked;
+                    _pressWeekAttention = false;
+                    _pressMonthAttention = false;
+                    _press3MonthAttention = false;
+                    _press6MonthAttention = false;
+                    _pressYTDAttention = false;
+                    _animate = true;
+                  });
+                }
+              },
             child: Container(
                 height: 28,
                 child: Center(
@@ -577,6 +599,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           _press3MonthAttention = false;
                           _press6MonthAttention = false;
                           _pressYTDAttention = false;
+                          _pressRangeAttention = [];
 
                           _animate = false;
                         }),
@@ -611,6 +634,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         _press3MonthAttention = false;
                         _press6MonthAttention = false;
                         _pressYTDAttention = false;
+                        _pressRangeAttention = [];
 
                         _animate = false;
                       }),
@@ -646,6 +670,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         _pressMonthAttention = false;
                         _press6MonthAttention = false;
                         _pressYTDAttention = false;
+                        _pressRangeAttention = [];
 
                         _animate = false;
                       }),
@@ -681,6 +706,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           _pressMonthAttention = false;
                           _press3MonthAttention = false;
                           _pressYTDAttention = false;
+                          _pressRangeAttention = [];
 
                           _animate = false;
                         }),
@@ -715,6 +741,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           _pressMonthAttention = false;
                           _press3MonthAttention = false;
                           _press6MonthAttention = false;
+                          _pressRangeAttention = [];
 
                           _animate = false;
                         }),
@@ -1008,22 +1035,28 @@ class _SecurityScreenState extends State<SecurityScreen> {
       var lastDate = graphs[graphs.length - 1].date;
       var firstDate = graphs[0].date;
       var comparisonDate;
-      if (_graphDateCriteria == 'all')
-        comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
-      if (_graphDateCriteria == _week)
-        comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
-      if (_graphDateCriteria == _month)
-        comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
-      if (_graphDateCriteria == _threeMonth)
-        comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
-      if (_graphDateCriteria == _sixMonth)
-        comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
-      if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
+      if (_graphDateCriteria == 'all') comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
+      else if (_graphDateCriteria == _week) comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
+      else if (_graphDateCriteria == _month) comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
+      else if (_graphDateCriteria == _threeMonth) comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
+      else if (_graphDateCriteria == _sixMonth) comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
+      else if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
 
-      for (var i = 0; i < graphs.length; i++) {
-        if (graphs[i].date.isAfter(comparisonDate)) {
-          portfolioMinus100Series.add(TimeSeries(graphs[i].date, graphs[i].price));
-//        if (i % 100 == 0) portfolioMinus100Pointers.add(TimeSeries(graphs[i].date, graphs[i].price));
+      if (_pressRangeAttention.length == 2) {
+        var first = DateTime(_pressRangeAttention[0].year, _pressRangeAttention[0].month, _pressRangeAttention[0].day);
+        var second = DateTime(_pressRangeAttention[1].year, _pressRangeAttention[1].month, _pressRangeAttention[1].day);
+        for (var i = 0; i < graphs.length; i++) {
+          var v = graphs[i].date;
+          if (v.isAfter(first) && v.isBefore(second)) {
+            portfolioMinus100Series.add(TimeSeries(graphs[i].date, graphs[i].price));
+          }
+        }
+      } else {
+        for (var i = 0; i < graphs.length; i++) {
+          var v = graphs[i].date;
+          if (v.isAfter(comparisonDate)) {
+            portfolioMinus100Series.add(TimeSeries(graphs[i].date, graphs[i].price));
+          }
         }
       }
 

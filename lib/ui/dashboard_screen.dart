@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
+import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 
 class DashboardScreen extends StatefulWidget {
   static const String route = '/dashboard_screen';
@@ -38,6 +39,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _press3MonthAttention = false;
   bool _press6MonthAttention = false;
   bool _pressYTDAttention = false;
+  List<DateTime> _pressRangeAttention = [];
   static const String _week = '1w';
   static const String _month = '1m';
   static const String _threeMonth = '3m';
@@ -351,7 +353,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Expanded(
           flex: 3,
           child: InkWell(
-            onTap: () => _showToast(context, 'Not implemented'),
+            onTap: () async {
+              DateTime now = DateTime.now();
+              final List<DateTime> picked = await DateRangePicker.showDatePicker(
+                  context: context,
+                  initialFirstDate: DateTime(now.year, now.month - 1, now.day),
+                  initialLastDate: DateTime(now.year, now.month, now.day),
+                  firstDate: DateTime(2016),
+                  lastDate: DateTime(now.year, now.month, now.day)
+              );
+              if (picked != null && picked.length == 2) {
+                setState(() {
+                  _pressRangeAttention = picked;
+                  _pressWeekAttention = false;
+                  _pressMonthAttention = false;
+                  _press3MonthAttention = false;
+                  _press6MonthAttention = false;
+                  _pressYTDAttention = false;
+                  _animate = true;
+                });
+              }
+            },
             child: Container(
                 height: 28,
                 child: Center(
@@ -397,6 +419,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           _press3MonthAttention = false;
                           _press6MonthAttention = false;
                           _pressYTDAttention = false;
+                          _pressRangeAttention = [];
 
                           _animate = false;
                         }),
@@ -431,6 +454,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         _press3MonthAttention = false;
                         _press6MonthAttention = false;
                         _pressYTDAttention = false;
+                        _pressRangeAttention = [];
 
                         _animate = false;
                       }),
@@ -466,6 +490,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         _pressMonthAttention = false;
                         _press6MonthAttention = false;
                         _pressYTDAttention = false;
+                        _pressRangeAttention = [];
 
                         _animate = false;
                       }),
@@ -501,6 +526,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           _pressMonthAttention = false;
                           _press3MonthAttention = false;
                           _pressYTDAttention = false;
+                          _pressRangeAttention = [];
 
                           _animate = false;
                         }),
@@ -535,6 +561,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           _pressMonthAttention = false;
                           _press3MonthAttention = false;
                           _press6MonthAttention = false;
+                          _pressRangeAttention = [];
 
                           _animate = false;
                         }),
@@ -656,33 +683,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ));
   }
 
-  List<charts.Series<TimeSeries, DateTime>> _chartData(Graph graph) {
+  List<charts.Series<TimeSeries, DateTime>> _chartData(Graph graphs) {
     List<TimeSeries> portfolioMinus100Series = [];
     List<TimeSeries> portfolioMinus100Pointers = [];
     List<TimeSeries> benchmarkMinus100Series = [];
 
-    if (graph.dailyValues.dailyValue.length > 0) {
-      var lastDate = graph.dailyValues.dailyValue[graph.dailyValues.dailyValue.length - 1].date;
-      var firstDate = graph.dailyValues.dailyValue[0].date;
+    if (graphs.dailyValues.dailyValue.length > 0) {
+      var lastDate = graphs.dailyValues.dailyValue[graphs.dailyValues.dailyValue.length - 1].date;
+      var firstDate = graphs.dailyValues.dailyValue[0].date;
       var comparisonDate;
-      if (_graphDateCriteria == 'all')
-        comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
-      if (_graphDateCriteria == _week)
-        comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
-      if (_graphDateCriteria == _month)
-        comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
-      if (_graphDateCriteria == _threeMonth)
-        comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
-      if (_graphDateCriteria == _sixMonth)
-        comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
+      if (_graphDateCriteria == 'all') comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
+      if (_graphDateCriteria == _week) comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
+      if (_graphDateCriteria == _month) comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
+      if (_graphDateCriteria == _threeMonth) comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
+      if (_graphDateCriteria == _sixMonth) comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
       if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
 
-      for (var i = 0; i < graph.dailyValues.dailyValue.length; i++) {
-        var v = graph.dailyValues.dailyValue[i];
-        if (v.date.isAfter(comparisonDate)) {
-          portfolioMinus100Series.add(TimeSeries(v.date, v.portfolioMinus100));
-//      if (i % 1000 == 0) portfolioMinus100Pointers.add(TimeSeriesSales(v.date, v.portfolioMinus100));
-          benchmarkMinus100Series.add(TimeSeries(v.date, v.benchmarkMinus100));
+      if (_pressRangeAttention.length == 2) {
+        var first = DateTime(_pressRangeAttention[0].year, _pressRangeAttention[0].month, _pressRangeAttention[0].day);
+        var second = DateTime(_pressRangeAttention[1].year, _pressRangeAttention[1].month, _pressRangeAttention[1].day);
+        for (var i = 0; i < graphs.dailyValues.dailyValue.length; i++) {
+          var v = graphs.dailyValues.dailyValue[i];
+          if (v.date.isAfter(first) && v.date.isBefore(second)) {
+            portfolioMinus100Series.add(TimeSeries(v.date, v.portfolioMinus100));
+            benchmarkMinus100Series.add(TimeSeries(v.date, v.benchmarkMinus100));
+          }
+        }
+      } else {
+        for (var i = 0; i < graphs.dailyValues.dailyValue.length; i++) {
+          var v = graphs.dailyValues.dailyValue[i];
+          if (v.date.isAfter(comparisonDate)) {
+            portfolioMinus100Series.add(TimeSeries(v.date, v.portfolioMinus100));
+            benchmarkMinus100Series.add(TimeSeries(v.date, v.benchmarkMinus100));
+          }
         }
       }
 
