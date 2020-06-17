@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fa_bank/constants.dart';
+import 'package:fa_bank/ui/fa_color.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -35,8 +35,8 @@ Widget _buildMaterialSpinner(BuildContext context) {
     height: 60,
     width: 60,
     child: CircularProgressIndicator(
-      valueColor: AlwaysStoppedAnimation<Color>(Constants.faRed[800]),
-      backgroundColor: Constants.faRed[300],
+      valueColor: AlwaysStoppedAnimation<Color>(FaColor.red[800]),
+      backgroundColor: FaColor.red[300],
     ),
   );
 }

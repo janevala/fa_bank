@@ -1,12 +1,15 @@
+import 'dart:io';
+
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 import 'package:fa_bank/bloc/dashboard_bloc.dart';
-import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/injector/injector.dart';
 import 'package:fa_bank/podo/portfolio/graph.dart';
 import 'package:fa_bank/podo/portfolio/investment.dart';
 import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/portfolio/trade_order.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
+import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/investment_item.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
@@ -16,8 +19,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'dart:io';
-import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 
 class DashboardScreen extends StatefulWidget {
   static const String route = '/dashboard_screen';
@@ -219,7 +220,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         iconTheme: IconThemeData(color: Colors.white),
         title: Image.asset('assets/images/fa-bank.png',
             height: AppBar().preferredSize.height * 0.8),
-        backgroundColor: Constants.faRed[900],
+        backgroundColor: FaColor.red[900],
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.refresh),
@@ -398,7 +399,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 height: 28,
                 minWidth: 30,
                 child: FlatButton(
-                    color: _pressWeekAttention ? Constants.faRed[900] : Colors.white,
+                    color: _pressWeekAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_week,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
@@ -421,7 +422,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: _pressWeekAttention ? Constants.faRed[900] : Colors.black,
+                            color: _pressWeekAttention ? FaColor.red[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -433,7 +434,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               height: 28,
               minWidth: 30,
               child: FlatButton(
-                  color: _pressMonthAttention ? Constants.faRed[900] : Colors.white,
+                  color: _pressMonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_month,
                       style: Theme.of(context).textTheme.bodyText2.merge(
                             TextStyle(
@@ -456,7 +457,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       }),
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
-                          color: _pressMonthAttention ? Constants.faRed[900] : Colors.black,
+                          color: _pressMonthAttention ? FaColor.red[900] : Colors.black,
                           width: 1,
                           style: BorderStyle.solid),
                       borderRadius: new BorderRadius.circular(20.0))),
@@ -469,7 +470,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               height: 28,
               minWidth: 30,
               child: FlatButton(
-                  color: _press3MonthAttention ? Constants.faRed[900] : Colors.white,
+                  color: _press3MonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_threeMonth,
                       style: Theme.of(context).textTheme.bodyText2.merge(
                             TextStyle(
@@ -492,7 +493,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       }),
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
-                          color: _press3MonthAttention ? Constants.faRed[900] : Colors.black,
+                          color: _press3MonthAttention ? FaColor.red[900] : Colors.black,
                           width: 1,
                           style: BorderStyle.solid),
                       borderRadius: new BorderRadius.circular(20.0))),
@@ -505,7 +506,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 height: 28,
                 minWidth: 30,
                 child: FlatButton(
-                    color: _press6MonthAttention ? Constants.faRed[900] : Colors.white,
+                    color: _press6MonthAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_sixMonth,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
@@ -528,7 +529,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: _press6MonthAttention ? Constants.faRed[900] : Colors.black,
+                            color: _press6MonthAttention ? FaColor.red[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -540,7 +541,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 height: 28,
                 minWidth: 30,
                 child: FlatButton(
-                    color: _pressYTDAttention ? Constants.faRed[900] : Colors.white,
+                    color: _pressYTDAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_ytd,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
@@ -564,7 +565,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: _pressYTDAttention ? Constants.faRed[900] : Colors.black,
+                            color: _pressYTDAttention ? FaColor.red[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -634,7 +635,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Flexible(
           child: Padding(
             padding: EdgeInsets.only(left: 18, right: 18),
-            child: Divider(thickness: 3, color: Constants.faRed[900]),
+            child: Divider(thickness: 3, color: FaColor.red[900]),
           ),
         ),
         Flexible(

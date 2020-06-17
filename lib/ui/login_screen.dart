@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:fa_bank/bloc/login_bloc.dart';
-import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
+import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -67,7 +67,7 @@ class LoginScreen extends StatelessWidget {
                     children: <Widget>[
                       Container(
                         height: screen * 0.80,
-                        color: Constants.faRed[900],
+                        color: FaColor.red[900],
                         child: Padding(
                           padding: EdgeInsets.all(32),
                           child: ListView(
@@ -153,7 +153,7 @@ class LoginScreen extends StatelessWidget {
           child: Text(
             'SIGN IN',
             style: Theme.of(context).textTheme.subtitle2.merge(
-                  TextStyle(color: Constants.faRed[900], fontWeight: FontWeight.bold),
+                  TextStyle(color: FaColor.red[900], fontWeight: FontWeight.bold),
                 ),
           ),
           onPressed: () {

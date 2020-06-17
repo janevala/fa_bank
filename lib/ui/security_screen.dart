@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 import 'package:fa_bank/api/graphql.dart';
 import 'package:fa_bank/bloc/security_bloc.dart';
 import 'package:fa_bank/constants.dart';
@@ -8,6 +11,7 @@ import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/graph.dart';
 import 'package:fa_bank/podo/security/security.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
+import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/investment_item.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
@@ -19,8 +23,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:io';
-import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 
 /// "Security" as in financial nomenclature, not data or information security.
 ///
@@ -170,7 +172,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                   ),
             ),
-            backgroundColor: Constants.faRed[900],
+            backgroundColor: FaColor.red[900],
 /*            actions: <Widget>[
               IconButton(
                 icon: Icon(Icons.refresh),
@@ -338,7 +340,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                           color: Colors.white,
                                           fontSize: 20),
                                     )),
-                                color: Constants.faRed[900],
+                                color: FaColor.red[900],
                                 onPressed: () {
                                   setState(() {
                                     _controllerAmount.text = '';
@@ -516,7 +518,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       Colors.white,
                       fontSize: 20),
                 )),
-            color: _transactionType == 'B' ? Colors.green : Constants.faRed[900],
+            color: _transactionType == 'B' ? Colors.green : FaColor.red[900],
             onPressed: () {
               FocusScope.of(context).unfocus();
 
@@ -592,7 +594,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 height: 28,
                 minWidth: 30,
                 child: FlatButton(
-                    color: _pressWeekAttention ? Constants.faRed[900] : Colors.white,
+                    color: _pressWeekAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_week,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
@@ -615,7 +617,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: _pressWeekAttention ? Constants.faRed[900] : Colors.black,
+                            color: _pressWeekAttention ? FaColor.red[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -627,7 +629,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               height: 28,
               minWidth: 30,
               child: FlatButton(
-                  color: _pressMonthAttention ? Constants.faRed[900] : Colors.white,
+                  color: _pressMonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_month,
                       style: Theme.of(context).textTheme.bodyText2.merge(
                             TextStyle(
@@ -650,7 +652,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       }),
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
-                          color: _pressMonthAttention ? Constants.faRed[900] : Colors.black,
+                          color: _pressMonthAttention ? FaColor.red[900] : Colors.black,
                           width: 1,
                           style: BorderStyle.solid),
                       borderRadius: new BorderRadius.circular(20.0))),
@@ -663,7 +665,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               height: 28,
               minWidth: 30,
               child: FlatButton(
-                  color: _press3MonthAttention ? Constants.faRed[900] : Colors.white,
+                  color: _press3MonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_threeMonth,
                       style: Theme.of(context).textTheme.bodyText2.merge(
                             TextStyle(
@@ -686,7 +688,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       }),
                   shape: RoundedRectangleBorder(
                       side: BorderSide(
-                          color: _press3MonthAttention ? Constants.faRed[900] : Colors.black,
+                          color: _press3MonthAttention ? FaColor.red[900] : Colors.black,
                           width: 1,
                           style: BorderStyle.solid),
                       borderRadius: new BorderRadius.circular(20.0))),
@@ -699,7 +701,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 height: 28,
                 minWidth: 30,
                 child: FlatButton(
-                    color: _press6MonthAttention ? Constants.faRed[900] : Colors.white,
+                    color: _press6MonthAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_sixMonth,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
@@ -722,7 +724,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: _press6MonthAttention ? Constants.faRed[900] : Colors.black,
+                            color: _press6MonthAttention ? FaColor.red[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),
@@ -734,7 +736,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 height: 28,
                 minWidth: 30,
                 child: FlatButton(
-                    color: _pressYTDAttention ? Constants.faRed[900] : Colors.white,
+                    color: _pressYTDAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_ytd,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
@@ -758,7 +760,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         }),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
-                            color: _pressYTDAttention ? Constants.faRed[900] : Colors.black,
+                            color: _pressYTDAttention ? FaColor.red[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
                         borderRadius: new BorderRadius.circular(20.0)))),

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:fa_bank/podo/portfolio/investment.dart';
-import 'package:fa_bank/podo/security/security.dart';
 import 'package:fa_bank/ui/security_screen.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:flutter/material.dart';

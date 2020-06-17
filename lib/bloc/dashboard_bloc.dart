@@ -4,8 +4,6 @@ import 'package:fa_bank/injector/injector.dart';
 import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
-import 'package:fa_bank/ui/dashboard_screen.dart';
-import 'package:fa_bank/ui/dashboard_screen.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 
 abstract class DashboardState {}
