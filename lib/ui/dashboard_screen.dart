@@ -384,10 +384,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                       children: [
                         WidgetSpan(
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 2.0),
-                            child: Icon(Icons.date_range, size: 20),
-                          ),
+                          child: Icon(Icons.date_range, size: 20),
                         ),
                         TextSpan(text: 'Date range'),
                       ],
@@ -548,6 +545,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Text(_ytd,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
+                                fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: _pressYTDAttention ? Colors.white : Colors.black),
                             )),
