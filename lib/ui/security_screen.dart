@@ -20,6 +20,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -99,9 +100,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
     _securityBloc.add(SecurityEvent(refreshTokenBody));
   }
 
-  String _getNow() {
-    DateTime now = DateTime.now();
-    return DateFormat('d MMMM yyyy').format(now);
+  String _formatDateTime(DateTime dateTime) {
+    return DateFormat('d MMM yyyy').format(dateTime);
   }
 
   String _getNowAgain() {
@@ -151,12 +151,25 @@ class _SecurityScreenState extends State<SecurityScreen> {
     );
   }
 
+  String _getParsedValue(Security security, double value) {
+    var code = security.currency == null ? 'EUR' : security.currency.currencyCode;
+    return _getParsedValueWithCode(code, value);
+  }
+
+  String _getParsedValueWithCode(String code, double value) {
+    var setting = Utils.getMoneySetting(code, 1);
+    return value > 100000 ?
+    FlutterMoneyFormatter(amount: value, settings: setting).output.compactSymbolOnLeft :
+    FlutterMoneyFormatter(amount: value, settings: setting).output.symbolOnLeft;
+  }
+
   @override
   Widget build(BuildContext context) {
     final SecurityArgument arg = ModalRoute.of(context).settings.arguments;
     final Investment investment = arg.investment;
     final Security security = arg.investment.security;
     final String shortName = arg.shortName;
+    final double cashBalance = arg.cashBalance;
 
     _controllerDate.text = _getNowAgain();
 
@@ -217,7 +230,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
                           SecurityBody securityBody = SecurityBody.fromJson(result.data);
 
-                          return _widgetMainView(context, securityBody, investment, shortName);
+                          return _widgetMainView(context, securityBody, investment, shortName, cashBalance);
                         });
                   } else {
                     return Container();
@@ -229,7 +242,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _widgetMainView(BuildContext context, SecurityBody securityBody, Investment investment, String shortName) {
+  Widget _widgetMainView(BuildContext context, SecurityBody securityBody, Investment investment, String shortName, double cashBalance) {
     MediaQueryData mediaQueryData = MediaQuery.of(context);
     double heightScreen = mediaQueryData.size.height;
 
@@ -275,8 +288,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         _widgetInformation(
                             context, securityBody.securities[0].url),
                         Divider(color: Colors.black),
-                        _widgetTextRow(context, 'Market Value', '€' + _widgetParsedNumberText(context, investment.positionValue.toStringAsFixed(0))),
-                        _widgetTextRow(context, 'Purchase Value', '€' + _widgetParsedNumberText(context, investment.purchaseValue.toStringAsFixed(0))),
+                        _widgetTextRow(context, 'Position Value', _getParsedValueWithCode('EUR', investment.positionValue)),
+                        _widgetTextRow(context, 'Purchase Value', _getParsedValueWithCode('EUR', investment.purchaseValue)),
                         Padding(
                             padding: EdgeInsets.only(top: 12, bottom: 12),
                             child: Row(
@@ -297,7 +310,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                   child: Align(
                                     alignment: Alignment.centerRight,
                                     child: Text(
-                                      '€' + _widgetParsedNumberText(context, (investment.positionValue - investment.purchaseValue).toStringAsFixed(0)),
+                                      _getParsedValueWithCode('EUR', investment.positionValue - investment.purchaseValue),
                                       style: Theme.of(context).textTheme.headline6.merge(
                                         TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Utils.getColor(investment.positionValue - investment.purchaseValue)),
                                       ),
@@ -387,7 +400,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ]),
               )),
 
-          _widgetPurchaseScreen(context, securityBody, shortName)
+          _widgetPurchaseScreen(context, securityBody, shortName, cashBalance)
 
         ],
       ),
@@ -400,7 +413,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     return askPrice * double.parse(_controllerOnChanged);
   }
 
-  Widget _widgetPurchaseScreen(BuildContext context, SecurityBody securityBody, String shortName) {
+  Widget _widgetPurchaseScreen(BuildContext context, SecurityBody securityBody, String shortName, double cashBalance) {
     return IgnorePointer(
         ignoring: !_dialogVisible,
         child: AnimatedOpacity(
@@ -423,7 +436,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           _widgetDate(context),
                           _widgetTextRow(context, 'Ask:', securityBody.securities[0].marketData.latestValue.toString() + ' €'),
                           _widgetTextRow(context, 'Estimated Price:', _calculateOnChanged(securityBody.securities[0].marketData.latestValue).toStringAsFixed(2) + ' €'),
-                          _widgetTextRow(context, 'Current Balance:', 'n/a'),
+                          _widgetTextRow(context, 'Current Balance:', _parsedNumberText(context, cashBalance.toStringAsFixed(0))),
+                          //'€' + _widgetParsedNumberText(context, investment.positionValue.toStringAsFixed(0))
                           Container(height: 8),
                           Container(height: 2, color: Colors.grey[300]),
                           Container(height: 12),
@@ -768,7 +782,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ]);
   }
 
-  String _widgetParsedNumberText(BuildContext context, String str) {
+  String _parsedNumberText(BuildContext context, String str) {
     final formatter = NumberFormat("#,###");// using comma here will not work, even by escaping with back slash
     String newString = formatter.format(int.parse(str));
     return newString.replaceAll(',', '.');
@@ -791,7 +805,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Total Current Value'),
-              Text('€' + _widgetParsedNumberText(context, (investment.amount * securityBody.securities[0].marketData.latestValue).toStringAsFixed(0)), style: Theme.of(context).textTheme.headline6)
+              Text(_getParsedValue(securityBody.securities[0], (investment.amount * securityBody.securities[0].marketData.latestValue)), style: Theme.of(context).textTheme.headline6)
             ],
           ),
         ),
@@ -803,8 +817,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     DateTime dateFirst = DateTime(_dateRangeFirst.year, _dateRangeFirst.month, _dateRangeFirst.day);
     DateTime dateLast = DateTime(_dateRangeLast.year, _dateRangeLast.month, _dateRangeLast.day);
     bool visible = !(dateFirst.isAtSameMomentAs(dateLast));
-    DateFormat fmt = DateFormat('dd.MM.yyyy');
-    String str = fmt.format(_dateRangeFirst) + ' - ' + fmt.format(_dateRangeLast);
+    String str = _formatDateTime(_dateRangeFirst) + ' - ' + _formatDateTime(_dateRangeLast);
     return Container(
       height: 24,
       child: Visibility(
@@ -893,6 +906,21 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
+  double _countToday(List<Graph> graphs) {
+    if (graphs.length > 0) {
+      var last = graphs[graphs.length - 1].price;
+      var secondLast = graphs[graphs.length - 2].price;
+      return last / secondLast - 1;
+    } else {
+      return 0;
+    }
+  }
+
+  String _getTodayAsString(double today) {
+    if (today == 0) return 'n/a';
+    return today.toStringAsFixed(2) + '%';
+  }
+
   Widget _widgetDetail(BuildContext context, SecurityBody securityBody, Investment investment) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
@@ -902,7 +930,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Latest Value'),
               _widgetBoldHeadline6(context,
-                  '€' + securityBody.securities[0].marketData.latestValue.toString(), Colors.black)
+                  _getParsedValue(securityBody.securities[0], securityBody.securities[0].marketData.latestValue), Colors.black)
             ],
           ),
         ),
@@ -912,7 +940,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               _widgetBodyText2(context, 'Return'),
               _widgetBoldHeadline6(
                   context,
-                  investment.changePercent.toStringAsFixed(2) + '%',
+                  (investment.changePercent * 100).toStringAsFixed(2) + '%',
                   Utils.getColor(investment.changePercent))
             ],
           ),
@@ -923,8 +951,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
               _widgetBodyText2(context, 'Today'),
               _widgetBoldHeadline6(
                   context,
-                  'n/a',
-                  Colors.black)
+                  _getTodayAsString(_countToday(securityBody.securities[0].graph)),
+                  Utils.getColor(_countToday(securityBody.securities[0].graph)))
             ],
           ),
         ),
@@ -944,8 +972,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 Center(
                     child: Text(
                   'Investment Details',
-                  style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20),
-                      ),
+                  style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20)),
                 )),
                 Visibility(
                   visible: (url == null || url == '') ? false : true,
@@ -984,7 +1011,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 child: Text(
                   label,
                   style: Theme.of(context).textTheme.headline6.merge(
-                        TextStyle(fontSize: 20),
+                        TextStyle(fontSize: 18),
                       ),
                 ),
               ),
@@ -995,7 +1022,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 child: Text(
                   text,
                   style: Theme.of(context).textTheme.headline6.merge(
-                        TextStyle(fontSize: 20),
+                        TextStyle(fontSize: 18),
                       ),
                 ),
               ),

@@ -18,6 +18,7 @@ import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -69,6 +70,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String refreshToken = _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
     RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
     _dashboardUserBloc.add(DashboardEvent(refreshTokenBody));
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return DateFormat('d MMM yyyy').format(dateTime);
   }
 
   _showToast(BuildContext context, var text) {
@@ -304,7 +309,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _widgetDescriptor(context),
             Container(height: 12, color: Colors.grey[300]),
             _widgetInvestments(
-                context, portfolioBody.portfolio.portfolioReport.investments, portfolioBody.portfolio.shortName)
+                context, portfolioBody.portfolio.portfolioReport.investments, portfolioBody.portfolio.shortName, portfolioBody.portfolio.portfolioReport.cashBalance)
           ],
         ),
       ),
@@ -315,8 +320,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     DateTime dateFirst = DateTime(_dateRangeFirst.year, _dateRangeFirst.month, _dateRangeFirst.day);
     DateTime dateLast = DateTime(_dateRangeLast.year, _dateRangeLast.month, _dateRangeLast.day);
     bool visible = !(dateFirst.isAtSameMomentAs(dateLast));
-    DateFormat fmt = DateFormat('dd.MM.yyyy');
-    String str = fmt.format(_dateRangeFirst) + ' - ' + fmt.format(_dateRangeLast);
+    String str = _formatDateTime(_dateRangeFirst) + ' - ' + _formatDateTime(_dateRangeLast);
     return Container(
       height: 24,
       child: Visibility(
@@ -581,6 +585,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _widgetSummary(BuildContext context, PortfolioBody portfolio) {
 
+    var setting = Utils.getMoneySetting('EUR', 1);
+    double netAssetValue = portfolio.portfolio.portfolioReport.netAssetValue;
+    String strNetAssetValue = netAssetValue > 1000000 ?
+    FlutterMoneyFormatter(amount: netAssetValue, settings: setting).output.compactSymbolOnLeft :
+    FlutterMoneyFormatter(amount: netAssetValue, settings: setting).output.symbolOnLeft;
+
+    double marketValue = portfolio.portfolio.portfolioReport.marketValue;
+    String strMarketValue = marketValue > 1000000 ?
+    FlutterMoneyFormatter(amount: marketValue, settings: setting).output.compactSymbolOnLeft :
+    FlutterMoneyFormatter(amount: marketValue, settings: setting).output.symbolOnLeft;
+
+    double cashBalance = portfolio.portfolio.portfolioReport.cashBalance;
+    String strCashBalance = cashBalance > 1000000 ?
+    FlutterMoneyFormatter(amount: cashBalance, settings: setting).output.compactSymbolOnLeft :
+    FlutterMoneyFormatter(amount: cashBalance, settings: setting).output.symbolOnLeft;
+
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
@@ -589,7 +609,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Total Value'),
               Center(
-                  child: _widgetParsedNumberText(context, portfolio.portfolio.portfolioReport.netAssetValue.toStringAsFixed(0)),
+                  child: Text(strNetAssetValue, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19))),
               ),
             ],
           ),
@@ -599,7 +619,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Market Value'),
               Center(
-                  child: _widgetParsedNumberText(context, portfolio.portfolio.portfolioReport.marketValue.toStringAsFixed(0)))
+                child: Text(strMarketValue, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19))),
+              )
             ],
           ),
         ),
@@ -608,7 +629,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Cash Balance'),
               Center(
-                  child: _widgetParsedNumberText(context, portfolio.portfolio.portfolioReport.cashBalance.toStringAsFixed(0)))
+                child: Text(strCashBalance, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19))),
+              )
             ],
           ),
         ),
@@ -648,7 +670,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _widgetInvestments(BuildContext context, List<Investment> investments, String shortName) {
+  Widget _widgetInvestments(BuildContext context, List<Investment> investments, String shortName, double cashBalance) {
 //    deviceList.sort((a, b) => b.deviceLocation.deviceTime.compareTo(a.deviceLocation.deviceTime));
 
     return Padding(
@@ -659,7 +681,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (BuildContext context, int i) {
-              return InvestmentItem(investment: investments[i], shortName: shortName);
+              return InvestmentItem(investment: investments[i], shortName: shortName, cashBalance: cashBalance);
             }));
   }
 
