@@ -317,7 +317,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     DateFormat fmt = DateFormat('dd.MM.yyyy');
     String str = fmt.format(_dateRangeFirst) + ' - ' + fmt.format(_dateRangeLast);
     return Container(
-      color: Colors.white,
       height: 24,
       child: Visibility(
         visible: visible,
