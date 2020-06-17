@@ -9,8 +9,9 @@ class Investment {
   double amount;
   double positionValue;
   double changePercent;
+  double purchaseValue;
 
-  Investment(this.security, this.amount, this.positionValue, this.changePercent);
+  Investment(this.security, this.amount, this.positionValue, this.changePercent, this.purchaseValue);
 
   factory Investment.fromJson(Map<String, dynamic> json) => _$InvestmentFromJson(json);
 

@@ -273,27 +273,40 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         _widgetInformation(
                             context, securityBody.securities[0].url),
                         Divider(color: Colors.black),
-                        _widgetTextRow(
-                            context,
-                            'Market Value', '€' + _widgetParsedNumberText(context, investment.positionValue.toStringAsFixed(0))),
-                        _widgetTextRow(
-                            context,
-                            'Purchase Value', 'n/a'),
-                        _widgetTextRow(
-                            context,
-                            'Return', 'n/a'),
-                        _widgetTextRow(
-                            context,
-                            'EGS Rating', 'n/a'),
-                        _widgetTextRow(
-                            context,
-                            'Risk Score', 'n/a'),
-                        _widgetTextRow(
-                            context,
-                            'Purchase Value', 'n/a'),
-                        _widgetTextRow(
-                            context,
-                            'Ticker', investment.security.securityCode),
+                        _widgetTextRow(context, 'Market Value', '€' + _widgetParsedNumberText(context, investment.positionValue.toStringAsFixed(0))),
+                        _widgetTextRow(context, 'Purchase Value', '€' + _widgetParsedNumberText(context, investment.purchaseValue.toStringAsFixed(0))),
+                        Padding(
+                            padding: EdgeInsets.only(top: 12, bottom: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Flexible(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Return',
+                                      style: Theme.of(context).textTheme.headline6.merge(
+                                        TextStyle(fontSize: 20),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      '€' + _widgetParsedNumberText(context, (investment.positionValue - investment.purchaseValue).toStringAsFixed(0)),
+                                      style: Theme.of(context).textTheme.headline6.merge(
+                                        TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Utils.getColor(investment.positionValue - investment.purchaseValue)),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            )),
+                        _widgetTextRow(context, 'EGS Rating', 'n/a'),
+                        _widgetTextRow(context, 'Risk Score', 'n/a'),
+                        _widgetTextRow(context, 'Ticker', investment.security.securityCode),
 
 
                       ]),
@@ -939,6 +952,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   visible: (url == null || url == '') ? false : true,
                   child: InkWell(
                     onTap: () async {
+                      if (url.startsWith('www')) url = 'https://' + url;
                       if (await canLaunch(url)) {
                         await launch(url);
                       } else {

@@ -22,6 +22,7 @@ query PortfolioOverview {
           securityCode
         }
         amount
+        purchaseValue: purchaseTradeAmount
         positionValue: marketTradeAmount
         changePercent: valueChangeRelative
       }
@@ -58,29 +59,6 @@ query PortfolioOverview {
 }
 //note withoutPositionData false = slower query
 
-String getSecurityQuery(String securityCode) {
-  return """
-query Security {
-  securities(securityCode: """
-+ securityCode +
-""") {
-    name
-    securityCode
-    marketData: latestMarketData {
-      latestValue:close
-    }
-    url
-    graph:marketDataHistory(timePeriodCode:"YEARS-1") {
-      date:obsDate
-      price:close
-    }
-    currency {
-      currencyCode:securityCode
-    }
-  }
-}
-""";
-}
   final String securityQuery = """
 query Security(\$securityCode: String) {
   securities( securityCode: \$securityCode ) {
@@ -88,6 +66,9 @@ query Security(\$securityCode: String) {
     securityCode
     marketData: latestMarketData {
       latestValue:close
+    }
+    figuresAsObject {
+        latestValues
     }
     url
     graph:marketDataHistory(timePeriodCode:"YEARS-1") {
