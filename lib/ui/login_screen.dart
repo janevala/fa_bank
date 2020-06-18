@@ -66,7 +66,7 @@ class LoginScreen extends StatelessWidget {
                   child: Column(
                     children: <Widget>[
                       Container(
-                        height: screen * 0.80,
+                        height: screen * 0.75,
                         color: FaColor.red[900],
                         child: Padding(
                           padding: EdgeInsets.all(32),
@@ -88,7 +88,7 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        height: screen * 0.20,
+                        height: screen * 0.25,
                         color: Colors.white,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -104,7 +104,7 @@ class LoginScreen extends StatelessWidget {
                                       ),
                                     ))),
                             Container(
-                              height: 32,
+                              height: 36,
                             ),
                             Builder(
                                 builder: (stupidToastContext) => InkWell(

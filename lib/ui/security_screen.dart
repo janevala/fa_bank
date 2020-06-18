@@ -158,7 +158,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   String _getParsedValueWithCode(String code, double value) {
     var setting = Utils.getMoneySetting(code, 1);
-    return value > 100000 ?
+    return value > 10000000 ?
     FlutterMoneyFormatter(amount: value, settings: setting).output.compactSymbolOnLeft :
     FlutterMoneyFormatter(amount: value, settings: setting).output.symbolOnLeft;
   }
@@ -407,13 +407,20 @@ class _SecurityScreenState extends State<SecurityScreen> {
     );
   }
 
-  double _calculateOnChanged(double askPrice) {
+  double _calculateEstimated(double price) {
     if (_controllerOnChanged == null || _controllerOnChanged.isEmpty) return 0;
     if (!_isNumeric(_controllerOnChanged)) return 0;
-    return askPrice * double.parse(_controllerOnChanged);
+    return price * double.parse(_controllerOnChanged);
+  }
+
+  double _calculateBalance(double balance, double estimated) {
+    if (_controllerOnChanged == null || _controllerOnChanged.isEmpty) return balance;
+    if (!_isNumeric(_controllerOnChanged)) return balance;
+    return balance - estimated;
   }
 
   Widget _widgetPurchaseScreen(BuildContext context, SecurityBody securityBody, String shortName, double cashBalance) {
+    double latestValue = securityBody.securities[0].marketData.latestValue;
     return IgnorePointer(
         ignoring: !_dialogVisible,
         child: AnimatedOpacity(
@@ -431,12 +438,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         children: [
                           Padding(
                               padding: EdgeInsets.only(top: 16, bottom: 16),
-                              child: _widgetHeadline6(context, 'New Transaction')),
+                              child: _widgetHeadline6(context, _transactionType == 'B' ? 'New Buy Order' : 'New Sell Order')),
                           _widgetAmount(context),
                           _widgetDate(context),
-                          _widgetTextRow(context, 'Ask:', securityBody.securities[0].marketData.latestValue.toString() + ' €'),
-                          _widgetTextRow(context, 'Estimated Price:', _calculateOnChanged(securityBody.securities[0].marketData.latestValue).toStringAsFixed(2) + ' €'),
-                          _widgetTextRow(context, 'Current Balance:', _parsedNumberText(context, cashBalance.toStringAsFixed(0))),
+                          _widgetTextRow(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue)),
+                          _widgetTextRow(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue))),
+                          _widgetTextRow(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)))),
                           //'€' + _widgetParsedNumberText(context, investment.positionValue.toStringAsFixed(0))
                           Container(height: 8),
                           Container(height: 2, color: Colors.grey[300]),
@@ -444,8 +451,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(right: 6),
+                                Expanded(
+                                    child: Padding(
+                                  padding: EdgeInsets.only(right: 20),
                                   child: FlatButton(
                                       child: Text('CANCEL',
                                           style: Theme.of(context)
@@ -470,10 +478,10 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                               width: 1,
                                               style: BorderStyle.solid),
                                           borderRadius: BorderRadius.circular(5.0))),
-                                ),
+                                )),
                                 Expanded(
                                   child: Padding(
-                                      padding: EdgeInsets.only(left: 6),
+                                      padding: EdgeInsets.only(left: 20),
                                       child: _widgetMutation(context, securityBody, shortName)),
                                 ),
                               ])
@@ -525,7 +533,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
       ),
       builder: (RunMutation runMutation, QueryResult result) {
         return FlatButton(
-            child: Text(_transactionType == 'B' ? 'SEND BUY ORDER' : 'SEND SELL ORDER',
+            child: Text('SEND',
                 style: Theme.of(context).textTheme.headline6.merge(
                   TextStyle(
                       color:
@@ -863,7 +871,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     });
                   },
                   inputFormatters: [
-                    LengthLimitingTextInputFormatter(6),
+                    LengthLimitingTextInputFormatter(8),
                     WhitelistingTextInputFormatter(RegExp("[0-9]"))
                   ],
                 ),
@@ -907,7 +915,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   double _countToday(List<Graph> graphs) {
-    if (graphs.length > 0) {
+    if (graphs.length > 2) {
       var last = graphs[graphs.length - 1].price;
       var secondLast = graphs[graphs.length - 2].price;
       return last / secondLast - 1;
