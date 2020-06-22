@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:fa_bank/injector/injector.dart';
 import 'package:fa_bank/podo/portfolio/investment.dart';
 import 'package:fa_bank/ui/security_screen.dart';
+import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
@@ -16,6 +18,9 @@ class SecurityArgument {
 
   SecurityArgument(this.investment, this.shortName, this.cashBalance);
 }
+
+//get rid of this and do more clever way
+final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
 class InvestmentItem extends StatelessWidget {
   final Investment investment;
@@ -45,6 +50,8 @@ class InvestmentItem extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () {
+            _sharedPreferencesManager.putString(SharedPreferencesManager.securityCode, investment.security.securityCode);
+
             Navigator.pushNamed(context, SecurityScreen.route,
               arguments: SecurityArgument(investment, shortName, cashBalance),
             );

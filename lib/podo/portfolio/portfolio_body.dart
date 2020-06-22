@@ -6,6 +6,7 @@ part 'portfolio_body.g.dart';
 @JsonSerializable()
 class PortfolioBody {
   Portfolio portfolio;
+
   @JsonKey(ignore: true)
   String error;
 

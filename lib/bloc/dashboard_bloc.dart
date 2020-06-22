@@ -33,9 +33,6 @@ class DashboardCache extends DashboardState {
 }
 
 class DashboardEvent extends DashboardState {
-  final RefreshTokenBody refreshTokenBody;
-
-  DashboardEvent(this.refreshTokenBody);
 }
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
@@ -61,7 +58,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
     Token token;
     if (expired) {
-      RefreshTokenBody refreshTokenBody = event.refreshTokenBody;
+      String refreshToken = sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
+      RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
       token = await apiRepository.postRefreshAuth(refreshTokenBody);
       if (token.error != null) {
         yield DashboardFailure(token.error);
@@ -76,20 +74,24 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
     if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.portfolioBody)) {
       var portfolioString = sharedPreferencesManager.getString(SharedPreferencesManager.portfolioBody);
-      PortfolioBody portfolioBody = PortfolioBody.fromJson(jsonDecode(portfolioString));
-      yield DashboardCache(portfolioBody);
+      PortfolioBody p = PortfolioBody.fromJson(jsonDecode(portfolioString));
+      yield DashboardCache(p);
     }
 
-    int userId  = sharedPreferencesManager.getInt(SharedPreferencesManager.keyUid);
-    String accessToken = token == null ? sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
-    PortfolioBody portfolioBody = await apiRepository.postPortfolioQuery(accessToken, userId);
-    if (portfolioBody.error != null) {
-      yield DashboardFailure(portfolioBody.error);
-      return;
+    if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyUid)) {
+      int userId  = sharedPreferencesManager.getInt(SharedPreferencesManager.keyUid);
+      String accessToken = token == null ? sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
+      PortfolioBody portfolioBody = await apiRepository.postPortfolioQuery(accessToken, userId);
+      if (portfolioBody.error != null) {
+        yield DashboardFailure(portfolioBody.error);
+        return;
+      }
+
+      await sharedPreferencesManager.putString(SharedPreferencesManager.portfolioBody, jsonEncode(portfolioBody.toJson()));
+
+      yield DashboardSuccess(portfolioBody);
+    } else {
+      yield DashboardFailure('Error');
     }
-
-    await sharedPreferencesManager.putString(SharedPreferencesManager.portfolioBody, jsonEncode(portfolioBody.toJson()));
-
-    yield DashboardSuccess(portfolioBody);
   }
 }

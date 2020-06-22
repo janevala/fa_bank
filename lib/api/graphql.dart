@@ -3,9 +3,7 @@
 String getPortfolioQuery(int uid) {
   return """
 query PortfolioOverview {
-  portfolio(id: """
-+ uid.toString() +
-""") {
+  portfolio(id: """ + uid.toString() + """) {
     client: primaryContact {
       name
     }
@@ -59,9 +57,11 @@ query PortfolioOverview {
 }
 //note withoutPositionData false = slower query
 
-  final String securityQuery = """
-query Security(\$securityCode: String) {
-  securities( securityCode: \$securityCode ) {
+
+String getSecurityQuery(String securityCode) {
+  return """
+query Security {
+  securities(securityCode:\"""" + securityCode + """\") {
     name
     securityCode
     marketData: latestMarketData {
@@ -81,7 +81,26 @@ query Security(\$securityCode: String) {
   }
 }
 """;
+}
 
+String getTransactionMutation(String parentPortfolio, String security, String amount, String price, String currency, String type, String dateString) {
+ return """
+mutation addOrder {
+  importTradeOrders(tradeOrderList: [
+    {
+      parentPortfolio: \"""" + parentPortfolio + """\"
+      security: \"""" + security + """\"
+      amount: \"""" + amount + """\"
+      unitPrice: \"""" + price + """\"
+      currency: \"""" + currency + """\"
+      type: \"""" + type + """\"
+      transactionDate: \"""" + dateString + """\"
+      status: "4"
+    }
+  ])
+}
+""";
+}
   final String transactionMutation = """
 mutation addOrder(\$parentPortfolio: String, \$security: String, \$amount: String, \$price: String, \$currency: String, \$type: String, \$dateString: String) {
   importTradeOrders(tradeOrderList: [

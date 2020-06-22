@@ -18,7 +18,6 @@ dependencies:
   cupertino_icons:
   shared_preferences:
   flutter_bloc:
-  graphql_flutter:
   google_fonts:
   intl:
   charts_flutter:

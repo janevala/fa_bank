@@ -6,6 +6,7 @@ import 'package:fa_bank/api/graphql.dart';
 import 'package:fa_bank/bloc/security_bloc.dart';
 import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/injector/injector.dart';
+import 'package:fa_bank/mutation_data.dart';
 import 'package:fa_bank/podo/portfolio/investment.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/graph.dart';
@@ -21,7 +22,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -66,6 +66,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
   DateTime _dateRangeFirst = DateTime.now();
   DateTime _dateRangeLast = DateTime.now();
 
+  bool _spin = true;
+
   @override
   void initState() {
     super.initState();
@@ -73,31 +75,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
     _doRefreshToken();
   }
 
-  static final HttpLink _httpLink = HttpLink(uri: Constants.faAuthApi);
-
-  static final AuthLink _authLink = AuthLink(
-      getToken: () async =>
-          'Bearer ' + _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken));
-
-  static final Link _link = _authLink.concat(_httpLink);
-
-  ValueNotifier<GraphQLClient> _faClient = ValueNotifier(
-    GraphQLClient(
-      cache: InMemoryCache(),
-      link: _link,
-    ),
-  );
-
   _doOnExpiry() async {
     if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs))
       await _sharedPreferencesManager.clearKey(SharedPreferencesManager.keyAuthMSecs);
   }
 
   _doRefreshToken() async {
-    String refreshToken =
-        _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
-    RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
-    _securityBloc.add(SecurityEvent(refreshTokenBody));
+    _securityBloc.add(SecurityEvent(null));
   }
 
   String _formatDateTime(DateTime dateTime) {
@@ -173,73 +157,51 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
     _controllerDate.text = _getNowAgain();
 
-    return GraphQLProvider(
-        client: _faClient,
-        child: Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            iconTheme: IconThemeData(color: Colors.white),
-            title: Text(
-              security.name,
-              style: Theme.of(context).textTheme.headline6.merge(
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-            ),
-            backgroundColor: FaColor.red[900],
-/*            actions: <Widget>[
-              IconButton(
-                icon: Icon(Icons.refresh),
-                onPressed: () {
-                  doRefreshToken();
-                },
-              ),
-            ],*/
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
+          security.name,
+          style: Theme.of(context).textTheme.headline6.merge(
+            TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
           ),
-          body: BlocProvider<SecurityBloc>(
-            create: (context) => _securityBloc,
-            child: BlocListener<SecurityBloc, SecurityState>(
-              listener: (context, state) {
-                if (state is SecurityFailure) {
-                  _showToast(context, state.error);
-                }
-              },
-              child: BlocBuilder<SecurityBloc, SecurityState>(
-                builder: (context, state) {
-                  if (state is SecurityLoading) {
-                    return Spinner();
-                  } else if (state is SecuritySuccess) {
-                    return Query(
-                        options: QueryOptions(documentNode: gql(securityQuery), variables: {"securityCode": security.securityCode}, pollInterval: 60000),
-                        builder: (QueryResult result, {VoidCallback refetch, FetchMore fetchMore}) {
-                          if (result.hasException) {
-                            if (result.exception.clientException != null) {
-                              String msg = result.exception.clientException.message;
-                              if (msg.contains('Network Error: 401')) {
-                                _doOnExpiry();
-                                _doRefreshToken();
-                              } else {
-                                return Center(child: Text(msg));
-                              }
-                            } else if (result.exception.graphqlErrors[0] != null) {
-                              return Center(child: Text(result.exception.graphqlErrors[0].message));
-                            } else {
-                              return Center(child: Text('Network Error'));
-                            }
-                          }
-                          if (result.loading) return Spinner();
-
-                          SecurityBody securityBody = SecurityBody.fromJson(result.data);
-
-                          return _widgetMainView(context, securityBody, investment, shortName, cashBalance);
-                        });
-                  } else {
-                    return Container();
-                  }
-                },
-              ),
-            ),
+        ),
+        backgroundColor: FaColor.red[900],
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              _spin = true;
+              _doRefreshToken();
+            },
           ),
-        ));
+        ],
+      ),
+      body: BlocProvider<SecurityBloc>(
+        create: (context) => _securityBloc,
+        child: BlocBuilder<SecurityBloc, SecurityState>(
+          builder: (context, state) {
+            if (state is SecurityLoading) {
+              _spin = true;
+            } else if (state is SecuritySuccess) {
+              _spin = false;
+              _animate = true;
+              return _widgetMainView(context, state.securityBody, investment, shortName, cashBalance);
+            } else if (state is SecurityCache) {
+              _animate = false;
+              return _widgetMainView(context, state.securityBody, investment, shortName, cashBalance);
+            } else if (state is SecurityFailure) {
+              return Center(
+                child: Text(state.error, style: Theme.of(context).textTheme.subtitle2),
+              );
+            }
+
+            return Spinner();
+          },
+        ),
+      ),
+    );
   }
 
   Widget _widgetMainView(BuildContext context, SecurityBody securityBody, Investment investment, String shortName, double cashBalance) {
@@ -400,8 +362,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ]),
               )),
 
-          _widgetPurchaseScreen(context, securityBody, shortName, cashBalance)
-
+          _widgetPurchaseScreen(context, securityBody, shortName, cashBalance),
+          Visibility(
+            visible: _spin,
+            child: Spinner(),
+          )
         ],
       ),
     );
@@ -482,7 +447,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                 Expanded(
                                   child: Padding(
                                       padding: EdgeInsets.only(left: 20),
-                                      child: _widgetMutation(context, securityBody, shortName)),
+                                      child: _widgetSendButton(context, securityBody, shortName)),
                                 ),
                               ])
                         ]),
@@ -492,8 +457,42 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _widgetMutation(BuildContext context, SecurityBody securityBody, String shortName) {
-    return Mutation(
+  Widget _widgetSendButton(BuildContext context, SecurityBody securityBody, String shortName) {
+    return FlatButton(
+        child: Text('SEND',
+            style: Theme.of(context).textTheme.headline6.merge(
+              TextStyle(
+                  color:
+                  Colors.white,
+                  fontSize: 20),
+            )),
+        color: _transactionType == 'B' ? Colors.green : FaColor.red[900],
+        onPressed: () {
+          FocusScope.of(context).unfocus();
+
+          String _amount = _controllerAmount.text.trim();
+          String _date = _controllerDate.text.trim();
+          if (_amount.isEmpty || _date.isEmpty) {
+            _showToast(context, 'Please correct input and try again');
+          } else {
+            String _amount = _controllerAmount.text.trim();
+            String _date = _controllerDate.text.trim();
+            MutationData mutationData = MutationData(
+                shortName,
+                securityBody.securities[0].securityCode,
+                _amount,
+                securityBody.securities[0].marketData.latestValue.toString(),
+                securityBody.securities[0].currency.currencyCode,
+                _transactionType,
+                _date);
+
+            _securityBloc.add(SecurityEvent(mutationData));
+
+          }
+        },
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)));
+
+/*    return Mutation(
       options: MutationOptions(
         documentNode:
         gql(transactionMutation),
@@ -508,16 +507,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
               }
             }
           } else {
-            bool resultOk = false;
-            List<dynamic> list = result.data['importTradeOrders'];
-            for (var i = 0; i < list.length; i++) {
-              Map<String, dynamic> v = list[i];
-              if (v.containsKey( 'importStatus') && v.containsValue('OK')) {
-                resultOk = true;
-              }
-            }
-
-            if (resultOk) {
               //refetch();
               setState(() {
                 _dialogVisible = false;
@@ -532,37 +521,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
         },
       ),
       builder: (RunMutation runMutation, QueryResult result) {
-        return FlatButton(
-            child: Text('SEND',
-                style: Theme.of(context).textTheme.headline6.merge(
-                  TextStyle(
-                      color:
-                      Colors.white,
-                      fontSize: 20),
-                )),
-            color: _transactionType == 'B' ? Colors.green : FaColor.red[900],
-            onPressed: () {
-              FocusScope.of(context).unfocus();
-
-              String _amount = _controllerAmount.text.trim();
-              String _date = _controllerDate.text.trim();
-              if (_amount.isEmpty || _date.isEmpty) {
-                _showToast(context, 'Please correct input and try again');
-              } else {
-                runMutation({
-                  'parentPortfolio': shortName,
-                  'security': securityBody.securities[0].securityCode,
-                  'amount': double.parse(_amount),
-                  'price': securityBody.securities[0].marketData.latestValue,
-                  'currency': securityBody.securities[0].currency.currencyCode,
-                  'type': _transactionType,
-                  'dateString': _date
-                });
-              }
-            },
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)));
+        return ;
       },
-    );
+    );*/
   }
 
   Widget _widgetDateChooser(BuildContext context) {

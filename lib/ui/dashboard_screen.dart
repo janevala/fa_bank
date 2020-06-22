@@ -53,7 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   DateTime _dateRangeFirst = DateTime.now();
   DateTime _dateRangeLast = DateTime.now();
 
-  bool spinning = true;
+  bool _spin = true;
 
   @override
   void initState() {
@@ -70,9 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   _doRefreshToken() async {
-    String refreshToken = _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
-    RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
-    _dashboardUserBloc.add(DashboardEvent(refreshTokenBody));
+    _dashboardUserBloc.add(DashboardEvent());
   }
 
   String _formatDateTime(DateTime dateTime) {
@@ -233,7 +231,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           IconButton(
             icon: Icon(Icons.refresh),
             onPressed: () {
-              spinning = true;
+              _spin = true;
               _doRefreshToken();
             },
           ),
@@ -256,12 +254,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: BlocBuilder<DashboardBloc, DashboardState>(
           builder: (context, state) {
             if (state is DashboardLoading) {
-              spinning = true;
+              _spin = true;
             } else if (state is DashboardSuccess) {
-              spinning = false;
+              _spin = false;
+              _animate = true;
               tradeOrders = state.portfolioBody.portfolio.tradeOrders;
               return _widgetMainView(context, state.portfolioBody);
             } else if (state is DashboardCache) {
+              _animate = false;
               return _widgetMainView(context, state.portfolioBody);
             } else if (state is DashboardFailure) {
               return Center(
@@ -322,7 +322,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           Visibility(
-            visible: spinning,
+            visible: _spin,
             child: Spinner(),
           )
         ],

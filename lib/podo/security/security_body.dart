@@ -7,9 +7,14 @@ part 'security_body.g.dart';
 class SecurityBody {
   List<Security> securities;
 
+  @JsonKey(ignore: true)
+  String error;
+
   SecurityBody(this.securities);
 
   factory SecurityBody.fromJson(Map<String, dynamic> json) => _$SecurityBodyFromJson(json);
 
   Map<String, dynamic> toJson() => _$SecurityBodyToJson(this);
+
+  SecurityBody.withError(this.error);
 }
