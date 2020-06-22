@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
 import 'package:fa_bank/api/repository.dart';
 import 'package:fa_bank/injector/injector.dart';
@@ -22,6 +24,12 @@ class DashboardSuccess extends DashboardState {
   final PortfolioBody portfolioBody;
 
   DashboardSuccess(this.portfolioBody);
+}
+
+class DashboardCache extends DashboardState {
+  final PortfolioBody portfolioBody;
+
+  DashboardCache(this.portfolioBody);
 }
 
 class DashboardEvent extends DashboardState {
@@ -66,6 +74,12 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       await sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
     }
 
+    if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.portfolioBody)) {
+      var portfolioString = sharedPreferencesManager.getString(SharedPreferencesManager.portfolioBody);
+      PortfolioBody portfolioBody = PortfolioBody.fromJson(jsonDecode(portfolioString));
+      yield DashboardCache(portfolioBody);
+    }
+
     int userId  = sharedPreferencesManager.getInt(SharedPreferencesManager.keyUid);
     String accessToken = token == null ? sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
     PortfolioBody portfolioBody = await apiRepository.postPortfolioQuery(accessToken, userId);
@@ -73,6 +87,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       yield DashboardFailure(portfolioBody.error);
       return;
     }
+
+    await sharedPreferencesManager.putString(SharedPreferencesManager.portfolioBody, jsonEncode(portfolioBody.toJson()));
 
     yield DashboardSuccess(portfolioBody);
   }
