@@ -16,3 +16,6 @@ About: demo and concept app
 - To create new Android release, run commands in repo:
     cd android/
     ./gradlew clean assembleRelease
+
+## TODO's
+- Caching should be done using more robust storage, for example Realmdb

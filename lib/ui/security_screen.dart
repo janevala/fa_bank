@@ -2,7 +2,7 @@ import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 import 'package:fa_bank/bloc/security_bloc.dart';
 import 'package:fa_bank/injector.dart';
-import 'package:fa_bank/mutation_data.dart';
+import 'package:fa_bank/podo/mutation/mutation_data.dart';
 import 'package:fa_bank/podo/portfolio/investment.dart';
 import 'package:fa_bank/podo/security/graph.dart';
 import 'package:fa_bank/podo/security/security.dart';

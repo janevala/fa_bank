@@ -56,6 +56,12 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
     yield DashboardLoading();
 
+    if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.portfolioBody)) {
+      var portfolioString = sharedPreferencesManager.getString(SharedPreferencesManager.portfolioBody);
+      PortfolioBody p = PortfolioBody.fromJson(jsonDecode(portfolioString));
+      yield DashboardCache(p);
+    }
+
     Token token;
     if (expired) {
       String refreshToken = sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
@@ -70,12 +76,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       await sharedPreferencesManager.putString(SharedPreferencesManager.keyRefreshToken, token.refreshToken);
       await sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, true);
       await sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
-    }
-
-    if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.portfolioBody)) {
-      var portfolioString = sharedPreferencesManager.getString(SharedPreferencesManager.portfolioBody);
-      PortfolioBody p = PortfolioBody.fromJson(jsonDecode(portfolioString));
-      yield DashboardCache(p);
     }
 
     if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyUid)) {

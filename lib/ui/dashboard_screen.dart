@@ -195,7 +195,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Padding(padding: EdgeInsets.only(right: 4), child: Text(dateText, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16)))),
               Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.business_center, size: 20)),
               Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: typeColor)))),
-              Text(tradeOrder.amount.toString(), style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: typeColor))),
+              Text(tradeOrder.amount.toInt().toString(), style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: typeColor))),
             ],
           ),
           Divider(color: Colors.grey[300], thickness: 2)

@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:fa_bank/api/repository.dart';
 import 'package:fa_bank/injector.dart';
-import 'package:fa_bank/mutation_data.dart';
+import 'package:fa_bank/podo/mutation/mutation_data.dart';
 import 'package:fa_bank/podo/mutation/mutation_response.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
@@ -90,7 +90,6 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
 
     SecurityBody securityBody;
     if (event.mutationData == null) { //we do query
-      if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.securityCode)) {
         String securityCode  = sharedPreferencesManager.getString(SharedPreferencesManager.securityCode);
         if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.securityBody + securityCode)) {
           var securityString = sharedPreferencesManager.getString(SharedPreferencesManager.securityBody + securityCode);
@@ -108,9 +107,7 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
         await sharedPreferencesManager.putString(SharedPreferencesManager.securityBody + securityCode, jsonEncode(securityBody.toJson()));
 
         yield SecurityQuerySuccess(securityBody);
-      } else {
-        yield SecurityFailure('Error');
-      }
+
     } else { //do mutation
       String accessToken = token == null ? sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
       MutationResponse mutationResponse = await apiRepository.postSecurityMutation(accessToken, event.mutationData);

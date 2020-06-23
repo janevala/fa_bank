@@ -18,7 +18,7 @@ class Utils {
     if (symbol.toUpperCase() == 'EUR') {
       return MoneyFormatterSettings(
         symbol: '€',
-        thousandSeparator: ' ',
+        thousandSeparator: '.',
         decimalSeparator: ',',
         symbolAndNumberSeparator: ' ',
         fractionDigits: decimal,
@@ -27,7 +27,7 @@ class Utils {
     } else {
       return MoneyFormatterSettings(
         symbol: symbol.toUpperCase(),
-        thousandSeparator: ' ',
+        thousandSeparator: '.',
         decimalSeparator: ',',
         symbolAndNumberSeparator: ' ',
         fractionDigits: decimal,
