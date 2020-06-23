@@ -16,6 +16,7 @@ import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/investment_item.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
+import 'package:fa_bank/widget/result_container.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +38,36 @@ class SecurityScreen extends StatefulWidget {
 }
 
 final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+
+enum ConfirmAction { CANCEL, PROCEED }
+
+Future<ConfirmAction> _asyncConfirmDialog(BuildContext context) async {
+  return await showDialog<ConfirmAction>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Confirmation'),
+        content: Text(
+            'Send new trade order?'),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop(ConfirmAction.CANCEL);
+            },
+          ),
+          FlatButton(
+            child: Text('Proceed'),
+            onPressed: () {
+              Navigator.of(context).pop(ConfirmAction.PROCEED);
+            },
+          )
+        ],
+      );
+    },
+  );
+}
 
 class _SecurityScreenState extends State<SecurityScreen> {
   final SecurityBloc _securityBloc = SecurityBloc();
@@ -67,6 +98,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
   DateTime _dateRangeLast = DateTime.now();
 
   bool _spin = true;
+
+  bool _mutationSuccess = false;
 
   @override
   void initState() {
@@ -168,7 +201,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           ),
         ),
         backgroundColor: FaColor.red[900],
-        actions: <Widget>[
+/*        actions: <Widget>[
           IconButton(
             icon: Icon(Icons.refresh),
             onPressed: () {
@@ -176,7 +209,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               _doRefreshToken();
             },
           ),
-        ],
+        ],*/
       ),
       body: BlocProvider<SecurityBloc>(
         create: (context) => _securityBloc,
@@ -184,9 +217,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
           builder: (context, state) {
             if (state is SecurityLoading) {
               _spin = true;
-            } else if (state is SecuritySuccess) {
+            } else if (state is SecurityQuerySuccess) {
               _spin = false;
               _animate = true;
+              return _widgetMainView(context, state.securityBody, investment, shortName, cashBalance);
+            } else if (state is SecurityMutationSuccess) {
+              _mutationSuccess = true;
+              _spin = false;
               return _widgetMainView(context, state.securityBody, investment, shortName, cashBalance);
             } else if (state is SecurityCache) {
               _animate = false;
@@ -361,12 +398,18 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       ),
                     ]),
               )),
-
-          _widgetPurchaseScreen(context, securityBody, shortName, cashBalance),
+        _widgetPurchaseScreen(context, securityBody, shortName, cashBalance),
           Visibility(
             visible: _spin,
             child: Spinner(),
-          )
+          ),
+          InkWell(
+            onTap: () => Navigator.pop(context, true),
+            child: Visibility(
+              visible: _mutationSuccess,
+              child: ResultContainer(true),
+            ),
+          ),
         ],
       ),
     );
@@ -467,7 +510,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   fontSize: 20),
             )),
         color: _transactionType == 'B' ? Colors.green : FaColor.red[900],
-        onPressed: () {
+        onPressed: () async {
           FocusScope.of(context).unfocus();
 
           String _amount = _controllerAmount.text.trim();
@@ -475,55 +518,29 @@ class _SecurityScreenState extends State<SecurityScreen> {
           if (_amount.isEmpty || _date.isEmpty) {
             _showToast(context, 'Please correct input and try again');
           } else {
-            String _amount = _controllerAmount.text.trim();
-            String _date = _controllerDate.text.trim();
-            MutationData mutationData = MutationData(
-                shortName,
-                securityBody.securities[0].securityCode,
-                _amount,
-                securityBody.securities[0].marketData.latestValue.toString(),
-                securityBody.securities[0].currency.currencyCode,
-                _transactionType,
-                _date);
+            ConfirmAction action = await _asyncConfirmDialog(context);
 
-            _securityBloc.add(SecurityEvent(mutationData));
+            if (action == ConfirmAction.PROCEED) {
+              String _amount = _controllerAmount.text.trim();
+              String _date = _controllerDate.text.trim();
+              MutationData mutationData = MutationData(
+                  shortName,
+                  securityBody.securities[0].securityCode,
+                  _amount,
+                  securityBody.securities[0].marketData.latestValue.toString(),
+                  securityBody.securities[0].currency.currencyCode,
+                  _transactionType,
+                  _date);
 
-          }
-        },
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)));
+              _securityBloc.add(SecurityEvent(mutationData));
 
-/*    return Mutation(
-      options: MutationOptions(
-        documentNode:
-        gql(transactionMutation),
-        update: (Cache cache, QueryResult result) {
-          if (result.hasException) {
-            if (result.exception.clientException != null) {
-              String msg = result.exception.clientException.message;
-              if (msg.contains('Network Error: 401')) {
-                _doOnExpiry();
-                _doRefreshToken();
-                _showDialog(context, 'Updated', 'Please try again');
-              }
-            }
-          } else {
-              //refetch();
               setState(() {
                 _dialogVisible = false;
               });
-              _showDialog(context, 'Success', 'Trade order was submitted successfully.');
-            } else {
-              _showDialog(context, 'Error', result.data.toString());
             }
           }
-
-          return cache;
         },
-      ),
-      builder: (RunMutation runMutation, QueryResult result) {
-        return ;
-      },
-    );*/
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)));
   }
 
   Widget _widgetDateChooser(BuildContext context) {

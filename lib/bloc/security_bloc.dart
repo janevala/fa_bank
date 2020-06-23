@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:fa_bank/api/repository.dart';
 import 'package:fa_bank/injector/injector.dart';
 import 'package:fa_bank/mutation_data.dart';
+import 'package:fa_bank/podo/mutation/mutation_response.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
@@ -26,10 +27,16 @@ class SecurityFailure extends SecurityState {
   SecurityFailure(this.error);
 }
 
-class SecuritySuccess extends SecurityState {
+class SecurityQuerySuccess extends SecurityState {
   final SecurityBody securityBody;
 
-  SecuritySuccess(this.securityBody);
+  SecurityQuerySuccess(this.securityBody);
+}
+
+class SecurityMutationSuccess extends SecurityState {
+  final SecurityBody securityBody;
+
+  SecurityMutationSuccess(this.securityBody);
 }
 
 class SecurityCache extends SecurityState {
@@ -81,17 +88,18 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
       await sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
     }
 
+    SecurityBody securityBody;
     if (event.mutationData == null) { //we do query
       if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.securityCode)) {
         String securityCode  = sharedPreferencesManager.getString(SharedPreferencesManager.securityCode);
         if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.securityBody + securityCode)) {
           var securityString = sharedPreferencesManager.getString(SharedPreferencesManager.securityBody + securityCode);
-          SecurityBody s = SecurityBody.fromJson(jsonDecode(securityString));
-          yield SecurityCache(s);
+          securityBody = SecurityBody.fromJson(jsonDecode(securityString));
+          yield SecurityCache(securityBody);
         }
 
         String accessToken = token == null ? sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
-        SecurityBody securityBody = await apiRepository.postSecurityQuery(accessToken, securityCode);
+        securityBody = await apiRepository.postSecurityQuery(accessToken, securityCode);
         if (securityBody.error != null) {
           yield SecurityFailure(securityBody.error);
           return;
@@ -99,16 +107,25 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
 
         await sharedPreferencesManager.putString(SharedPreferencesManager.securityBody + securityCode, jsonEncode(securityBody.toJson()));
 
-        yield SecuritySuccess(securityBody);
+        yield SecurityQuerySuccess(securityBody);
       } else {
         yield SecurityFailure('Error');
       }
     } else { //do mutation
       String accessToken = token == null ? sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
-      SecurityBody securityBody = await apiRepository.postTransactionMutation(accessToken, event.mutationData);
-      if (securityBody.error != null) {
-        yield SecurityFailure(securityBody.error);
+      MutationResponse mutationResponse = await apiRepository.postSecurityMutation(accessToken, event.mutationData);
+      if (mutationResponse.error != null) {
+        yield SecurityFailure(mutationResponse.error);
         return;
+      }
+
+      if (securityBody == null) {
+        String securityCode  = sharedPreferencesManager.getString(SharedPreferencesManager.securityCode);
+        if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.securityBody + securityCode)) {
+          var securityString = sharedPreferencesManager.getString(SharedPreferencesManager.securityBody + securityCode);
+          securityBody = SecurityBody.fromJson(jsonDecode(securityString));
+          yield SecurityMutationSuccess(securityBody);
+        }
       }
     }
   }

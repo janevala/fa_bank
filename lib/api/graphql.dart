@@ -101,19 +101,3 @@ mutation addOrder {
 }
 """;
 }
-  final String transactionMutation = """
-mutation addOrder(\$parentPortfolio: String, \$security: String, \$amount: String, \$price: String, \$currency: String, \$type: String, \$dateString: String) {
-  importTradeOrders(tradeOrderList: [
-    {
-      parentPortfolio: \$parentPortfolio
-      security: \$security
-      amount: \$amount
-      unitPrice: \$price
-      currency: \$currency
-      type: \$type
-      transactionDate: \$dateString
-      status: "4"
-    }
-  ])
-}
-""";

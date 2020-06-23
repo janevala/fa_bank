@@ -5,6 +5,7 @@ import 'package:fa_bank/api/graphql.dart';
 import 'package:fa_bank/constants.dart';
 import 'package:fa_bank/mutation_data.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
+import 'package:fa_bank/podo/mutation/mutation_response.dart';
 import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
@@ -80,7 +81,7 @@ class ApiProvider {
     }
   }
 
-  Future<void> postTransactionMutation(String authCookie, MutationData m) async {
+  Future<MutationResponse> postSecurityMutation(String authCookie, MutationData m) async {
     try {
       final response = await _dio.post('graphql',
           data: getTransactionMutation(m.parentPortfolio, m.security, m.amount, m.price, m.currency, m.type, m.dateString),
@@ -105,21 +106,16 @@ class ApiProvider {
         }
 
         if (resultOk) {
-
-        }
-
-        if (data['errors'] != null) {
-          String s = jsonEncode(data['errors']['message']);
-          return SecurityBody.withError(s);
+          return MutationResponse.withList(list);
         } else {
-          return SecurityBody.fromJson(data['data']);
+          return MutationResponse.withError(jsonEncode(list));
         }
       } else {
-        return SecurityBody.withError('Network Error');
+        return MutationResponse.withError('Network Error');
       }
     } catch (error, stacktrace) {
       _printError(error, stacktrace);
-      return SecurityBody.withError('$error');
+      return MutationResponse.withError('$error');
     }
   }
 
