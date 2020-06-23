@@ -1,14 +1,9 @@
-import 'dart:io';
-
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
-import 'package:fa_bank/api/graphql.dart';
 import 'package:fa_bank/bloc/security_bloc.dart';
-import 'package:fa_bank/constants.dart';
-import 'package:fa_bank/injector/injector.dart';
+import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/mutation_data.dart';
 import 'package:fa_bank/podo/portfolio/investment.dart';
-import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/graph.dart';
 import 'package:fa_bank/podo/security/security.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
@@ -135,37 +130,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   _showToast(BuildContext context, var text) {
     Scaffold.of(context).showSnackBar(SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
-  }
-
-  _showDialog(BuildContext context, String title, String content) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        if (Platform.isIOS) {
-          return CupertinoAlertDialog(
-            title: Text(title, style: Theme.of(context).textTheme.headline6),
-            content: Text(content, style: Theme.of(context).textTheme.subtitle2),
-            actions: [
-              FlatButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text('Ok', style: Theme.of(context).textTheme.subtitle2),
-              ),
-            ],
-          );
-        } else {
-          return AlertDialog(
-            title: Text(title, style: Theme.of(context).textTheme.headline6),
-            content: Text(content, style: Theme.of(context).textTheme.subtitle2),
-            actions: [
-              FlatButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text('Ok', style: Theme.of(context).textTheme.subtitle2),
-              ),
-            ],
-          );
-        }
-      },
-    );
   }
 
   String _getParsedValue(Security security, double value) {
@@ -321,8 +285,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         _widgetTextRow(context, 'EGS Rating', 'n/a'),
                         _widgetTextRow(context, 'Risk Score', 'n/a'),
                         _widgetTextRow(context, 'Ticker', investment.security.securityCode),
-
-
                       ]),
                     ),
                   )
@@ -452,7 +414,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           _widgetTextRow(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue)),
                           _widgetTextRow(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue))),
                           _widgetTextRow(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)))),
-                          //'€' + _widgetParsedNumberText(context, investment.positionValue.toStringAsFixed(0))
                           Container(height: 8),
                           Container(height: 2, color: Colors.grey[300]),
                           Container(height: 12),

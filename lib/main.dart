@@ -1,5 +1,5 @@
 import 'package:fa_bank/app.dart';
-import 'package:fa_bank/injector/injector.dart';
+import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

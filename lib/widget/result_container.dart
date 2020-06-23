@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +10,7 @@ class ResultContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black.withOpacity(0.7),
+      color: Colors.black.withOpacity(0.4),
       width: double.infinity,
       height: double.infinity,
       child: Center(

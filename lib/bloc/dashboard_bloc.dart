@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:fa_bank/api/repository.dart';
-import 'package:fa_bank/injector/injector.dart';
+import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/token/token.dart';

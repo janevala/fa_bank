@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 import 'package:fa_bank/api/repository.dart';
-import 'package:fa_bank/injector/injector.dart';
+import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/mutation_data.dart';
 import 'package:fa_bank/podo/mutation/mutation_response.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';

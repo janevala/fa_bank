@@ -1,4 +1,4 @@
-import 'package:fa_bank/injector/injector.dart';
+import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/ui/security_screen.dart';
@@ -12,8 +12,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool _isAlreadyLoggedIn = _sharedPreferencesManager
-            .isKeyExists(SharedPreferencesManager.keyIsLogin)
+    bool _isAlreadyLoggedIn = _sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyIsLogin)
         ? _sharedPreferencesManager.getBool(SharedPreferencesManager.keyIsLogin)
         : false;
 
@@ -25,10 +24,6 @@ class App extends StatelessWidget {
           primaryColor: Colors.grey[500],
           accentColor: Colors.blueGrey[500],
           fontFamily: 'Lato',
-/*          buttonTheme: ButtonThemeData(
-            buttonColor: Constants.faColorRed[900],
-            textTheme: ButtonTextTheme.primary,
-          ),*/
           textTheme: TextTheme(
             headline5: GoogleFonts.lato(textStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             headline6: GoogleFonts.lato(textStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.normal)),

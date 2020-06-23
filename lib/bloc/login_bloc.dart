@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:fa_bank/api/repository.dart';
-import 'package:fa_bank/injector/injector.dart';
+import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';

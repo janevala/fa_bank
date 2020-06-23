@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fa_bank/injector/injector.dart';
+import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/portfolio/investment.dart';
 import 'package:fa_bank/ui/security_screen.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
