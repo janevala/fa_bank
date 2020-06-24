@@ -144,6 +144,21 @@ class _SecurityScreenState extends State<SecurityScreen> {
     FlutterMoneyFormatter(amount: value, settings: setting).output.symbolOnLeft;
   }
 
+  double _countToday(List<Graph> graphs) {
+    if (graphs.length > 2) {
+      var last = graphs[graphs.length - 1].price;
+      var secondLast = graphs[graphs.length - 2].price;
+      return last / secondLast - 1;
+    } else {
+      return 0;
+    }
+  }
+
+  String _getTodayAsString(double today) {
+    if (today == 0) return 'n/a';
+    return today.toStringAsFixed(2) + '%';
+  }
+
   @override
   Widget build(BuildContext context) {
     final SecurityArgument arg = ModalRoute.of(context).settings.arguments;
@@ -851,21 +866,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
             )
           ],
         ));
-  }
-
-  double _countToday(List<Graph> graphs) {
-    if (graphs.length > 2) {
-      var last = graphs[graphs.length - 1].price;
-      var secondLast = graphs[graphs.length - 2].price;
-      return last / secondLast - 1;
-    } else {
-      return 0;
-    }
-  }
-
-  String _getTodayAsString(double today) {
-    if (today == 0) return 'n/a';
-    return today.toStringAsFixed(2) + '%';
   }
 
   Widget _widgetDetail(BuildContext context, SecurityBody securityBody, Investment investment) {
