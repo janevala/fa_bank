@@ -66,7 +66,7 @@ class InvestmentItem extends StatelessWidget {
                         child: Text(
                           investment.security.name,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.headline6.merge(
+                          style: Theme.of(context).textTheme.subtitle2.merge(
                             TextStyle(fontSize: 17, color: Colors.black),
                           ),
                         ))
@@ -96,7 +96,7 @@ class InvestmentItem extends StatelessWidget {
                   child: Column(
                     children: <Widget>[
                       _widgetBodyText2(context, 'Return'),
-                      _widgetHeadline6(context, (investment.changePercent * 100).toStringAsFixed(1) + '%',
+                      _widgetHeadline6(context, (investment.changePercent * 100).toStringAsFixed(1).replaceFirst('.', ',') + '%',
                           Utils.getColor(investment.changePercent)),
                     ],
                   ),
@@ -116,23 +116,9 @@ class InvestmentItem extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           text,
-          style: Theme.of(context).textTheme.headline6.merge(
+          style: Theme.of(context).textTheme.subtitle2.merge(
                 TextStyle(fontSize: 16, color: color, fontWeight: FontWeight.bold),
               ),
-        ));
-  }
-
-  Widget _widgetHeadline6Currency(BuildContext context, String text, Color color) {
-    final formatter = NumberFormat("#,###");// using comma here will not work, even by escaping with back slash
-    String newString = formatter.format(int.parse(text));
-
-    return Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          '€' + newString.replaceAll(',', '.'),
-          style: Theme.of(context).textTheme.headline6.merge(
-            TextStyle(fontSize: 16, color: color, fontWeight: FontWeight.bold),
-          ),
         ));
   }
 
@@ -142,7 +128,7 @@ class InvestmentItem extends StatelessWidget {
         child: Text(
           text,
           style: Theme.of(context).textTheme.bodyText2.merge(
-                TextStyle(fontSize: 14, color: Colors.grey[600]),
+                TextStyle(color: Colors.grey[600]),
               ),
         ));
   }

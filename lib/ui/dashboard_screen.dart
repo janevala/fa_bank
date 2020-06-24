@@ -356,8 +356,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Center(
                 child: Text(
               portfolio.portfolio.client.name,
-              style: Theme.of(context).textTheme.bodyText2.merge(
-                    TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.grey[600]),
+              style: Theme.of(context).textTheme.subtitle2.merge(
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600]),
                   ),
             ))
           ],
@@ -441,7 +441,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             color: _pressWeekAttention ? FaColor.red[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
-                        borderRadius: new BorderRadius.circular(20.0)))),
+                        borderRadius: BorderRadius.circular(20.0)))),
           )),
       Expanded(
           flex: 2,
@@ -476,7 +476,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: _pressMonthAttention ? FaColor.red[900] : Colors.black,
                           width: 1,
                           style: BorderStyle.solid),
-                      borderRadius: new BorderRadius.circular(20.0))),
+                      borderRadius: BorderRadius.circular(20.0))),
             ),
           )),
       Expanded(
@@ -512,7 +512,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: _press3MonthAttention ? FaColor.red[900] : Colors.black,
                           width: 1,
                           style: BorderStyle.solid),
-                      borderRadius: new BorderRadius.circular(20.0))),
+                      borderRadius: BorderRadius.circular(20.0))),
             ),
           )),
       Expanded(
@@ -548,7 +548,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             color: _press6MonthAttention ? FaColor.red[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
-                        borderRadius: new BorderRadius.circular(20.0)))),
+                        borderRadius: BorderRadius.circular(20.0)))),
           )),
       Expanded(
           flex: 2,
@@ -584,7 +584,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             color: _pressYTDAttention ? FaColor.red[900] : Colors.black,
                             width: 1,
                             style: BorderStyle.solid),
-                        borderRadius: new BorderRadius.circular(20.0)))),
+                        borderRadius: BorderRadius.circular(20.0)))),
           ))
     ]);
   }
@@ -600,17 +600,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     var setting = Utils.getMoneySetting('EUR', 1);
     double netAssetValue = portfolio.portfolio.portfolioReport.netAssetValue;
     String strNetAssetValue = netAssetValue > 1000000 ?
-    FlutterMoneyFormatter(amount: netAssetValue, settings: setting).output.compactSymbolOnLeft :
+    (FlutterMoneyFormatter(amount: netAssetValue, settings: setting).output.compactSymbolOnLeft).replaceFirst('.', ',') :
     FlutterMoneyFormatter(amount: netAssetValue, settings: setting).output.symbolOnLeft;
 
     double marketValue = portfolio.portfolio.portfolioReport.marketValue;
     String strMarketValue = marketValue > 1000000 ?
-    FlutterMoneyFormatter(amount: marketValue, settings: setting).output.compactSymbolOnLeft :
+    (FlutterMoneyFormatter(amount: marketValue, settings: setting).output.compactSymbolOnLeft).replaceFirst('.', ',') :
     FlutterMoneyFormatter(amount: marketValue, settings: setting).output.symbolOnLeft;
 
     double cashBalance = portfolio.portfolio.portfolioReport.cashBalance;
     String strCashBalance = cashBalance > 1000000 ?
-    FlutterMoneyFormatter(amount: cashBalance, settings: setting).output.compactSymbolOnLeft :
+    (FlutterMoneyFormatter(amount: cashBalance, settings: setting).output.compactSymbolOnLeft).replaceFirst('.', ',') :
     FlutterMoneyFormatter(amount: cashBalance, settings: setting).output.symbolOnLeft;
 
     return Padding(
