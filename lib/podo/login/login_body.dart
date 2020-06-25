@@ -22,6 +22,6 @@ class LoginBody {
   }
 
   String tokenString() {
-    return 'username=$username&password=$password&grant_type=$grantType&scope=openid offline_access&client_id=' + Constants.clientId + '&client_secret=' + Constants.clientSecret;
+    return 'username=$username&password=$password&grant_type=$grantType&scope=openid offline_access';
   }
 }

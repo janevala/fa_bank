@@ -7,12 +7,18 @@ class SharedPreferencesManager {
   static const String keyAccessToken = 'accessToken';
   static const String keyRefreshToken = 'refreshToken';
   static const String keyIsLogin = 'isLogin';
-  static const String keyUsername = 'username';
+  static const String keyPortfolioUserName = 'portfolioUserName';
   static const String keyAuthMSecs = 'authMSecs';
-  static const String keyUid = 'userId';
-  static const String portfolioBody = 'portfolioBody';
-  static const String securityCode = 'securityCode';
-  static const String securityBody = 'securityBody_';
+  static const String keyPortfolioBody = 'portfolioBody';
+  static const String keySecurityCode = 'securityCode';
+  static const String keySecurityBody = 'securityBody_';
+  static const String keyLoginUserName = 'loginUserName';
+  static const String keyLoginPassword = 'loginPassword';
+
+  static const String keyBackend = 'backend';
+  static const String keyPortfolioId = 'portfolioId';
+  static const String keyClientId = 'clientId';
+  static const String keyClientSecret = 'clientSecret';
 
   static Future<SharedPreferencesManager> getInstance() async {
     if (_manager == null) {
@@ -49,4 +55,16 @@ class SharedPreferencesManager {
   Future<bool> clearKey(String key) => _preferences.remove(key);
 
   Future<bool> clearAll() => _preferences.clear();
+
+  Future<bool> clearSessionRelated() {
+    _preferences.remove(keyAccessToken);
+    _preferences.remove(keyRefreshToken);
+    _preferences.remove(keyIsLogin);
+    _preferences.remove(keyPortfolioUserName);
+    _preferences.remove(keyPortfolioBody);
+    _preferences.remove(keyAuthMSecs);
+    _preferences.remove(keyLoginUserName);
+    _preferences.remove(keyLoginPassword);
+  }
+
 }

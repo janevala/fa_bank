@@ -10,6 +10,7 @@ import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/portfolio/trade_order.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/investment_item.dart';
+import 'package:fa_bank/app.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
@@ -56,8 +57,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-
-    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyUid)) _logout();
 
     _doRefreshToken();
   }
@@ -211,8 +210,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  _logout() {
-    locator<SharedPreferencesManager>().clearAll();
+  _logout(BuildContext context) {
+    locator<SharedPreferencesManager>().clearSessionRelated();
+//    RestartWidget.restartApp(context);
     Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
   }
 
@@ -242,7 +242,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           IconButton(
             icon: Icon(Icons.exit_to_app),
             onPressed: () {
-              _logout();
+              _logout(context);
             },
           ),
         ],
@@ -256,10 +256,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             } else if (state is DashboardSuccess) {
               _spin = false;
               _animate = true;
+              if (state.portfolioBody.portfolio == null) return Center(
+                child: Text('Error', style: Theme.of(context).textTheme.subtitle2),
+              );
               tradeOrders = state.portfolioBody.portfolio.tradeOrders;
               return _widgetMainView(context, state.portfolioBody);
             } else if (state is DashboardCache) {
               _animate = false;
+              if (state.portfolioBody.portfolio == null) return Center(
+                child: Text('Error', style: Theme.of(context).textTheme.subtitle2),
+              );
               return _widgetMainView(context, state.portfolioBody);
             } else if (state is DashboardFailure) {
               return Center(

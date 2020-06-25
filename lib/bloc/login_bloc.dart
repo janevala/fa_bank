@@ -27,7 +27,6 @@ class LoginEvent extends LoginState {
 }
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  final ApiRepository apiRepository = ApiRepository();
   final SharedPreferencesManager sharedPreferencesManager = locator<SharedPreferencesManager>();
 
   @override
@@ -44,7 +43,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       return;
     }
     yield LoginLoading();
-    Token token = await apiRepository.postLoginUser(loginBody);
+    Token token = await ApiRepository().postLoginUser(loginBody);
     if (token.error != null) {
       yield LoginFailure(token.error);
       return;
@@ -53,8 +52,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     await sharedPreferencesManager.putString(SharedPreferencesManager.keyRefreshToken, token.refreshToken);
     await sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, true);
     await sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
-    await sharedPreferencesManager.putString(SharedPreferencesManager.keyUsername, loginBody.username);
-    await sharedPreferencesManager.putInt(SharedPreferencesManager.keyUid, 10527024); //10527075
+    await sharedPreferencesManager.putString(SharedPreferencesManager.keyPortfolioUserName, loginBody.username);
     yield LoginSuccess();
   }
 }

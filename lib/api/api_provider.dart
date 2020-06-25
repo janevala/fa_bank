@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:fa_bank/api/graphql.dart';
-import 'package:fa_bank/constants.dart';
+import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/mutation/mutation_data.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
 import 'package:fa_bank/podo/mutation/mutation_response.dart';
@@ -11,13 +11,16 @@ import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
 import 'package:fa_bank/utils/dio_logging_interceptors.dart';
+import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:flutter/cupertino.dart';
+
+final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
 class ApiProvider {
   final Dio _dio = new Dio();
 
   ApiProvider() {
-    _dio.options.baseUrl = Constants.faBaseUrl;
+    _dio.options.baseUrl = _sharedPreferencesManager.getString(SharedPreferencesManager.keyBackend);
     _dio.interceptors.add(DioLoggingInterceptors(_dio));
   }
 
@@ -120,10 +123,14 @@ class ApiProvider {
   }
 
   Future<Token> loginUser(LoginBody loginBody) async {
+    var clientId = _sharedPreferencesManager.getString(SharedPreferencesManager.keyClientId);
+    var clientSecret = _sharedPreferencesManager.getString(SharedPreferencesManager.keyClientSecret);
+    var dataString = loginBody.tokenString() + '&client_id=' + clientId + '&client_secret=' + clientSecret;
+
     try {
       final response = await _dio.post(
         'auth/realms/fa/protocol/openid-connect/token',
-        data: loginBody.tokenString(),
+        data: dataString,
         options: Options(
           contentType: Headers.formUrlEncodedContentType,
         ),
@@ -136,10 +143,14 @@ class ApiProvider {
   }
 
   Future<Token> refreshAuth(RefreshTokenBody refreshTokenBody) async {
+    var clientId = _sharedPreferencesManager.getString(SharedPreferencesManager.keyClientId);
+    var clientSecret = _sharedPreferencesManager.getString(SharedPreferencesManager.keyClientSecret);
+    var dataString = refreshTokenBody.tokenString() + '&client_id=' + clientId + '&client_secret=' + clientSecret;
+
     try {
       final response = await _dio.post(
         'auth/realms/fa/protocol/openid-connect/token',
-        data: refreshTokenBody.tokenString(),
+        data: dataString,
         options: Options(
           contentType: Headers.formUrlEncodedContentType,
         ),

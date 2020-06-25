@@ -23,6 +23,6 @@ class RefreshTokenBody {
   }
 
   String tokenString() {
-    return 'grant_type=$grantType&refresh_token=$refreshToken&client_id=' + Constants.clientId + '&client_secret=' + Constants.clientSecret;
+    return 'grant_type=$grantType&refresh_token=$refreshToken';
   }
 }

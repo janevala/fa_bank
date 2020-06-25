@@ -90,9 +90,9 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
 
     SecurityBody securityBody;
     if (event.mutationData == null) { //we do query
-        String securityCode  = sharedPreferencesManager.getString(SharedPreferencesManager.securityCode);
-        if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.securityBody + securityCode)) {
-          var securityString = sharedPreferencesManager.getString(SharedPreferencesManager.securityBody + securityCode);
+        String securityCode  = sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityCode);
+        if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keySecurityBody + securityCode)) {
+          var securityString = sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityBody + securityCode);
           securityBody = SecurityBody.fromJson(jsonDecode(securityString));
           yield SecurityCache(securityBody);
         }
@@ -104,7 +104,7 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
           return;
         }
 
-        await sharedPreferencesManager.putString(SharedPreferencesManager.securityBody + securityCode, jsonEncode(securityBody.toJson()));
+        await sharedPreferencesManager.putString(SharedPreferencesManager.keySecurityBody + securityCode, jsonEncode(securityBody.toJson()));
 
         yield SecurityQuerySuccess(securityBody);
 
@@ -117,9 +117,9 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
       }
 
       if (securityBody == null) {
-        String securityCode  = sharedPreferencesManager.getString(SharedPreferencesManager.securityCode);
-        if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.securityBody + securityCode)) {
-          var securityString = sharedPreferencesManager.getString(SharedPreferencesManager.securityBody + securityCode);
+        String securityCode  = sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityCode);
+        if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keySecurityBody + securityCode)) {
+          var securityString = sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityBody + securityCode);
           securityBody = SecurityBody.fromJson(jsonDecode(securityString));
           yield SecurityMutationSuccess(securityBody);
         }

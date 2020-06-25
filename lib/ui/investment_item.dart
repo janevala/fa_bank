@@ -50,7 +50,7 @@ class InvestmentItem extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () {
-            _sharedPreferencesManager.putString(SharedPreferencesManager.securityCode, investment.security.securityCode);
+            _sharedPreferencesManager.putString(SharedPreferencesManager.keySecurityCode, investment.security.securityCode);
 
             Navigator.pushNamed(context, SecurityScreen.route,
               arguments: SecurityArgument(investment, shortName, cashBalance),

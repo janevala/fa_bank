@@ -56,8 +56,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
     yield DashboardLoading();
 
-    if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.portfolioBody)) {
-      var portfolioString = sharedPreferencesManager.getString(SharedPreferencesManager.portfolioBody);
+    if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyPortfolioBody)) {
+      var portfolioString = sharedPreferencesManager.getString(SharedPreferencesManager.keyPortfolioBody);
       PortfolioBody p = PortfolioBody.fromJson(jsonDecode(portfolioString));
       yield DashboardCache(p);
     }
@@ -78,8 +78,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       await sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
     }
 
-    if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyUid)) {
-      int userId  = sharedPreferencesManager.getInt(SharedPreferencesManager.keyUid);
+    if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyPortfolioId)) {
+      int userId  = sharedPreferencesManager.getInt(SharedPreferencesManager.keyPortfolioId);
       String accessToken = token == null ? sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
       PortfolioBody portfolioBody = await apiRepository.postPortfolioQuery(accessToken, userId);
       if (portfolioBody.error != null) {
@@ -87,7 +87,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         return;
       }
 
-      await sharedPreferencesManager.putString(SharedPreferencesManager.portfolioBody, jsonEncode(portfolioBody.toJson()));
+      await sharedPreferencesManager.putString(SharedPreferencesManager.keyPortfolioBody, jsonEncode(portfolioBody.toJson()));
 
       yield DashboardSuccess(portfolioBody);
     } else {

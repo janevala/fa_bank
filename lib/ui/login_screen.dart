@@ -1,20 +1,32 @@
 import 'dart:io';
 
 import 'package:fa_bank/bloc/login_bloc.dart';
+import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
+import 'package:fa_bank/ui/backend_screen.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';
+import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   static const String route = '/login_screen';
 
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+
+class _LoginScreenState extends State<LoginScreen> {
   final LoginBloc _loginBloc = LoginBloc();
+
   final TextEditingController _controllerUserName = TextEditingController();
+
   final TextEditingController _controllerPassword = TextEditingController();
 
   _showToast(BuildContext context, var text) {
@@ -38,6 +50,24 @@ class LoginScreen extends StatelessWidget {
         }
       },
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyLoginUserName))
+      _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginUserName, 'codemate');
+    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyLoginPassword))
+      _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginPassword, 'sNY5x18tfy4W');
+    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyBackend))
+      _sharedPreferencesManager.putString(SharedPreferencesManager.keyBackend, 'https://fadev.fasolutions.com/');
+    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyClientId))
+      _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientId, 'fa-back');
+    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyClientSecret))
+      _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientSecret, 'f692d597-0f4a-4495-a90e-1d090e7288fa');
+    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyPortfolioId))
+      _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, 10527024); //10527075
   }
 
   @override
@@ -97,6 +127,7 @@ class LoginScreen extends StatelessWidget {
                             Builder(
                                 builder: (stupidToastContext) => InkWell(
                                     onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                                    onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
                                     child: Text(
                                       'FORGOT PASSWORD?',
                                       style: Theme.of(context).textTheme.subtitle2.merge(
@@ -109,6 +140,7 @@ class LoginScreen extends StatelessWidget {
                             Builder(
                                 builder: (stupidToastContext) => InkWell(
                                     onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                                    onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
                                     child: Text(
                                       'PRIVACY POLICY',
                                       style: Theme.of(context).textTheme.subtitle2.merge(
@@ -160,7 +192,9 @@ class LoginScreen extends StatelessWidget {
             String username = _controllerUserName.text.trim();
             String password = _controllerPassword.text.trim();
             if (username.isEmpty || password.isEmpty) {
-              _loginBloc.add(LoginEvent(LoginBody('codemate', 'sNY5x18tfy4W', 'password')));
+              var user = _sharedPreferencesManager.getString(SharedPreferencesManager.keyLoginUserName);
+              var pass = _sharedPreferencesManager.getString(SharedPreferencesManager.keyLoginPassword);
+              _loginBloc.add(LoginEvent(LoginBody(user, pass, 'password')));
             } else {
               _loginBloc.add(LoginEvent(LoginBody(username, password, 'password')));
             }
