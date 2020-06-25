@@ -1,17 +1,10 @@
-import 'dart:io';
-
 import 'package:fa_bank/app.dart';
-import 'package:fa_bank/bloc/login_bloc.dart';
 import 'package:fa_bank/injector.dart';
-import 'package:fa_bank/podo/login/login_body.dart';
-import 'package:fa_bank/ui/dashboard_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
-import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
@@ -64,7 +57,7 @@ class BackendScreen extends StatelessWidget {
                     _widgetSizedBox(16),
                     _widgetLabel(context, 'PORTFOLIO ID'),
                     _widgetFieldPortfolioId(context),
-                    _widgetSizedBox(64),
+                    _widgetSizedBox(32),
                     _widgetSaveAndReboot(context),
                   ],
                 ),
@@ -85,7 +78,7 @@ class BackendScreen extends StatelessWidget {
                   TextStyle(color: FaColor.red[900], fontWeight: FontWeight.bold),
                 ),
           ),
-          onPressed: () {
+          onPressed: () async {
             String username = _controllerUserName.text.trim();
             String password = _controllerPassword.text.trim();
             String backend = _controllerBackend.text.trim();
@@ -93,14 +86,14 @@ class BackendScreen extends StatelessWidget {
             String clientSecret = _controllerClientSecret.text.trim();
             String portfolioId = _controllerPortfolioId.text.trim();
             if (username.isNotEmpty || password.isNotEmpty || backend.isNotEmpty || clientId.isNotEmpty || clientSecret.isNotEmpty || portfolioId.isNotEmpty ) {
-              _sharedPreferencesManager.clearAll();
-              _sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, false);
-              _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginUserName, username);
-              _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginPassword, password);
-              _sharedPreferencesManager.putString(SharedPreferencesManager.keyBackend, backend);
-              _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientId, clientId);
-              _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientSecret, clientSecret);
-              _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, int.parse(portfolioId));
+              await _sharedPreferencesManager.clearAll();
+
+              await _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginUserName, username);
+              await _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginPassword, password);
+              await _sharedPreferencesManager.putString(SharedPreferencesManager.keyBackend, backend);
+              await _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientId, clientId);
+              await _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientSecret, clientSecret);
+              await _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, int.parse(portfolioId));
 
               RestartWidget.restartApp(context);
             }
@@ -207,6 +200,7 @@ class BackendScreen extends StatelessWidget {
         style: Theme.of(context).textTheme.subtitle2.merge(
           TextStyle(
             color: Colors.white,
+              fontSize: 16
           ),
         ),
         controller: _controllerClientSecret,

@@ -7,7 +7,6 @@ import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
-import 'package:intl/intl.dart';
 
 enum ConfirmAction { CANCEL, ACCEPT }
 

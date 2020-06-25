@@ -10,7 +10,6 @@ import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/portfolio/trade_order.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/investment_item.dart';
-import 'package:fa_bank/app.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
@@ -281,6 +280,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _widgetMainView(BuildContext context, PortfolioBody portfolioBody) {
+    if (portfolioBody.portfolio == null) return Center(
+      child: Text('Error', style: Theme.of(context).textTheme.subtitle2),
+    );
+    
     return SafeArea(
       child: Stack(
         children: <Widget>[

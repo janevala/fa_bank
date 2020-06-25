@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:fa_bank/api/graphql.dart';
 import 'package:fa_bank/injector.dart';
-import 'package:fa_bank/podo/mutation/mutation_data.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
+import 'package:fa_bank/podo/mutation/mutation_data.dart';
 import 'package:fa_bank/podo/mutation/mutation_response.dart';
 import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
@@ -17,7 +17,7 @@ import 'package:flutter/cupertino.dart';
 final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
 class ApiProvider {
-  final Dio _dio = new Dio();
+  final Dio _dio = Dio();
 
   ApiProvider() {
     _dio.options.baseUrl = _sharedPreferencesManager.getString(SharedPreferencesManager.keyBackend);

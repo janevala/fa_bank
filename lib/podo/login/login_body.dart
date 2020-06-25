@@ -1,4 +1,3 @@
-import 'package:fa_bank/constants.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'login_body.g.dart';

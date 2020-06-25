@@ -127,7 +127,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             Builder(
                                 builder: (stupidToastContext) => InkWell(
                                     onTap: () => _showToast(stupidToastContext, 'Not implemented'),
-                                    onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
                                     child: Text(
                                       'FORGOT PASSWORD?',
                                       style: Theme.of(context).textTheme.subtitle2.merge(
@@ -140,7 +139,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             Builder(
                                 builder: (stupidToastContext) => InkWell(
                                     onTap: () => _showToast(stupidToastContext, 'Not implemented'),
-                                    onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
                                     child: Text(
                                       'PRIVACY POLICY',
                                       style: Theme.of(context).textTheme.subtitle2.merge(
@@ -265,7 +263,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _widgetImageHeader() {
     return Padding(
       padding: EdgeInsets.only(left: 64, right: 64, top: 32, bottom: 32),
-      child: Container(
+      child: InkWell(
+        onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
         child: Image.asset('assets/images/fa-bank-login.png'),
       ),
     );

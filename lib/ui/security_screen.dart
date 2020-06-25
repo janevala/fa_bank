@@ -43,6 +43,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   final TextEditingController _controllerAmount = TextEditingController();
   String _controllerOnChanged;
   final TextEditingController _controllerDate = TextEditingController();
+  bool isConfirmed = false;
 
   //Graph globals
   bool _animate = true;
@@ -134,32 +135,76 @@ class _SecurityScreenState extends State<SecurityScreen> {
     return today.toStringAsFixed(2) + '%';
   }
 
-  Future<ConfirmAction> _asyncConfirmDialog(BuildContext context) async {
-    return await showDialog<ConfirmAction>(
+  Future<void> _showPurchaseDialogBottomSheet(BuildContext context, SecurityBody securityBody, String shortName, double cashBalance) async {
+    double latestValue = securityBody.securities[0].marketData.latestValue;
+
+    return await showModalBottomSheet<void>(
       context: context,
-      barrierDismissible: false,
+      isScrollControlled:true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(5.0),
+      ),
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Confirmation'),
-          content: Text(
-              'Send new trade order?'),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(ConfirmAction.CANCEL);
-              },
-            ),
-            FlatButton(
-              child: Text('Proceed'),
-              onPressed: () {
-                Navigator.of(context).pop(ConfirmAction.PROCEED);
-              },
-            )
-          ],
+        return Container(
+          child: Padding(
+              padding: EdgeInsets.only(left: 32, right: 32),
+              child: SingleChildScrollView(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                          padding: EdgeInsets.only(top: 16, bottom: 16),
+                          child: _widgetHeadline6(context, _transactionType == 'B' ? 'New Buy Order' : 'New Sell Order')),
+                      _widgetAmount(context),
+                      _widgetDate(context),
+                      _widgetTextRow(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue)),
+                      _widgetTextRow(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue))),
+                      _widgetTextRow(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)))),
+                      _widgetConfirmation(context),
+                      Container(height: 16),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Expanded(
+                                child: Padding(
+                                  padding: EdgeInsets.only(right: 20),
+                                  child: FlatButton(
+                                      child: Text('CANCEL',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline6
+                                              .merge(
+                                            TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 20),
+                                          )),
+                                      color: Colors.white,
+                                      onPressed: () {
+                                        FocusScope.of(context).unfocus();
+                                        Navigator.of(context).pop();
+                                      },
+                                      shape: RoundedRectangleBorder(
+                                          side: BorderSide(
+                                              color: Colors.black,
+                                              width: 1,
+                                              style: BorderStyle.solid),
+                                          borderRadius: BorderRadius.circular(5.0))),
+                                )),
+                            Expanded(
+                              child: Padding(
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: _widgetSendButton(context, securityBody, shortName)),
+                            ),
+                          ]),
+                      Container(height: 16),
+                    ]),
+              )),
         );
       },
-    );
+    ).whenComplete(() {
+      print('LOG: bottom sheet closed');
+    });
   }
 
   @override
@@ -184,15 +229,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
           ),
         ),
         backgroundColor: FaColor.red[900],
-/*        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: () {
-              _spin = true;
-              _doRefreshToken();
-            },
-          ),
-        ],*/
       ),
       body: BlocProvider<SecurityBloc>(
         create: (context) => _securityBloc,
@@ -341,10 +377,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                     _transactionType = 'M'; //logical, sell in Finnish
                                   });
 
-                                  if (!_purchaseSheetOpen) {
-                                    _purchaseSheetController = _key.currentState.showBottomSheet((_) => _widgetPurchaseSheetContent(context, securityBody, shortName, cashBalance));
-                                    setState(() => _purchaseSheetOpen = true);
-                                  }
+                                  _showPurchaseDialogBottomSheet(context, securityBody, shortName, cashBalance);
                                 },
                                 shape: RoundedRectangleBorder(
                                     borderRadius:
@@ -374,10 +407,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                     _transactionType = 'B';
                                   });
 
-                                  if (!_purchaseSheetOpen) {
-                                    _purchaseSheetController = _key.currentState.showBottomSheet((_) => _widgetPurchaseSheetContent(context, securityBody, shortName, cashBalance));
-                                    setState(() => _purchaseSheetOpen = true);
-                                  }
+                                  _showPurchaseDialogBottomSheet(context, securityBody, shortName, cashBalance);
                                 },
                                 shape: RoundedRectangleBorder(
                                     borderRadius:
@@ -415,76 +445,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
     return balance - estimated;
   }
 
-  Widget _widgetPurchaseSheetContent(BuildContext context, SecurityBody securityBody, String shortName, double cashBalance) {
-    double latestValue = securityBody.securities[0].marketData.latestValue;
-
-    return Container(
-      margin: const EdgeInsets.only(top: 8, left: 8, right: 8),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-          boxShadow: [
-            BoxShadow(
-                blurRadius: 8, color: Colors.grey[400], spreadRadius: 8)
-          ]),
-      child: Padding(
-          padding: EdgeInsets.only(left: 32, right: 32),
-          child: SingleChildScrollView(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                      padding: EdgeInsets.only(top: 16, bottom: 16),
-                      child: _widgetHeadline6(context, _transactionType == 'B' ? 'New Buy Order' : 'New Sell Order')),
-                  _widgetAmount(context),
-                  _widgetDate(context),
-                  _widgetTextRow(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue)),
-                  _widgetTextRow(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue))),
-                  _widgetTextRow(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)))),
-                  Container(height: 16),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(right: 20),
-                              child: FlatButton(
-                                  child: Text('CANCEL',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headline6
-                                          .merge(
-                                        TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 20),
-                                      )),
-                                  color: Colors.white,
-                                  onPressed: () {
-                                    FocusScope.of(context).unfocus();
-
-                                    _purchaseSheetController.close();
-                                    setState(() => _purchaseSheetOpen = false);
-                                  },
-                                  shape: RoundedRectangleBorder(
-                                      side: BorderSide(
-                                          color: Colors.black,
-                                          width: 1,
-                                          style: BorderStyle.solid),
-                                      borderRadius: BorderRadius.circular(5.0))),
-                            )),
-                        Expanded(
-                          child: Padding(
-                              padding: EdgeInsets.only(left: 20),
-                              child: _widgetSendButton(context, securityBody, shortName)),
-                        ),
-                      ]),
-                  Container(height: 16),
-                ]),
-          )),
-    );
-  }
-
   Widget _widgetSendButton(BuildContext context, SecurityBody securityBody, String shortName) {
     return FlatButton(
         child: Text('SEND',
@@ -500,28 +460,22 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
           String _amount = _controllerAmount.text.trim();
           String _date = _controllerDate.text.trim();
-          if (_amount.isEmpty || _date.isEmpty) {
-            _showToast(context, 'Please correct input and try again');
+          if (_amount.isEmpty || _date.isEmpty || !isConfirmed) {
+            print('ERRRR');
           } else {
-            ConfirmAction action = await _asyncConfirmDialog(context);
+            Navigator.of(context).pop();
+            String _amount = _controllerAmount.text.trim();
+            String _date = _controllerDate.text.trim();
+            MutationData mutationData = MutationData(
+                shortName,
+                securityBody.securities[0].securityCode,
+                _amount,
+                securityBody.securities[0].marketData.latestValue.toString(),
+                securityBody.securities[0].currency.currencyCode,
+                _transactionType,
+                _date);
 
-            if (action == ConfirmAction.PROCEED) {
-              _purchaseSheetController.close();
-              setState(() => _purchaseSheetOpen = false);
-
-              String _amount = _controllerAmount.text.trim();
-              String _date = _controllerDate.text.trim();
-              MutationData mutationData = MutationData(
-                  shortName,
-                  securityBody.securities[0].securityCode,
-                  _amount,
-                  securityBody.securities[0].marketData.latestValue.toString(),
-                  securityBody.securities[0].currency.currencyCode,
-                  _transactionType,
-                  _date);
-
-              _securityBloc.add(SecurityEvent(mutationData));
-            }
+            _securityBloc.add(SecurityEvent(mutationData));
           }
         },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)));
@@ -876,6 +830,34 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
+  Widget _widgetConfirmation(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.only(top: 8, bottom: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Checkbox(
+                  value: isConfirmed,
+                  onChanged: (bool value) {
+                    setState(() {
+                      isConfirmed = value;
+                    });
+                  },
+                );
+              },
+            ),
+            Text(
+              'Confirm new order',
+              style: Theme.of(context).textTheme.headline6.merge(
+                TextStyle(fontSize: 20),
+              ),
+            )
+          ],
+        ));
+  }
+
   Widget _widgetDetail(BuildContext context, SecurityBody securityBody, Investment investment) {
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
@@ -1077,107 +1059,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
           data: portfolioMinus100Pointers)
         ..setAttribute(charts.rendererIdKey, 'stocksPoint'),
     ];
-  }
-
-  //kept here "just in case" for now..
-  Future<void> _asyncPurchaseDialog(BuildContext context, SecurityBody securityBody, String shortName, double cashBalance) async {
-    double latestValue = securityBody.securities[0].marketData.latestValue;
-
-    return await showModalBottomSheet<void>(context: context, isScrollControlled: true, shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(5.0),
-    ), builder: (BuildContext context) {
-
-      return Container(
-        child: Padding(
-            padding: EdgeInsets.only(left: 32, right: 32, bottom: 32),
-            child: SingleChildScrollView(
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Padding(
-                        padding: EdgeInsets.only(top: 16, bottom: 16),
-                        child: _widgetHeadline6(context, _transactionType == 'B' ? 'New Buy Order' : 'New Sell Order')),
-                    _widgetAmount(context),
-                    _widgetDate(context),
-                    _widgetTextRow(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue)),
-                    _widgetTextRow(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue))),
-                    _widgetTextRow(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)))),
-                    Container(height: 16),
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.only(right: 20),
-                                child: FlatButton(
-                                    child: Text('CANCEL',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headline6
-                                            .merge(
-                                          TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 20),
-                                        )),
-                                    color: Colors.white,
-                                    onPressed: () {
-                                      FocusScope.of(context).unfocus();
-
-                                      Navigator.of(context).pop();
-                                    },
-                                    shape: RoundedRectangleBorder(
-                                        side: BorderSide(
-                                            color: Colors.black,
-                                            width: 1,
-                                            style: BorderStyle.solid),
-                                        borderRadius: BorderRadius.circular(5.0))),
-                              )),
-                          Expanded(
-                            child: Padding(
-                                padding: EdgeInsets.only(left: 20),
-                                child: FlatButton(
-                                    child: Text('SEND',
-                                        style: Theme.of(context).textTheme.headline6.merge(
-                                          TextStyle(
-                                              color:
-                                              Colors.white,
-                                              fontSize: 20),
-                                        )),
-                                    color: _transactionType == 'B' ? Colors.green : FaColor.red[900],
-                                    onPressed: () async {
-                                      FocusScope.of(context).unfocus();
-
-                                      String _amount = _controllerAmount.text.trim();
-                                      String _date = _controllerDate.text.trim();
-                                      if (_amount.isEmpty || _date.isEmpty) {
-                                        _showToast(context, 'Please correct input and try again');
-                                      } else {
-                                        ConfirmAction action = await _asyncConfirmDialog(context);
-
-                                        if (action == ConfirmAction.PROCEED) {
-                                          String _amount = _controllerAmount.text.trim();
-                                          String _date = _controllerDate.text.trim();
-                                          MutationData mutationData = MutationData(
-                                              shortName,
-                                              securityBody.securities[0].securityCode,
-                                              _amount,
-                                              securityBody.securities[0].marketData.latestValue.toString(),
-                                              securityBody.securities[0].currency.currencyCode,
-                                              _transactionType,
-                                              _date);
-
-                                          _securityBloc.add(SecurityEvent(mutationData));
-                                        }
-                                      }
-                                    },
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)))),
-                          ),
-                        ])
-                  ]),
-            )),
-      );
-    });
   }
 }
 

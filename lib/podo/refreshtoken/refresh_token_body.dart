@@ -1,7 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../constants.dart';
-
 part 'refresh_token_body.g.dart';
 
 @JsonSerializable()

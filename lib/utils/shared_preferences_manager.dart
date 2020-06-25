@@ -4,21 +4,22 @@ class SharedPreferencesManager {
   static SharedPreferencesManager _manager;
   static SharedPreferences _preferences;
 
-  static const String keyAccessToken = 'accessToken';
-  static const String keyRefreshToken = 'refreshToken';
-  static const String keyIsLogin = 'isLogin';
-  static const String keyPortfolioUserName = 'portfolioUserName';
-  static const String keyAuthMSecs = 'authMSecs';
-  static const String keyPortfolioBody = 'portfolioBody';
-  static const String keySecurityCode = 'securityCode';
-  static const String keySecurityBody = 'securityBody_';
-  static const String keyLoginUserName = 'loginUserName';
-  static const String keyLoginPassword = 'loginPassword';
+  static const int version = 2;
+  static const String keyAccessToken = 'accessToken.$version';
+  static const String keyRefreshToken = 'refreshToken.$version';
+  static const String keyIsLogin = 'isLogin.$version';
+  static const String keyPortfolioUserName = 'portfolioUserName.$version';
+  static const String keyAuthMSecs = 'authMSecs.$version';
+  static const String keyPortfolioBody = 'portfolioBody.$version';
+  static const String keySecurityCode = 'securityCode.$version';
+  static const String keySecurityBody = 'securityBody.$version.';
+  static const String keyLoginUserName = 'loginUserName.$version';
+  static const String keyLoginPassword = 'loginPassword.$version';
 
-  static const String keyBackend = 'backend';
-  static const String keyPortfolioId = 'portfolioId';
-  static const String keyClientId = 'clientId';
-  static const String keyClientSecret = 'clientSecret';
+  static const String keyBackend = 'backend.$version';
+  static const String keyPortfolioId = 'portfolioId.$version';
+  static const String keyClientId = 'clientId.$version';
+  static const String keyClientSecret = 'clientSecret.$version';
 
   static Future<SharedPreferencesManager> getInstance() async {
     if (_manager == null) {
