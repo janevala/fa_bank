@@ -133,7 +133,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         int numOfOrders = tradeOrders.length + 1;
         String title = 'Trade Orders ($numOfOrders)';
 
-        if (Platform.isIOS) {
+        return AlertDialog(//Cupertino causing problem so quick fix this
+          title: Text(title, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20))),
+          content: _widgetTradeOrderList(context, tradeOrders),
+          actions: [
+            FlatButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text('Ok', style: Theme.of(context).textTheme.subtitle2),
+            ),
+          ],
+        );
+        if (!Platform.isIOS) {
           return CupertinoAlertDialog(
             title: Text(title, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20))),
             content: _widgetTradeOrderList(context, tradeOrders),
@@ -193,7 +203,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Padding(padding: EdgeInsets.only(right: 4), child: Text(dateText, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16)))),
               Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.business_center, size: 20)),
               Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: typeColor)))),
-              Text(tradeOrder.amount.toInt().toString(), style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: typeColor))),
+              Expanded(child: Text(tradeOrder.amount.toInt().toString(), style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: typeColor)), overflow: TextOverflow.ellipsis)),
             ],
           ),
           Divider(color: Colors.grey[300], thickness: 2)
@@ -400,12 +410,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               }
             },
             child: Container(
-                height: 28,
+                height: 26,
                 child: Center(
                   child: RichText(
                     text: TextSpan(
                       style: Theme.of(context).textTheme.bodyText2.merge(
-                            TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                            TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
                           ),
                       children: [
                         WidgetSpan(
@@ -421,13 +431,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 28,
+                height: 26,
                 minWidth: 30,
                 child: FlatButton(
                     color: _pressWeekAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_week,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: _pressWeekAttention ? Colors.white : Colors.black),
                             )),
@@ -456,13 +467,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-              height: 28,
+              height: 26,
               minWidth: 30,
               child: FlatButton(
                   color: _pressMonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_month,
                       style: Theme.of(context).textTheme.bodyText2.merge(
                             TextStyle(
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: _pressMonthAttention ? Colors.white : Colors.black),
                           )),
@@ -492,13 +504,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-              height: 28,
+              height: 26,
               minWidth: 30,
               child: FlatButton(
                   color: _press3MonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_threeMonth,
                       style: Theme.of(context).textTheme.bodyText2.merge(
                             TextStyle(
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: _press3MonthAttention ? Colors.white : Colors.black),
                           )),
@@ -528,13 +541,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 28,
+                height: 26,
                 minWidth: 30,
                 child: FlatButton(
                     color: _press6MonthAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_sixMonth,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: _press6MonthAttention ? Colors.white : Colors.black),
                             )),
@@ -563,14 +577,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 28,
+                height: 26,
                 minWidth: 30,
                 child: FlatButton(
                     color: _pressYTDAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_ytd,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
-                                fontSize: 12,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                   color: _pressYTDAttention ? Colors.white : Colors.black),
                             )),
@@ -630,7 +644,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Total Value'),
               Center(
-                  child: Text(strNetAssetValue, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19))),
+                  child: Text(strNetAssetValue, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19))),
               ),
             ],
           ),
@@ -640,7 +654,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Market Value'),
               Center(
-                child: Text(strMarketValue, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19))),
+                child: Text(strMarketValue, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19))),
               )
             ],
           ),
@@ -650,7 +664,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: <Widget>[
               _widgetBodyText2(context, 'Cash Balance'),
               Center(
-                child: Text(strCashBalance, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19))),
+                child: Text(strCashBalance, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19))),
               )
             ],
           ),

@@ -12,37 +12,45 @@ class Spinner extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       child: Center(
-        child: Container(
-          width: 100.0,
-          height: 100.0,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(
-              Radius.circular(8.0),
-            ),
-          ),
-          child: Center(
-            child: Platform.isIOS ? _buildCupertinoSpinner(context) : _buildMaterialSpinner(context),
-          ),
-        ),
+        child: Platform.isIOS ? _buildCupertinoSpinner(context) : _buildMaterialSpinner(context),
       ),
     );
   }
 }
 
 Widget _buildMaterialSpinner(BuildContext context) {
-  return SizedBox(
-    height: 60,
-    width: 60,
-    child: CircularProgressIndicator(
-      valueColor: AlwaysStoppedAnimation<Color>(FaColor.red[800]),
-      backgroundColor: FaColor.red[300],
+  return Container(
+    width: 100,
+    height: 100,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.all(
+        Radius.circular(8.0),
+      ),
+    ),
+    child: Center(
+      child: SizedBox(
+        height: 60,
+        width: 60,
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(FaColor.red[800]),
+          backgroundColor: FaColor.red[300],
+        ),
+      ),
     ),
   );
 }
 
 Widget _buildCupertinoSpinner(BuildContext context) {
-  return SizedBox(
-    child: CupertinoActivityIndicator(radius: 18)
+  return Container(
+    width: 60,
+    height: 60,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.all(
+        Radius.circular(8.0),
+      ),
+    ),
+    child: Center(child: SizedBox(child: CupertinoActivityIndicator(radius: 14))),
   );
 }

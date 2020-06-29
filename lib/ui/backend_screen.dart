@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fa_bank/app.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/ui/fa_color.dart';
@@ -57,7 +59,7 @@ class BackendScreen extends StatelessWidget {
                     _widgetSizedBox(16),
                     _widgetLabel(context, 'PORTFOLIO ID'),
                     _widgetFieldPortfolioId(context),
-                    _widgetSizedBox(32),
+                    _widgetSizedBox(16),
                     _widgetSaveAndReboot(context),
                   ],
                 ),
@@ -70,7 +72,7 @@ class BackendScreen extends StatelessWidget {
 
   Widget _widgetSaveAndReboot(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 64, right: 64),
+      padding: EdgeInsets.only(left: 32, right: 32),
       child: FlatButton(
           child: Text(
             'SAVE AND RESTART',
@@ -95,7 +97,7 @@ class BackendScreen extends StatelessWidget {
               await _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientSecret, clientSecret);
               await _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, int.parse(portfolioId));
 
-              await Future.delayed(const Duration(seconds: 1));
+              await Future.delayed(const Duration(seconds: 2));
 
               RestartWidget.restartApp(context);
             }
@@ -229,7 +231,7 @@ class BackendScreen extends StatelessWidget {
           ),
         ),
         controller: _controllerPortfolioId,
-        keyboardType: TextInputType.number,
+        keyboardType: Platform.isIOS ? TextInputType.numberWithOptions(signed: true) : TextInputType.number,
         cursorColor: Colors.white,
         decoration: InputDecoration(
           enabledBorder: UnderlineInputBorder(

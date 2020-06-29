@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 import 'package:fa_bank/bloc/security_bloc.dart';
@@ -508,12 +510,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 }
               },
             child: Container(
-                height: 28,
+                height: 26,
                 child: Center(
                   child: RichText(
                     text: TextSpan(
                       style: Theme.of(context).textTheme.bodyText2.merge(
-                            TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                            TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
                           ),
                       children: [
                         WidgetSpan(
@@ -529,13 +531,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 28,
+                height: 26,
                 minWidth: 30,
                 child: FlatButton(
                     color: _pressWeekAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_week,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: _pressWeekAttention ? Colors.white : Colors.black),
                             )),
@@ -564,13 +567,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-              height: 28,
+              height: 26,
               minWidth: 30,
               child: FlatButton(
                   color: _pressMonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_month,
                       style: Theme.of(context).textTheme.bodyText2.merge(
                             TextStyle(
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: _pressMonthAttention ? Colors.white : Colors.black),
                           )),
@@ -600,13 +604,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-              height: 28,
+              height: 26,
               minWidth: 30,
               child: FlatButton(
                   color: _press3MonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_threeMonth,
                       style: Theme.of(context).textTheme.bodyText2.merge(
                             TextStyle(
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: _press3MonthAttention ? Colors.white : Colors.black),
                           )),
@@ -636,13 +641,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 28,
+                height: 26,
                 minWidth: 30,
                 child: FlatButton(
                     color: _press6MonthAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_sixMonth,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: _press6MonthAttention ? Colors.white : Colors.black),
                             )),
@@ -671,14 +677,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 2,
           child: Center(
             child: ButtonTheme(
-                height: 28,
+                height: 26,
                 minWidth: 30,
                 child: FlatButton(
                     color: _pressYTDAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_ytd,
                         style: Theme.of(context).textTheme.bodyText2.merge(
                               TextStyle(
-                                fontSize: 12,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                   color: _pressYTDAttention ? Colors.white : Colors.black),
                             )),
@@ -729,7 +735,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Total Current Value'),
-              Text(_getParsedValue(securityBody.securities[0], (investment.amount * securityBody.securities[0].marketData.latestValue)), style: Theme.of(context).textTheme.headline6)
+              Text(_getParsedValue(securityBody.securities[0], (investment.amount * securityBody.securities[0].marketData.latestValue)), style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19)))
             ],
           ),
         ),
@@ -780,7 +786,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   textAlign: TextAlign.end,
                   style: Theme.of(context).textTheme.subtitle2,
                   controller: _controllerAmount,
-                  keyboardType: TextInputType.number,
+                  keyboardType: Platform.isIOS ? TextInputType.numberWithOptions(signed: true) : TextInputType.number,
                   onChanged: (text) {
                     setState(() {
                       _controllerOnChanged = text;
@@ -947,9 +953,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   label,
-                  style: Theme.of(context).textTheme.headline6.merge(
-                        TextStyle(fontSize: 18),
-                      ),
+                  style: Theme.of(context).textTheme.subtitle2,
                 ),
               ),
             ),
@@ -958,9 +962,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 alignment: Alignment.centerRight,
                 child: Text(
                   text,
-                  style: Theme.of(context).textTheme.headline6.merge(
-                        TextStyle(fontSize: 18),
-                      ),
+                  style: Theme.of(context).textTheme.subtitle2,
                 ),
               ),
             )
@@ -972,9 +974,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     return Center(
         child: Text(
       text,
-      style: Theme.of(context).textTheme.headline6.merge(
-            TextStyle(color: color),
-          ),
+      style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19)),
     ));
   }
 
@@ -982,15 +982,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     return Center(
         child: Text(
       text,
-      style: Theme.of(context).textTheme.headline6,
-    ));
-  }
-
-  Widget _widgetSubtitle2(BuildContext context, String text) {
-    return Center(
-        child: Text(
-      text,
-      style: Theme.of(context).textTheme.subtitle2,
+      style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19)),
     ));
   }
 
