@@ -339,7 +339,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                 )
                               ],
                             )),
-                        _widgetTextRow(context, 'EGS Rating', 'n/a'),
+                        _widgetTextRow(context, 'ESG Rating', 'n/a'),
                         _widgetTextRow(context, 'Risk Score', 'n/a'),
                         _widgetTextRow(context, 'Ticker', investment.security.securityCode),
                       ]),
