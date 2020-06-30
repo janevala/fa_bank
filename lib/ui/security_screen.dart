@@ -116,7 +116,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   String _getParsedValueWithCode(String code, double value) {
-    var setting = Utils.getMoneySetting(code, 1);
+    var setting = Utils.getMoneySetting(code, 2);
     return value > 10000000 ?
     FlutterMoneyFormatter(amount: value, settings: setting).output.compactSymbolOnLeft :
     FlutterMoneyFormatter(amount: value, settings: setting).output.symbolOnLeft;
