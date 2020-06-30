@@ -303,7 +303,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   Container(
                     color: Colors.grey[300],
                     child: Padding(
-                      padding: EdgeInsets.only(left: 56, right: 56),
+                      padding: EdgeInsets.only(left: 48, right: 48),
                       child: Column(children: <Widget>[
                         _widgetInformation(
                             context, securityBody.securities[0].url),
