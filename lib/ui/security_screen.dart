@@ -726,8 +726,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Total Amount'),
-              _widgetBoldHeadline6(context,
-                  investment.amount.toStringAsFixed(0), Colors.black)
+              _widgetBoldHeadline6(context, investment.amount.toStringAsFixed(0), Colors.black)
             ],
           ),
         ),
@@ -872,8 +871,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Latest Value'),
-              _widgetBoldHeadline6(context,
-                  _getParsedValue(securityBody.securities[0], securityBody.securities[0].marketData.latestValue), Colors.black)
+              _widgetBoldHeadline6(context, _getParsedValue(securityBody.securities[0], securityBody.securities[0].marketData.latestValue), Colors.black)
             ],
           ),
         ),
@@ -881,10 +879,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Return'),
-              _widgetBoldHeadline6(
-                  context,
-                  (investment.changePercent * 100).toStringAsFixed(2).replaceFirst('.', ',') + '%',
-                  Utils.getColor(investment.changePercent))
+              _widgetBoldHeadline6(context, (investment.changePercent * 100).toStringAsFixed(2).replaceFirst('.', ',') + '%', Utils.getColor(investment.changePercent * 100))
             ],
           ),
         ),
@@ -892,10 +887,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Today'),
-              _widgetBoldHeadline6(
-                  context,
-                  _getTodayAsString(_countToday(securityBody.securities[0].graph)).replaceFirst('.', ','),
-                  Utils.getColor(_countToday(securityBody.securities[0].graph)))
+              _widgetBoldHeadline6(context, _getTodayAsString(_countToday(securityBody.securities[0].graph)).replaceFirst('.', ','), Utils.getColor(_countToday(securityBody.securities[0].graph)))
             ],
           ),
         ),
@@ -974,7 +966,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     return Center(
         child: Text(
       text,
-      style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19)),
+      style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19, color: color)),
     ));
   }
 

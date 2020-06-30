@@ -97,7 +97,9 @@ class BackendScreen extends StatelessWidget {
               await _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientSecret, clientSecret);
               await _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, int.parse(portfolioId));
 
-              await Future.delayed(const Duration(seconds: 2));
+              await Future.delayed(const Duration(seconds: 1));
+
+//              await _sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, false);
 
               RestartWidget.restartApp(context);
             }

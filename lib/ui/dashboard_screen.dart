@@ -130,22 +130,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        int numOfOrders = tradeOrders.length + 1;
+        int numOfOrders = tradeOrders.length;
         String title = 'Trade Orders ($numOfOrders)';
 
-        return AlertDialog(//Cupertino causing problem so quick fix this
-          title: Text(title, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20))),
-          content: _widgetTradeOrderList(context, tradeOrders),
-          actions: [
-            FlatButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text('Ok', style: Theme.of(context).textTheme.subtitle2),
-            ),
-          ],
-        );
-        if (!Platform.isIOS) {
+        if (Platform.isIOS) {
           return CupertinoAlertDialog(
-            title: Text(title, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20))),
+            title: Text(title, style: Theme.of(context).textTheme.subtitle2),
             content: _widgetTradeOrderList(context, tradeOrders),
             actions: [
               FlatButton(
@@ -156,7 +146,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         } else {
           return AlertDialog(
-            title: Text(title, style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20))),
+            title: Text(title, style: Theme.of(context).textTheme.subtitle2),
             content: _widgetTradeOrderList(context, tradeOrders),
             actions: [
               FlatButton(
@@ -172,8 +162,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _widgetTradeOrderList(BuildContext context, List<TradeOrder> tradeOrders) {
     double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height * 0.70;
     return Container(
       width: width,
+      height: height,
       child: ListView.builder(
         shrinkWrap: true,
         itemCount: tradeOrders.length,
@@ -187,26 +179,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _widgetTradeOrder(BuildContext context, TradeOrder tradeOrder) {
     Color typeColor = Utils.getColor(tradeOrder.typeName == 'Buy' ? 1 : -1);
     String dateText = DateFormat('dd.MM.yyyy').format(tradeOrder.transactionDate);
+    String titleText = Platform.isIOS ? tradeOrder.securityName : tradeOrder.securityName + ' (' + tradeOrder.securityCode + ')'; //Cupertino quirks
 
     return Padding(
       padding: EdgeInsets.only(bottom: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(tradeOrder.securityName + ' (' + tradeOrder.securityCode + ')',
-              style: Theme.of(context).textTheme.subtitle2,
+          Text(titleText,
+              style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16)),
               overflow: TextOverflow.ellipsis),
           Container(height: 4),
           Row(
             children: <Widget>[
-              Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.date_range, size: 20)),
-              Padding(padding: EdgeInsets.only(right: 4), child: Text(dateText, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16)))),
-              Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.business_center, size: 20)),
-              Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: typeColor)))),
-              Expanded(child: Text(tradeOrder.amount.toInt().toString(), style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: typeColor)), overflow: TextOverflow.ellipsis)),
+              Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.date_range, size: 18)),
+              Padding(padding: EdgeInsets.only(right: 8), child: Text(dateText, style: Theme.of(context).textTheme.bodyText2)),
+              Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.business_center, size: 18)),
+              Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName, style: Theme.of(context).textTheme.bodyText2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor)))),
+              Text(tradeOrder.amount.toInt().toString(), style: Theme.of(context).textTheme.bodyText2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor)), overflow: TextOverflow.ellipsis),
             ],
           ),
-          Divider(color: Colors.grey[300], thickness: 2)
+          Divider(color: Colors.grey[500], thickness: 1)
         ],
       ),
     );

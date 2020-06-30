@@ -96,7 +96,7 @@ class InvestmentItem extends StatelessWidget {
                     children: <Widget>[
                       _widgetBodyText2(context, 'Return'),
                       _widgetHeadline6(context, (investment.changePercent * 100).toStringAsFixed(1).replaceFirst('.', ',') + '%',
-                          Utils.getColor(investment.changePercent)),
+                          Utils.getColor(investment.changePercent * 100)),
                     ],
                   ),
                 ),
