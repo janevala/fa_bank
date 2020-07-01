@@ -112,11 +112,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   String _getParsedValue(Security security, double value) {
     var code = security.currency == null ? 'EUR' : security.currency.currencyCode;
-    return _getParsedValueWithCode(code, value);
+    return _getParsedValueWithCode(code, value, 1);
   }
 
-  String _getParsedValueWithCode(String code, double value) {
-    var setting = Utils.getMoneySetting(code, 2);
+  String _getParsedValueWithCode(String code, double value, int decimal) {
+    var setting = Utils.getMoneySetting(code, decimal);
     return value > 10000000 ?
     FlutterMoneyFormatter(amount: value, settings: setting).output.compactSymbolOnLeft :
     FlutterMoneyFormatter(amount: value, settings: setting).output.symbolOnLeft;
@@ -160,9 +160,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           child: _widgetHeadline6(context, _transactionType == 'B' ? 'New Buy Order' : 'New Sell Order')),
                       _widgetAmount(context),
                       _widgetDate(context),
-                      _widgetTextRow(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue)),
-                      _widgetTextRow(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue))),
-                      _widgetTextRow(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)))),
+                      _widgetTextRow(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue, 1)),
+                      _widgetTextRow(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue), 1)),
+                      _widgetTextRow(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)), 1)),
                       _widgetConfirmation(context),
                       Container(height: 16),
                       Row(
@@ -308,8 +308,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         _widgetInformation(
                             context, securityBody.securities[0].url),
                         Divider(color: Colors.black),
-                        _widgetTextRow(context, 'Position Value', _getParsedValueWithCode('EUR', investment.positionValue)),
-                        _widgetTextRow(context, 'Purchase Value', _getParsedValueWithCode('EUR', investment.purchaseValue)),
+                        _widgetTextRow(context, 'Position Value', _getParsedValueWithCode('EUR', investment.positionValue, 2)),
+                        _widgetTextRow(context, 'Purchase Value', _getParsedValueWithCode('EUR', investment.purchaseValue, 2)),
                         Padding(
                             padding: EdgeInsets.only(top: 12, bottom: 12),
                             child: Row(
@@ -330,7 +330,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                   child: Align(
                                     alignment: Alignment.centerRight,
                                     child: Text(
-                                      _getParsedValueWithCode('EUR', investment.positionValue - investment.purchaseValue),
+                                      _getParsedValueWithCode('EUR', investment.positionValue - investment.purchaseValue, 2),
                                       style: Theme.of(context).textTheme.headline6.merge(
                                         TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Utils.getColor(investment.positionValue - investment.purchaseValue)),
                                       ),
