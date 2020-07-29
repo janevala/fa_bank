@@ -40,7 +40,7 @@ class ApiProvider {
 
       if (response.statusCode == 200) {
         if (data['errors'] != null) {
-          String s = jsonEncode(data['errors']['message']);
+          String s = jsonEncode(data['errors']);
           return PortfolioBody.withError(s);
         } else {
           return PortfolioBody.fromJson(data['data']);
