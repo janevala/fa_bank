@@ -30,7 +30,7 @@ class DashboardScreen extends StatefulWidget {
 final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final DashboardBloc _dashboardUserBloc = DashboardBloc();
+  final DashboardBloc _dashboardUserBloc = DashboardBloc(DashboardInitial());
 
   //Graph globals
   bool _animate = true;

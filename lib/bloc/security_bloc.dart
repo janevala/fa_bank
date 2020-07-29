@@ -55,6 +55,8 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
   final ApiRepository apiRepository = ApiRepository();
   final SharedPreferencesManager sharedPreferencesManager = locator<SharedPreferencesManager>();
 
+  SecurityBloc(SecurityState initialState) : super(initialState);
+
   @override
   SecurityState get initialState => SecurityInitial();
 

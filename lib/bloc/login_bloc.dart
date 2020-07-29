@@ -29,6 +29,8 @@ class LoginEvent extends LoginState {
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final SharedPreferencesManager sharedPreferencesManager = locator<SharedPreferencesManager>();
 
+  LoginBloc(LoginState initialState) : super(initialState);
+
   @override
   LoginState get initialState => LoginInitial();
 

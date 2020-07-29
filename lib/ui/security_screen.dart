@@ -40,7 +40,7 @@ enum ConfirmAction { CANCEL, PROCEED }
 
 class _SecurityScreenState extends State<SecurityScreen> {
 
-  final SecurityBloc _securityBloc = SecurityBloc();
+  final SecurityBloc _securityBloc = SecurityBloc(SecurityInitial());
 
   final TextEditingController _controllerAmount = TextEditingController();
   String _controllerOnChanged;

@@ -39,6 +39,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final ApiRepository apiRepository = ApiRepository();
   final SharedPreferencesManager sharedPreferencesManager = locator<SharedPreferencesManager>();
 
+  DashboardBloc(DashboardState initialState) : super(initialState);
+
   @override
   DashboardState get initialState => DashboardInitial();
 

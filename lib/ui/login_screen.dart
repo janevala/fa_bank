@@ -23,7 +23,7 @@ class LoginScreen extends StatefulWidget {
 final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
 class _LoginScreenState extends State<LoginScreen> {
-  final LoginBloc _loginBloc = LoginBloc();
+  final LoginBloc _loginBloc = LoginBloc(LoginInitial());
 
   final TextEditingController _controllerUserName = TextEditingController();
 
