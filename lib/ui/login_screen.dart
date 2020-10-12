@@ -61,13 +61,13 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyLoginPassword))
       _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginPassword, 'sNY5x18tfy4W');
     if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyBackend))
-      _sharedPreferencesManager.putString(SharedPreferencesManager.keyBackend, 'https://fadev.fasolutions.com/');
+      _sharedPreferencesManager.putString(SharedPreferencesManager.keyBackend, 'https://demo4.fasolutions.com/');
     if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyClientId))
       _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientId, 'fa-back');
     if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyClientSecret))
       _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientSecret, 'f692d597-0f4a-4495-a90e-1d090e7288fa');
     if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyPortfolioId))
-      _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, 10527024); //10527075
+      _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, 313706);
   }
 
   @override
