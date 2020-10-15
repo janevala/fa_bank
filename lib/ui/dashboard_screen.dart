@@ -290,45 +290,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return SafeArea(
       child: Stack(
         children: <Widget>[
-          SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                _widgetTitle(context, portfolioBody),
-                Container(height: 12, color: Colors.grey[300]),
-                _widgetSummary(context, portfolioBody),
-                Divider(thickness: 2, color: Colors.grey[300]),
-                Padding(
-                    padding: EdgeInsets.only(left: 2, right: 2),
-                    child: _widgetDateChooser(context)),
-                Container(
-                  height: 250,
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 4, right: 4),
-                    child: charts.TimeSeriesChart(
-                      _chartData(portfolioBody.portfolio.graph),
-                      animate: _animate,
-                      defaultRenderer: charts.LineRendererConfig(),
-                      customSeriesRenderers: [
-                        charts.PointRendererConfig(
-                            customRendererId: 'stocksPoint')
-                      ],
-                      dateTimeFactory: charts.LocalDateTimeFactory(),
-                      selectionModels: [
-                        charts.SelectionModelConfig(
-                            type: charts.SelectionModelType.info)
-                        //changedListener: _onChanged)
-                      ],
+          RefreshIndicator(
+            onRefresh: () async {
+              _spin = true;
+              _doRefreshToken();
+            },
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  _widgetTitle(context, portfolioBody),
+                  Container(height: 12, color: Colors.grey[300]),
+                  _widgetSummary(context, portfolioBody),
+                  Divider(thickness: 2, color: Colors.grey[300]),
+                  Padding(
+                      padding: EdgeInsets.only(left: 2, right: 2),
+                      child: _widgetDateChooser(context)),
+                  Container(
+                    height: 250,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 4, right: 4),
+                      child: charts.TimeSeriesChart(
+                        _chartData(portfolioBody.portfolio.graph),
+                        animate: _animate,
+                        defaultRenderer: charts.LineRendererConfig(),
+                        customSeriesRenderers: [
+                          charts.PointRendererConfig(
+                              customRendererId: 'stocksPoint')
+                        ],
+                        dateTimeFactory: charts.LocalDateTimeFactory(),
+                        selectionModels: [
+                          charts.SelectionModelConfig(
+                              type: charts.SelectionModelType.info)
+                          //changedListener: _onChanged)
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                _widgetDateTitle(context),
-                _widgetDescriptor(context),
-                Container(height: 12, color: Colors.grey[300]),
-                _widgetInvestments(
-                    context, portfolioBody.portfolio.portfolioReport.investments, portfolioBody.portfolio.shortName, portfolioBody.portfolio.portfolioReport.cashBalance)
-              ],
+                  _widgetDateTitle(context),
+                  _widgetDescriptor(context),
+                  Container(height: 12, color: Colors.grey[300]),
+                  _widgetInvestments(
+                      context, portfolioBody.portfolio.portfolioReport.investments, portfolioBody.portfolio.shortName, portfolioBody.portfolio.portfolioReport.cashBalance)
+                ],
+              ),
             ),
           ),
           Visibility(

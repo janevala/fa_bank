@@ -27,12 +27,12 @@ class LoginEvent extends LoginState {
 }
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  final SharedPreferencesManager sharedPreferencesManager = locator<SharedPreferencesManager>();
+  final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
   LoginBloc(LoginState initialState) : super(initialState);
 
   @override
-  LoginState get initialState => LoginInitial();
+  LoginState get _initialState => LoginInitial();
 
   @override
   Stream<LoginState> mapEventToState(LoginEvent event) async* {
@@ -50,11 +50,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       yield LoginFailure(token.error);
       return;
     }
-    await sharedPreferencesManager.putString(SharedPreferencesManager.keyAccessToken, token.accessToken);
-    await sharedPreferencesManager.putString(SharedPreferencesManager.keyRefreshToken, token.refreshToken);
-    await sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, true);
-    await sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
-    await sharedPreferencesManager.putString(SharedPreferencesManager.keyPortfolioUserName, loginBody.username);
+    await _sharedPreferencesManager.putString(SharedPreferencesManager.keyAccessToken, token.accessToken);
+    await _sharedPreferencesManager.putString(SharedPreferencesManager.keyRefreshToken, token.refreshToken);
+    await _sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, true);
+    await _sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
+    await _sharedPreferencesManager.putString(SharedPreferencesManager.keyPortfolioUserName, loginBody.username);
     yield LoginSuccess();
   }
 }

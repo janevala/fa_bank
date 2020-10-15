@@ -52,19 +52,19 @@ class SecurityEvent extends SecurityState {
 }
 
 class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
-  final ApiRepository apiRepository = ApiRepository();
-  final SharedPreferencesManager sharedPreferencesManager = locator<SharedPreferencesManager>();
+  final ApiRepository _apiRepository = ApiRepository();
+  final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
   SecurityBloc(SecurityState initialState) : super(initialState);
 
   @override
-  SecurityState get initialState => SecurityInitial();
+  SecurityState get _initialState => SecurityInitial();
 
   @override
   Stream<SecurityState> mapEventToState(SecurityEvent event) async* {
     bool expired = true;
-    if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs)) {
-      int wasThen = sharedPreferencesManager.getInt(SharedPreferencesManager.keyAuthMSecs);
+    if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs)) {
+      int wasThen = _sharedPreferencesManager.getInt(SharedPreferencesManager.keyAuthMSecs);
       int isNow = DateTime.now().millisecondsSinceEpoch;
       int elapsed = isNow - wasThen;
       if (elapsed < 50000) { // auth token expiry 60000
@@ -76,52 +76,52 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
 
     Token token;
     if (expired) {
-      String refreshToken = sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
+      String refreshToken = _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
       RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
-      token = await apiRepository.postRefreshAuth(refreshTokenBody);
+      token = await _apiRepository.postRefreshAuth(refreshTokenBody);
       if (token.error != null) {
         yield SecurityFailure(token.error);
         return;
       }
 
-      await sharedPreferencesManager.putString(SharedPreferencesManager.keyAccessToken, token.accessToken);
-      await sharedPreferencesManager.putString(SharedPreferencesManager.keyRefreshToken, token.refreshToken);
-      await sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, true);
-      await sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
+      await _sharedPreferencesManager.putString(SharedPreferencesManager.keyAccessToken, token.accessToken);
+      await _sharedPreferencesManager.putString(SharedPreferencesManager.keyRefreshToken, token.refreshToken);
+      await _sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, true);
+      await _sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
     }
 
     SecurityBody securityBody;
     if (event.mutationData == null) { //we do query
-        String securityCode  = sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityCode);
-        if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keySecurityBody + securityCode)) {
-          var securityString = sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityBody + securityCode);
+        String securityCode  = _sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityCode);
+        if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keySecurityBody + securityCode)) {
+          var securityString = _sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityBody + securityCode);
           securityBody = SecurityBody.fromJson(jsonDecode(securityString));
           yield SecurityCache(securityBody);
         }
 
-        String accessToken = token == null ? sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
-        securityBody = await apiRepository.postSecurityQuery(accessToken, securityCode);
+        String accessToken = token == null ? _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
+        securityBody = await _apiRepository.postSecurityQuery(accessToken, securityCode);
         if (securityBody.error != null) {
           yield SecurityFailure(securityBody.error);
           return;
         }
 
-        await sharedPreferencesManager.putString(SharedPreferencesManager.keySecurityBody + securityCode, jsonEncode(securityBody.toJson()));
+        await _sharedPreferencesManager.putString(SharedPreferencesManager.keySecurityBody + securityCode, jsonEncode(securityBody.toJson()));
 
         yield SecurityQuerySuccess(securityBody);
 
     } else { //do mutation
-      String accessToken = token == null ? sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
-      MutationResponse mutationResponse = await apiRepository.postSecurityMutation(accessToken, event.mutationData);
+      String accessToken = token == null ? _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
+      MutationResponse mutationResponse = await _apiRepository.postSecurityMutation(accessToken, event.mutationData);
       if (mutationResponse.error != null) {
         yield SecurityFailure(mutationResponse.error);
         return;
       }
 
       if (securityBody == null) {
-        String securityCode  = sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityCode);
-        if (sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keySecurityBody + securityCode)) {
-          var securityString = sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityBody + securityCode);
+        String securityCode  = _sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityCode);
+        if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keySecurityBody + securityCode)) {
+          var securityString = _sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityBody + securityCode);
           securityBody = SecurityBody.fromJson(jsonDecode(securityString));
           yield SecurityMutationSuccess(securityBody);
         }
