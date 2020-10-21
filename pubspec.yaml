@@ -21,6 +21,7 @@ dependencies:
   google_fonts:
   intl:
   charts_flutter:
+  fl_chart:
   url_launcher:
   date_range_picker:
   flutter_money_formatter:
