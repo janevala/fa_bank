@@ -331,6 +331,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   Container(
                     height: 250,
+                    width:  MediaQuery.of(context).size.width,
                     child: LineChart(
                       sampleData1(portfolioBody.portfolio.graph),
                       swapAnimationDuration: const Duration(milliseconds: 250),
@@ -430,10 +431,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
-      minX: 0,
+/*      minX: 0,
       maxX: 14,
       maxY: 4,
-      minY: 0,
+      minY: 0,*/
       lineBarsData: linesBarData1(graphs),
     );
   }
