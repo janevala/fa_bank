@@ -329,6 +329,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                   ),
+                  Container(
+                    height: 250,
+                    child: LineChart(
+                      sampleData1(portfolioBody.portfolio.graph),
+                      swapAnimationDuration: const Duration(milliseconds: 250),
+                    ),
+                  ),
                   _widgetDateTitle(context),
                   _widgetDescriptor(context),
                   Container(height: 12, color: Colors.grey[300]),
@@ -345,6 +352,111 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
     );
+  }
+
+  LineChartData sampleData1(Graph graphs) {
+    return LineChartData(
+      lineTouchData: LineTouchData(
+        touchTooltipData: LineTouchTooltipData(
+          tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+        ),
+        touchCallback: (LineTouchResponse touchResponse) {},
+        handleBuiltInTouches: true,
+      ),
+      gridData: FlGridData(
+        show: false,
+      ),
+      titlesData: FlTitlesData(
+        bottomTitles: SideTitles(
+          showTitles: true,
+          reservedSize: 22,
+          getTextStyles: (value) => const TextStyle(
+            color: Color(0xff72719b),
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+          margin: 10,
+          getTitles: (value) {
+            switch (value.toInt()) {
+              case 2:
+                return 'SEPT';
+              case 7:
+                return 'OCT';
+              case 12:
+                return 'DEC';
+            }
+            return '';
+          },
+        ),
+        leftTitles: SideTitles(
+          showTitles: true,
+          getTextStyles: (value) => const TextStyle(
+            color: Color(0xff75729e),
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+          getTitles: (value) {
+            switch (value.toInt()) {
+              case 1:
+                return '1m';
+              case 2:
+                return '2m';
+              case 3:
+                return '3m';
+              case 4:
+                return '5m';
+            }
+            return '';
+          },
+          margin: 8,
+          reservedSize: 30,
+        ),
+      ),
+      borderData: FlBorderData(
+        show: true,
+        border: const Border(
+          bottom: BorderSide(
+            color: Color(0xff4e4965),
+            width: 4,
+          ),
+          left: BorderSide(
+            color: Colors.transparent,
+          ),
+          right: BorderSide(
+            color: Colors.transparent,
+          ),
+          top: BorderSide(
+            color: Colors.transparent,
+          ),
+        ),
+      ),
+      minX: 0,
+      maxX: 14,
+      maxY: 4,
+      minY: 0,
+      lineBarsData: linesBarData1(graphs),
+    );
+  }
+
+  List<LineChartBarData> linesBarData1(Graph graphs) {
+    final LineChartBarData lineChartBarData1 = LineChartBarData(
+      spots: _chartNewData(graphs),
+      isCurved: true,
+      colors: [
+        const Color(0xff4af699),
+      ],
+      barWidth: 8,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
+        show: false,
+      ),
+      belowBarData: BarAreaData(
+        show: false,
+      ),
+    );
+    return [
+      lineChartBarData1,
+    ];
   }
 
   Widget _widgetDateTitle(BuildContext context) {
@@ -804,6 +916,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ..setAttribute(charts.rendererIdKey, 'stocksPoint'),
     ];
   }
+
+  List<FlSpot> _chartNewData(Graph graphs) {
+    List<FlSpot> portfolioMinus100 = [];
+
+    if (graphs.dailyValues.dailyValue.length > 0) {
+      var lastDate = graphs.dailyValues.dailyValue[graphs.dailyValues.dailyValue.length - 1].date;
+      var firstDate = graphs.dailyValues.dailyValue[0].date;
+      var comparisonDate;
+      if (_graphDateCriteria == 'all') comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
+      if (_graphDateCriteria == _week) comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
+      if (_graphDateCriteria == _month) comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
+      if (_graphDateCriteria == _threeMonth) comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
+      if (_graphDateCriteria == _sixMonth) comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
+      if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
+
+      if (_pressRangeAttention.length == 2) {
+        var first = DateTime(_pressRangeAttention[0].year, _pressRangeAttention[0].month, _pressRangeAttention[0].day);
+        var second = DateTime(_pressRangeAttention[1].year, _pressRangeAttention[1].month, _pressRangeAttention[1].day);
+        for (var i = 0; i < graphs.dailyValues.dailyValue.length; i++) {
+          var v = graphs.dailyValues.dailyValue[i];
+          if (v.date.isAfter(first) && v.date.isBefore(second)) {
+            portfolioMinus100.add(FlSpot(v.date.millisecondsSinceEpoch.toDouble(), v.portfolioMinus100));
+          }
+        }
+      } else {
+        for (var i = 0; i < graphs.dailyValues.dailyValue.length; i++) {
+          var v = graphs.dailyValues.dailyValue[i];
+          if (v.date.isAfter(comparisonDate)) {
+            portfolioMinus100.add(FlSpot(v.date.millisecondsSinceEpoch.toDouble(), v.portfolioMinus100));
+          }
+        }
+      }
+
+      if (portfolioMinus100.length > 0) {
+        _dateRangeFirst = DateTime.fromMillisecondsSinceEpoch(portfolioMinus100[0].x.toInt());
+        _dateRangeLast = DateTime.fromMillisecondsSinceEpoch(portfolioMinus100[portfolioMinus100.length -1].x.toInt());
+      }
+    }
+
+    return portfolioMinus100;
+  }
 }
 
 class TimeSeries {
@@ -811,4 +964,11 @@ class TimeSeries {
   final double unit;
 
   TimeSeries(this.time, this.unit);
+}
+
+class NewTimeSeries {
+  final FlSpot flSpot;
+  final DateTime dateTime;
+
+  NewTimeSeries(this.flSpot, this.dateTime);
 }
