@@ -1,9 +1,10 @@
 import 'dart:io';
 
-import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 import 'package:fa_bank/bloc/dashboard_bloc.dart';
 import 'package:fa_bank/injector.dart';
+import 'package:fa_bank/podo/portfolio/daily_value.dart';
+import 'package:fa_bank/podo/portfolio/daily_values.dart';
 import 'package:fa_bank/podo/portfolio/graph.dart';
 import 'package:fa_bank/podo/portfolio/investment.dart';
 import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
@@ -20,6 +21,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math';
 
 class DashboardScreen extends StatefulWidget {
   static const String route = '/dashboard_screen';
@@ -48,10 +50,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static const String _sixMonth = '6m';
   static const String _ytd = 'YTD';
 
-  DateTime _dateTime = DateTime.now();
   DateTime _dateRangeFirst = DateTime.now();
   DateTime _dateRangeLast = DateTime.now();
-
+  Graph _graphRaw = Graph(DailyValues([DailyValue(DateTime.now(), 0, 0)]));
+  List<FlSpot> _graphBenchmarkMinus100 = [];
+  List<FlSpot> _graphPortfolioMinus100 = [];
+  double _portfolioFirstX, _portfolioLastX = 0;
+  double _minY, _maxY = 0;
+  double _chartTimeMSecs = 0;
   bool _spin = true;
 
   @override
@@ -206,13 +212,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  _onChanged(charts.SelectionModel<DateTime> model) {
-    setState(() {
-      _dateTime = model.selectedDatum.first.datum.time;
-      _animate = false;
-    });
-  }
-
   _logout(BuildContext context) {
     locator<SharedPreferencesManager>().clearSessionRelated();
 //    RestartWidget.restartApp(context);
@@ -287,7 +286,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (portfolioBody.portfolio == null) return Center(
       child: Text('Error', style: Theme.of(context).textTheme.subtitle2),
     );
-    
+
+    _graphRaw = portfolioBody.portfolio.graph;
+    _updateGraphStates();
+
     return SafeArea(
       child: Stack(
         children: <Widget>[
@@ -308,36 +310,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Padding(
                       padding: EdgeInsets.only(left: 2, right: 2),
                       child: _widgetDateChooser(context)),
-                  Container(
-                    height: 250,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 4, right: 4),
-                      child: charts.TimeSeriesChart(
-                        _chartData(portfolioBody.portfolio.graph),
-                        animate: _animate,
-                        defaultRenderer: charts.LineRendererConfig(),
-                        customSeriesRenderers: [
-                          charts.PointRendererConfig(
-                              customRendererId: 'stocksPoint')
-                        ],
-                        dateTimeFactory: charts.LocalDateTimeFactory(),
-                        selectionModels: [
-                          charts.SelectionModelConfig(
-                              type: charts.SelectionModelType.info)
-                          //changedListener: _onChanged)
-                        ],
+                  _widgetDateTitle(context),
+                  Padding(
+                    padding: EdgeInsets.only(left: 4, right: 6),
+                    child: Container(
+                      height: 200,
+                      width: MediaQuery.of(context).size.width,
+                      child: LineChart(
+                        _getLineChartData(),
+                        swapAnimationDuration: const Duration(milliseconds: 500),
                       ),
                     ),
                   ),
-                  Container(
-                    height: 250,
-                    width:  MediaQuery.of(context).size.width,
-                    child: LineChart(
-                      sampleData1(portfolioBody.portfolio.graph),
-                      swapAnimationDuration: const Duration(milliseconds: 250),
-                    ),
-                  ),
-                  _widgetDateTitle(context),
                   _widgetDescriptor(context),
                   Container(height: 12, color: Colors.grey[300]),
                   _widgetInvestments(
@@ -355,73 +339,75 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  LineChartData sampleData1(Graph graphs) {
+  LineChartData _getLineChartData() {
     return LineChartData(
       lineTouchData: LineTouchData(
         touchTooltipData: LineTouchTooltipData(
-          tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+          tooltipBgColor: Colors.blueGrey.withOpacity(0.3),
         ),
-        touchCallback: (LineTouchResponse touchResponse) {},
+        touchCallback: (LineTouchResponse touchResponse) {
+          if (touchResponse.props.last.runtimeType == FlPanEnd || touchResponse.props.last.runtimeType == FlLongPressEnd) {
+            setState(() {
+              _chartTimeMSecs = 0;
+            });
+          } else if (touchResponse.lineBarSpots.length > 0) {
+            setState(() {
+              _chartTimeMSecs = touchResponse.lineBarSpots[0].x;
+            });
+          }
+        },
         handleBuiltInTouches: true,
       ),
       gridData: FlGridData(
         show: false,
+        horizontalInterval: 10
       ),
       titlesData: FlTitlesData(
         bottomTitles: SideTitles(
-          showTitles: true,
-          reservedSize: 22,
-          getTextStyles: (value) => const TextStyle(
-            color: Color(0xff72719b),
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-          margin: 10,
+          showTitles: false,
+          getTextStyles: (value) => Theme.of(context).textTheme.bodyText1,
           getTitles: (value) {
             switch (value.toInt()) {
-              case 2:
-                return 'SEPT';
-              case 7:
-                return 'OCT';
-              case 12:
-                return 'DEC';
+              case 1:
+                return 'JAN';
             }
             return '';
           },
         ),
         leftTitles: SideTitles(
           showTitles: true,
-          getTextStyles: (value) => const TextStyle(
-            color: Color(0xff75729e),
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
+          getTextStyles: (value) => Theme.of(context).textTheme.bodyText1,
           getTitles: (value) {
             switch (value.toInt()) {
-              case 1:
-                return '1m';
-              case 2:
-                return '2m';
-              case 3:
-                return '3m';
-              case 4:
-                return '5m';
+              case 60:
+                return '60';
+              case 80:
+                return '80';
+              case 100:
+                return '100';
+              case 120:
+                return '120';
+              case 140:
+                return '140';
+              case 160:
+                return '160';
+              case 180:
+                return '180';
             }
             return '';
           },
-          margin: 8,
-          reservedSize: 30,
         ),
       ),
       borderData: FlBorderData(
         show: true,
         border: const Border(
           bottom: BorderSide(
-            color: Color(0xff4e4965),
-            width: 4,
+            color: Colors.black,
+            width: 0.5,
           ),
           left: BorderSide(
-            color: Colors.transparent,
+            color: Colors.black,
+            width: 0.5,
           ),
           right: BorderSide(
             color: Colors.transparent,
@@ -431,32 +417,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
-/*      minX: 0,
-      maxX: 14,
-      maxY: 4,
-      minY: 0,*/
-      lineBarsData: linesBarData1(graphs),
+/*      minX: _minX,
+      maxX: _maxX,*/
+      maxY: _maxY,
+      minY: _minY,
+      lineBarsData: _getLineBarDataList(),
     );
   }
 
-  List<LineChartBarData> linesBarData1(Graph graphs) {
-    final LineChartBarData lineChartBarData1 = LineChartBarData(
-      spots: _chartNewData(graphs),
-      isCurved: true,
+  List<LineChartBarData> _getLineBarDataList() {
+    final LineChartBarData linePortfolioMinus100 = LineChartBarData(
+      spots: _graphPortfolioMinus100,
+      isCurved: false,
       colors: [
-        const Color(0xff4af699),
+        Colors.black,
       ],
-      barWidth: 8,
+      barWidth: 2,
       isStrokeCapRound: true,
       dotData: FlDotData(
         show: false,
       ),
       belowBarData: BarAreaData(
+          show: false,
+          colors: [
+            Colors.grey
+          ]
+      ),
+    );
+    final LineChartBarData lineBenchmarkMinus100 = LineChartBarData(
+      spots: _graphBenchmarkMinus100,
+      isCurved: false,
+      colors: [
+        FaColor.red[900],
+      ],
+      barWidth: 2,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
         show: false,
+      ),
+      belowBarData: BarAreaData(
+          show: false,
+          colors: [
+            FaColor.red[500]
+          ]
       ),
     );
     return [
-      lineChartBarData1,
+      linePortfolioMinus100,
+      lineBenchmarkMinus100
     ];
   }
 
@@ -464,14 +472,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     DateTime dateFirst = DateTime(_dateRangeFirst.year, _dateRangeFirst.month, _dateRangeFirst.day);
     DateTime dateLast = DateTime(_dateRangeLast.year, _dateRangeLast.month, _dateRangeLast.day);
     bool visible = !(dateFirst.isAtSameMomentAs(dateLast));
-    String str = _formatDateTime(_dateRangeFirst) + ' - ' + _formatDateTime(_dateRangeLast);
     return Container(
       height: 24,
       child: Visibility(
         visible: visible,
         child: Center(
           child: Text(
-            str,
+            _chartTimeMSecs > 0 ? _formatDateTime(DateTime.fromMillisecondsSinceEpoch(_chartTimeMSecs.toInt())) : _formatDateTime(_dateRangeFirst) + ' - ' + _formatDateTime(_dateRangeLast),
             style: Theme.of(context).textTheme.bodyText2,
           ),
         ),
@@ -851,14 +858,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ));
   }
 
-  List<charts.Series<TimeSeries, DateTime>> _chartData(Graph graphs) {
-    List<TimeSeries> portfolioMinus100Series = [];
-    List<TimeSeries> portfolioMinus100Pointers = [];
-    List<TimeSeries> benchmarkMinus100Series = [];
+  _updateGraphStates() {
+    _graphPortfolioMinus100 = [];
+    _graphBenchmarkMinus100 = [];
 
-    if (graphs.dailyValues.dailyValue.length > 0) {
-      var lastDate = graphs.dailyValues.dailyValue[graphs.dailyValues.dailyValue.length - 1].date;
-      var firstDate = graphs.dailyValues.dailyValue[0].date;
+    if (_graphRaw.dailyValues.dailyValue.length > 0) {
+      var lastDate = _graphRaw.dailyValues.dailyValue[_graphRaw.dailyValues.dailyValue.length - 1].date;
+      var firstDate = _graphRaw.dailyValues.dailyValue[0].date;
       var comparisonDate;
       if (_graphDateCriteria == 'all') comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
       if (_graphDateCriteria == _week) comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
@@ -870,106 +876,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (_pressRangeAttention.length == 2) {
         var first = DateTime(_pressRangeAttention[0].year, _pressRangeAttention[0].month, _pressRangeAttention[0].day);
         var second = DateTime(_pressRangeAttention[1].year, _pressRangeAttention[1].month, _pressRangeAttention[1].day);
-        for (var i = 0; i < graphs.dailyValues.dailyValue.length; i++) {
-          var v = graphs.dailyValues.dailyValue[i];
+        for (var i = 0; i < _graphRaw.dailyValues.dailyValue.length; i++) {
+          var v = _graphRaw.dailyValues.dailyValue[i];
           if (v.date.isAfter(first) && v.date.isBefore(second)) {
-            portfolioMinus100Series.add(TimeSeries(v.date, v.portfolioMinus100));
-            benchmarkMinus100Series.add(TimeSeries(v.date, v.benchmarkMinus100));
+            _graphPortfolioMinus100.add(FlSpot(v.date.millisecondsSinceEpoch.toDouble(), num.parse(v.portfolioMinus100.toStringAsFixed(1))));
+            _graphBenchmarkMinus100.add(FlSpot(v.date.millisecondsSinceEpoch.toDouble(), num.parse(v.benchmarkMinus100.toStringAsFixed(1))));
           }
         }
       } else {
-        for (var i = 0; i < graphs.dailyValues.dailyValue.length; i++) {
-          var v = graphs.dailyValues.dailyValue[i];
+        for (var i = 0; i < _graphRaw.dailyValues.dailyValue.length; i++) {
+          var v = _graphRaw.dailyValues.dailyValue[i];
           if (v.date.isAfter(comparisonDate)) {
-            portfolioMinus100Series.add(TimeSeries(v.date, v.portfolioMinus100));
-            benchmarkMinus100Series.add(TimeSeries(v.date, v.benchmarkMinus100));
+            _graphPortfolioMinus100.add(FlSpot(v.date.millisecondsSinceEpoch.toDouble(), num.parse(v.portfolioMinus100.toStringAsFixed(1))));
+            _graphBenchmarkMinus100.add(FlSpot(v.date.millisecondsSinceEpoch.toDouble(), num.parse(v.benchmarkMinus100.toStringAsFixed(1))));
           }
         }
       }
 
-      if (portfolioMinus100Series.length > 0) {
-        _dateRangeFirst = portfolioMinus100Series[0].time;
-        _dateRangeLast = portfolioMinus100Series[portfolioMinus100Series.length -1].time;
+      if (_graphPortfolioMinus100.length > 0 && _graphBenchmarkMinus100.length > 0) {
+        var portfolioValues = List.generate(_graphPortfolioMinus100.length, (i) => _graphPortfolioMinus100[i].y);
+        var benchmarkValues = List.generate(_graphBenchmarkMinus100.length, (i) => _graphBenchmarkMinus100[i].y);
+        _minY = min(portfolioValues.reduce(min),benchmarkValues.reduce(min));
+        _maxY = max(portfolioValues.reduce(max),benchmarkValues.reduce(max));
+
+        _dateRangeFirst = DateTime.fromMillisecondsSinceEpoch(_graphPortfolioMinus100[0].x.toInt());
+        _dateRangeLast = DateTime.fromMillisecondsSinceEpoch(_graphPortfolioMinus100[_graphPortfolioMinus100.length -1].x.toInt());
+        _portfolioFirstX = _graphPortfolioMinus100[0].x;
+        _portfolioLastX = _graphPortfolioMinus100[_graphPortfolioMinus100.length -1].x;
       }
     }
-
-    return [
-      charts.Series<TimeSeries, DateTime>(
-        id: 'portfolioMinus100Series',
-        colorFn: (_, __) => charts.MaterialPalette.black,
-        domainFn: (TimeSeries s, _) => s.time,
-        measureFn: (TimeSeries s, _) => s.unit,
-        data: portfolioMinus100Series,
-      ),
-      charts.Series<TimeSeries, DateTime>(
-        id: 'benchmarkMinus100Series',
-        colorFn: (_, __) => charts.MaterialPalette.red.shadeDefault,
-        domainFn: (TimeSeries s, _) => s.time,
-        measureFn: (TimeSeries s, _) => s.unit,
-        data: benchmarkMinus100Series,
-      ),
-      charts.Series<TimeSeries, DateTime>(
-          id: 'portfolioMinus100Pointers',
-          colorFn: (_, __) => charts.MaterialPalette.black,
-          domainFn: (TimeSeries s, _) => s.time,
-          measureFn: (TimeSeries s, _) => s.unit,
-          data: portfolioMinus100Pointers)
-        ..setAttribute(charts.rendererIdKey, 'stocksPoint'),
-    ];
   }
-
-  List<FlSpot> _chartNewData(Graph graphs) {
-    List<FlSpot> portfolioMinus100 = [];
-
-    if (graphs.dailyValues.dailyValue.length > 0) {
-      var lastDate = graphs.dailyValues.dailyValue[graphs.dailyValues.dailyValue.length - 1].date;
-      var firstDate = graphs.dailyValues.dailyValue[0].date;
-      var comparisonDate;
-      if (_graphDateCriteria == 'all') comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
-      if (_graphDateCriteria == _week) comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
-      if (_graphDateCriteria == _month) comparisonDate = DateTime(lastDate.year, lastDate.month - 1, lastDate.day);
-      if (_graphDateCriteria == _threeMonth) comparisonDate = DateTime(lastDate.year, lastDate.month - 3, lastDate.day);
-      if (_graphDateCriteria == _sixMonth) comparisonDate = DateTime(lastDate.year, lastDate.month - 6, lastDate.day);
-      if (_graphDateCriteria == _ytd) comparisonDate = DateTime(lastDate.year, 1, 1);
-
-      if (_pressRangeAttention.length == 2) {
-        var first = DateTime(_pressRangeAttention[0].year, _pressRangeAttention[0].month, _pressRangeAttention[0].day);
-        var second = DateTime(_pressRangeAttention[1].year, _pressRangeAttention[1].month, _pressRangeAttention[1].day);
-        for (var i = 0; i < graphs.dailyValues.dailyValue.length; i++) {
-          var v = graphs.dailyValues.dailyValue[i];
-          if (v.date.isAfter(first) && v.date.isBefore(second)) {
-            portfolioMinus100.add(FlSpot(v.date.millisecondsSinceEpoch.toDouble(), v.portfolioMinus100));
-          }
-        }
-      } else {
-        for (var i = 0; i < graphs.dailyValues.dailyValue.length; i++) {
-          var v = graphs.dailyValues.dailyValue[i];
-          if (v.date.isAfter(comparisonDate)) {
-            portfolioMinus100.add(FlSpot(v.date.millisecondsSinceEpoch.toDouble(), v.portfolioMinus100));
-          }
-        }
-      }
-
-      if (portfolioMinus100.length > 0) {
-        _dateRangeFirst = DateTime.fromMillisecondsSinceEpoch(portfolioMinus100[0].x.toInt());
-        _dateRangeLast = DateTime.fromMillisecondsSinceEpoch(portfolioMinus100[portfolioMinus100.length -1].x.toInt());
-      }
-    }
-
-    return portfolioMinus100;
-  }
-}
-
-class TimeSeries {
-  final DateTime time;
-  final double unit;
-
-  TimeSeries(this.time, this.unit);
-}
-
-class NewTimeSeries {
-  final FlSpot flSpot;
-  final DateTime dateTime;
-
-  NewTimeSeries(this.flSpot, this.dateTime);
 }

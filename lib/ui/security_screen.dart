@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 import 'package:fa_bank/bloc/security_bloc.dart';
 import 'package:fa_bank/injector.dart';
@@ -22,6 +21,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'dart:math';
 
 /// "Security" as in financial nomenclature, not data or information security.
 ///
@@ -65,9 +66,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
   String _transactionType = '';
   DateTime _dateRangeFirst = DateTime.now();
   DateTime _dateRangeLast = DateTime.now();
-
+  List<Graph> _graphs = [];
+  List<FlSpot> _graphPortfolioMinus100 = [];
+  double _portfolioFirstX, _portfolioLastX = 0;
+  double _minY, _maxY = 0;
+  double _chartTimeMSecs = 0;
   bool _spin = true;
-
   bool _mutationSuccess = false;
 
   GlobalKey<ScaffoldState> _key = GlobalKey();
@@ -266,6 +270,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
     MediaQueryData mediaQueryData = MediaQuery.of(context);
     double heightScreen = mediaQueryData.size.height;
 
+    _graphs = securityBody.securities[0].graph;
+    _updateGraphStates();
+
     return SafeArea(
       child: Stack(
         children: <Widget>[
@@ -283,27 +290,22 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   Padding(
                       padding: EdgeInsets.only(left: 2, right: 2),
                       child: _widgetDateChooser(context)),
-                  Container(
-                    height: 250,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 4, right: 4),
-                      child: charts.TimeSeriesChart(
-                        _chartData(securityBody.securities[0].graph),
-                        animate: _animate,
-                        defaultRenderer: charts.LineRendererConfig(),
-                        customSeriesRenderers: [
-                          charts.PointRendererConfig(
-                              customRendererId: 'stocksPoint')
-                        ],
-                        dateTimeFactory: const charts.LocalDateTimeFactory(),
+                  _widgetDateTitle(context),
+                  Padding(
+                    padding: EdgeInsets.only(left: 4, right: 6),
+                    child: Container(
+                      height: 200,
+                      width: MediaQuery.of(context).size.width,
+                      child: LineChart(
+                        _getLineChartData(),
+                        swapAnimationDuration: const Duration(milliseconds: 500),
                       ),
                     ),
                   ),
-                  _widgetDateTitle(context),
                   Container(
-                    color: Colors.grey[300],
+                    color: Colors.grey[200],
                     child: Padding(
-                      padding: EdgeInsets.only(left: 48, right: 48),
+                      padding: EdgeInsets.only(left: 42, right: 42),
                       child: Column(children: <Widget>[
                         _widgetInformation(
                             context, securityBody.securities[0].url),
@@ -339,8 +341,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                 )
                               ],
                             )),
-                        _widgetTextRow(context, 'ESG Rating', 'n/a'),
-                        _widgetTextRow(context, 'Risk Score', 'n/a'),
+                        _widgetTextRow(context, 'ESG Rating', securityBody.securities[0].figuresAsObject.latestValues.esgObject.value.toStringAsFixed(0)),
+                        _widgetTextRow(context, 'Risk Score', securityBody.securities[0].figuresAsObject.latestValues.riskObject.value.toStringAsFixed(0)),
                         _widgetTextRow(context, 'Ticker', investment.security.securityCode),
                       ]),
                     ),
@@ -433,6 +435,116 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ],
       ),
     );
+  }
+
+  LineChartData _getLineChartData() {
+    return LineChartData(
+      lineTouchData: LineTouchData(
+        touchTooltipData: LineTouchTooltipData(
+          tooltipBgColor: Colors.blueGrey.withOpacity(0.3),
+        ),
+        touchCallback: (LineTouchResponse touchResponse) {
+          if (touchResponse.props.last.runtimeType == FlPanEnd || touchResponse.props.last.runtimeType == FlLongPressEnd) {
+            setState(() {
+              _chartTimeMSecs = 0;
+            });
+          } else if (touchResponse.lineBarSpots.length > 0) {
+            setState(() {
+              _chartTimeMSecs = touchResponse.lineBarSpots[0].x;
+            });
+          }
+        },
+        handleBuiltInTouches: true,
+      ),
+      gridData: FlGridData(
+          show: false,
+          horizontalInterval: 10
+      ),
+      titlesData: FlTitlesData(
+        bottomTitles: SideTitles(
+          showTitles: false,
+          getTextStyles: (value) => Theme.of(context).textTheme.bodyText1,
+          getTitles: (value) {
+            switch (value.toInt()) {
+              case 1:
+                return 'JAN';
+            }
+            return '';
+          },
+        ),
+        leftTitles: SideTitles(
+          showTitles: true,
+          getTextStyles: (value) => Theme.of(context).textTheme.bodyText1,
+          getTitles: (value) {
+            switch (value.toInt()) {
+              case 60:
+                return '60';
+              case 80:
+                return '80';
+              case 100:
+                return '100';
+              case 120:
+                return '120';
+              case 140:
+                return '140';
+              case 160:
+                return '160';
+              case 180:
+                return '180';
+            }
+            return '';
+          },
+        ),
+      ),
+      borderData: FlBorderData(
+        show: true,
+        border: const Border(
+          bottom: BorderSide(
+            color: Colors.black,
+            width: 0.5,
+          ),
+          left: BorderSide(
+            color: Colors.black,
+            width: 0.5,
+          ),
+          right: BorderSide(
+            color: Colors.transparent,
+          ),
+          top: BorderSide(
+            color: Colors.transparent,
+          ),
+        ),
+      ),
+/*      minX: _minX,
+      maxX: _maxX,*/
+      maxY: _maxY,
+      minY: _minY,
+      lineBarsData: _getLineBarDataList(),
+    );
+  }
+
+  List<LineChartBarData> _getLineBarDataList() {
+    final LineChartBarData linePortfolioMinus100 = LineChartBarData(
+      spots: _graphPortfolioMinus100,
+      isCurved: false,
+      colors: [
+        Colors.black,
+      ],
+      barWidth: 2,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
+        show: false,
+      ),
+      belowBarData: BarAreaData(
+          show: false,
+          colors: [
+            Colors.grey
+          ]
+      ),
+    );
+    return [
+      linePortfolioMinus100,
+    ];
   }
 
   double _calculateEstimated(double price) {
@@ -988,13 +1100,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ));
   }
 
-  List<charts.Series<TimeSeries, DateTime>> _chartData(List<Graph> graphs) {
-    List<TimeSeries> portfolioMinus100Series = [];
-    List<TimeSeries> portfolioMinus100Pointers = [];
+  _updateGraphStates() {
+    _graphPortfolioMinus100 = [];
 
-    if (graphs.length > 0) {
-      var lastDate = graphs[graphs.length - 1].date;
-      var firstDate = graphs[0].date;
+    if (_graphs.length > 0) {
+      var lastDate = _graphs[_graphs.length - 1].date;
+      var firstDate = _graphs[0].date;
       var comparisonDate;
       if (_graphDateCriteria == 'all') comparisonDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
       else if (_graphDateCriteria == _week) comparisonDate = DateTime(lastDate.year, lastDate.month, lastDate.day - 7);
@@ -1006,49 +1117,31 @@ class _SecurityScreenState extends State<SecurityScreen> {
       if (_pressRangeAttention.length == 2) {
         var first = DateTime(_pressRangeAttention[0].year, _pressRangeAttention[0].month, _pressRangeAttention[0].day);
         var second = DateTime(_pressRangeAttention[1].year, _pressRangeAttention[1].month, _pressRangeAttention[1].day);
-        for (var i = 0; i < graphs.length; i++) {
-          var v = graphs[i].date;
+        for (var i = 0; i < _graphs.length; i++) {
+          var v = _graphs[i].date;
           if (v.isAfter(first) && v.isBefore(second)) {
-            portfolioMinus100Series.add(TimeSeries(graphs[i].date, graphs[i].price));
+            _graphPortfolioMinus100.add(FlSpot(_graphs[i].date.millisecondsSinceEpoch.toDouble(), _graphs[i].price));
           }
         }
       } else {
-        for (var i = 0; i < graphs.length; i++) {
-          var v = graphs[i].date;
+        for (var i = 0; i < _graphs.length; i++) {
+          var v = _graphs[i].date;
           if (v.isAfter(comparisonDate)) {
-            portfolioMinus100Series.add(TimeSeries(graphs[i].date, graphs[i].price));
+            _graphPortfolioMinus100.add(FlSpot(_graphs[i].date.millisecondsSinceEpoch.toDouble(), _graphs[i].price));
           }
         }
       }
 
-      if (portfolioMinus100Series.length > 0) {
-        _dateRangeFirst = portfolioMinus100Series[0].time;
-        _dateRangeLast = portfolioMinus100Series[portfolioMinus100Series.length -1].time;
+      if (_graphPortfolioMinus100.length > 0) {
+        var portfolioValues = List.generate(_graphPortfolioMinus100.length, (i) => _graphPortfolioMinus100[i].y);
+        _minY = portfolioValues.reduce(min);
+        _maxY = portfolioValues.reduce(max);
+
+        _dateRangeFirst = DateTime.fromMillisecondsSinceEpoch(_graphPortfolioMinus100[0].x.toInt());
+        _dateRangeLast = DateTime.fromMillisecondsSinceEpoch(_graphPortfolioMinus100[_graphPortfolioMinus100.length -1].x.toInt());
+        _portfolioFirstX = _graphPortfolioMinus100[0].x;
+        _portfolioLastX = _graphPortfolioMinus100[_graphPortfolioMinus100.length -1].x;
       }
     }
-
-    return [
-      charts.Series<TimeSeries, DateTime>(
-        id: 'portfolioMinus100Series',
-        colorFn: (_, __) => charts.MaterialPalette.black,
-        domainFn: (TimeSeries s, _) => s.time,
-        measureFn: (TimeSeries s, _) => s.unit,
-        data: portfolioMinus100Series,
-      ),
-      charts.Series<TimeSeries, DateTime>(
-          id: 'portfolioMinus100Pointers',
-          colorFn: (_, __) => charts.MaterialPalette.red.shadeDefault,
-          domainFn: (TimeSeries s, _) => s.time,
-          measureFn: (TimeSeries s, _) => s.unit,
-          data: portfolioMinus100Pointers)
-        ..setAttribute(charts.rendererIdKey, 'stocksPoint'),
-    ];
   }
-}
-
-class TimeSeries {
-  final DateTime time;
-  final double unit;
-
-  TimeSeries(this.time, this.unit);
 }

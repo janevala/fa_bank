@@ -31,6 +31,7 @@ class App extends StatelessWidget {
               headline6: GoogleFonts.lato(textStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.normal)),
               subtitle2: GoogleFonts.lato(textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.normal)),
               bodyText2: GoogleFonts.lato(textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+              bodyText1: GoogleFonts.lato(textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.normal)),
             )),
         home: _isAlreadyLoggedIn ? DashboardScreen() : LoginScreen(),
         routes: {

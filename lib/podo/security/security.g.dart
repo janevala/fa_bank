@@ -14,6 +14,10 @@ Security _$SecurityFromJson(Map<String, dynamic> json) {
     json['marketData'] == null
         ? null
         : MarketData.fromJson(json['marketData'] as Map<String, dynamic>),
+    json['figuresAsObject'] == null
+        ? null
+        : FiguresAsObject.fromJson(
+            json['figuresAsObject'] as Map<String, dynamic>),
     json['currency'] == null
         ? null
         : Currency.fromJson(json['currency'] as Map<String, dynamic>),
@@ -29,6 +33,7 @@ Map<String, dynamic> _$SecurityToJson(Security instance) => <String, dynamic>{
       'securityCode': instance.securityCode,
       'url': instance.url,
       'marketData': instance.marketData,
+      'figuresAsObject': instance.figuresAsObject,
       'currency': instance.currency,
       'graph': instance.graph,
     };
