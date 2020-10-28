@@ -312,14 +312,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: _widgetDateChooser(context)),
                   _widgetDateTitle(context),
                   Padding(
-                    padding: EdgeInsets.only(left: 4, right: 6),
-                    child: Container(
-                      height: 200,
-                      width: MediaQuery.of(context).size.width,
-                      child: LineChart(
-                        _getLineChartData(),
-                        swapAnimationDuration: const Duration(milliseconds: 500),
-                      ),
+                    padding: EdgeInsets.only(left: 2, right: 4),
+                    child: Row(
+                      children: [
+                        Container(
+                            height: 200,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 2),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Expanded(child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: Text(_maxY.toString(), style: Theme.of(context).textTheme.bodyText1))),
+                                  Expanded(child: Align(
+                                      alignment: Alignment.center,
+                                      child: Text(((_maxY+_minY) / 2).toStringAsFixed(1), style: Theme.of(context).textTheme.bodyText1))),
+                                  Expanded(child: Align(
+                                    alignment: Alignment.bottomCenter,
+                                      child: Text(_minY.toString(), style: Theme.of(context).textTheme.bodyText1)))
+                                ],
+                              ),
+                            )),
+                        Expanded(
+                          child: Container(
+                            height: 200,
+                            child: LineChart(
+                              _getLineChartData(),
+                              swapAnimationDuration: const Duration(milliseconds: 500),
+                            ),
+                          ),
+                        )
+                      ],
                     ),
                   ),
                   _widgetDescriptor(context),
@@ -359,8 +383,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         handleBuiltInTouches: true,
       ),
       gridData: FlGridData(
-        show: false,
-        horizontalInterval: 10
+          show: true,
+          getDrawingHorizontalLine: (value) {
+            return FlLine(
+              color: Colors.grey[300],
+              strokeWidth: 0.4,
+            );
+          }
       ),
       titlesData: FlTitlesData(
         bottomTitles: SideTitles(
@@ -375,7 +404,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
         ),
         leftTitles: SideTitles(
-          showTitles: true,
+          showTitles: false,
           getTextStyles: (value) => Theme.of(context).textTheme.bodyText1,
           getTitles: (value) {
             switch (value.toInt()) {

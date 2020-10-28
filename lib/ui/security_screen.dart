@@ -67,7 +67,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   DateTime _dateRangeFirst = DateTime.now();
   DateTime _dateRangeLast = DateTime.now();
   List<Graph> _graphs = [];
-  List<FlSpot> _graphPortfolioMinus100 = [];
+  List<FlSpot> _graphSecurity = [];
   double _portfolioFirstX, _portfolioLastX = 0;
   double _minY, _maxY = 0;
   double _chartTimeMSecs = 0;
@@ -273,6 +273,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
     _graphs = securityBody.securities[0].graph;
     _updateGraphStates();
 
+    bool esgRisk = securityBody.securities[0].figuresAsObject != null && securityBody.securities[0].figuresAsObject.latestValues != null &&
+        securityBody.securities[0].figuresAsObject.latestValues.esgObject != null && securityBody.securities[0].figuresAsObject.latestValues.riskObject != null;
+
     return SafeArea(
       child: Stack(
         children: <Widget>[
@@ -287,21 +290,46 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   Divider(thickness: 2, color: Colors.grey[300]),
                   _widgetDetail(context, securityBody, investment),
                   Divider(thickness: 2, color: Colors.grey[300]),
-                  Padding(
+                  _graphSecurity.length > 0 ? Padding(
                       padding: EdgeInsets.only(left: 2, right: 2),
-                      child: _widgetDateChooser(context)),
-                  _widgetDateTitle(context),
-                  Padding(
-                    padding: EdgeInsets.only(left: 4, right: 6),
-                    child: Container(
-                      height: 200,
-                      width: MediaQuery.of(context).size.width,
-                      child: LineChart(
-                        _getLineChartData(),
-                        swapAnimationDuration: const Duration(milliseconds: 500),
-                      ),
+                      child: _widgetDateChooser(context)) : Container(),
+                  _graphSecurity.length > 0 ? _widgetDateTitle(context) : Container(),
+                  _graphSecurity.length > 0 ? Padding(
+                    padding: EdgeInsets.only(left: 2, right: 4),
+                    child: Row(
+                      children: [
+                        Container(
+                            height: 200,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 2),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Expanded(child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: Text(_maxY.toString(), style: Theme.of(context).textTheme.bodyText1))),
+                                  Expanded(child: Align(
+                                      alignment: Alignment.center,
+                                      child: Text(((_maxY+_minY) / 2).toStringAsFixed(1), style: Theme.of(context).textTheme.bodyText1))),
+                                  Expanded(child: Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: Text(_minY.toString(), style: Theme.of(context).textTheme.bodyText1)))
+                                ],
+                              ),
+                            )),
+                        Expanded(
+                          child: Container(
+                            height: 200,
+                            child: LineChart(
+                              _getLineChartData(),
+                              swapAnimationDuration: const Duration(milliseconds: 500),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                  ) : Container(),
+                  Container(height: 16),
                   Container(
                     color: Colors.grey[200],
                     child: Padding(
@@ -341,8 +369,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                 )
                               ],
                             )),
-                        _widgetTextRow(context, 'ESG Rating', securityBody.securities[0].figuresAsObject.latestValues.esgObject.value.toStringAsFixed(0)),
-                        _widgetTextRow(context, 'Risk Score', securityBody.securities[0].figuresAsObject.latestValues.riskObject.value.toStringAsFixed(0)),
+                        _widgetTextRow(context, 'ESG Rating', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.esgObject.value.toStringAsFixed(0) : 'n/a'),
+                        _widgetTextRow(context, 'Risk Score', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.riskObject.value.toStringAsFixed(0) : 'n/a'),
                         _widgetTextRow(context, 'Ticker', investment.security.securityCode),
                       ]),
                     ),
@@ -456,10 +484,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
         },
         handleBuiltInTouches: true,
       ),
-      gridData: FlGridData(
-          show: false,
-          horizontalInterval: 10
-      ),
+        gridData: FlGridData(
+            show: true,
+            getDrawingHorizontalLine: (value) {
+              return FlLine(
+                color: Colors.grey[300],
+                strokeWidth: 0.4,
+              );
+            }
+        ),
       titlesData: FlTitlesData(
         bottomTitles: SideTitles(
           showTitles: false,
@@ -473,7 +506,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           },
         ),
         leftTitles: SideTitles(
-          showTitles: true,
+          showTitles: false,
           getTextStyles: (value) => Theme.of(context).textTheme.bodyText1,
           getTitles: (value) {
             switch (value.toInt()) {
@@ -525,7 +558,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   List<LineChartBarData> _getLineBarDataList() {
     final LineChartBarData linePortfolioMinus100 = LineChartBarData(
-      spots: _graphPortfolioMinus100,
+      spots: _graphSecurity,
       isCurved: false,
       colors: [
         Colors.black,
@@ -858,14 +891,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
     DateTime dateFirst = DateTime(_dateRangeFirst.year, _dateRangeFirst.month, _dateRangeFirst.day);
     DateTime dateLast = DateTime(_dateRangeLast.year, _dateRangeLast.month, _dateRangeLast.day);
     bool visible = !(dateFirst.isAtSameMomentAs(dateLast));
-    String str = _formatDateTime(_dateRangeFirst) + ' - ' + _formatDateTime(_dateRangeLast);
+
     return Container(
       height: 24,
       child: Visibility(
         visible: visible,
         child: Center(
           child: Text(
-            str,
+              _chartTimeMSecs > 0 ? _formatDateTime(DateTime.fromMillisecondsSinceEpoch(_chartTimeMSecs.toInt())) : _formatDateTime(_dateRangeFirst) + ' - ' + _formatDateTime(_dateRangeLast),
             style: Theme.of(context).textTheme.bodyText2,
           ),
         ),
@@ -1101,7 +1134,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   _updateGraphStates() {
-    _graphPortfolioMinus100 = [];
+    _graphSecurity = [];
 
     if (_graphs.length > 0) {
       var lastDate = _graphs[_graphs.length - 1].date;
@@ -1120,27 +1153,27 @@ class _SecurityScreenState extends State<SecurityScreen> {
         for (var i = 0; i < _graphs.length; i++) {
           var v = _graphs[i].date;
           if (v.isAfter(first) && v.isBefore(second)) {
-            _graphPortfolioMinus100.add(FlSpot(_graphs[i].date.millisecondsSinceEpoch.toDouble(), _graphs[i].price));
+            _graphSecurity.add(FlSpot(_graphs[i].date.millisecondsSinceEpoch.toDouble(), num.parse(_graphs[i].price.toStringAsFixed(1))));
           }
         }
       } else {
         for (var i = 0; i < _graphs.length; i++) {
           var v = _graphs[i].date;
           if (v.isAfter(comparisonDate)) {
-            _graphPortfolioMinus100.add(FlSpot(_graphs[i].date.millisecondsSinceEpoch.toDouble(), _graphs[i].price));
+            _graphSecurity.add(FlSpot(_graphs[i].date.millisecondsSinceEpoch.toDouble(), num.parse(_graphs[i].price.toStringAsFixed(1))));
           }
         }
       }
 
-      if (_graphPortfolioMinus100.length > 0) {
-        var portfolioValues = List.generate(_graphPortfolioMinus100.length, (i) => _graphPortfolioMinus100[i].y);
+      if (_graphSecurity.length > 0) {
+        var portfolioValues = List.generate(_graphSecurity.length, (i) => _graphSecurity[i].y);
         _minY = portfolioValues.reduce(min);
         _maxY = portfolioValues.reduce(max);
 
-        _dateRangeFirst = DateTime.fromMillisecondsSinceEpoch(_graphPortfolioMinus100[0].x.toInt());
-        _dateRangeLast = DateTime.fromMillisecondsSinceEpoch(_graphPortfolioMinus100[_graphPortfolioMinus100.length -1].x.toInt());
-        _portfolioFirstX = _graphPortfolioMinus100[0].x;
-        _portfolioLastX = _graphPortfolioMinus100[_graphPortfolioMinus100.length -1].x;
+        _dateRangeFirst = DateTime.fromMillisecondsSinceEpoch(_graphSecurity[0].x.toInt());
+        _dateRangeLast = DateTime.fromMillisecondsSinceEpoch(_graphSecurity[_graphSecurity.length -1].x.toInt());
+        _portfolioFirstX = _graphSecurity[0].x;
+        _portfolioLastX = _graphSecurity[_graphSecurity.length -1].x;
       }
     }
   }
