@@ -406,7 +406,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                   setState(() {
                                     _controllerAmount.text = '';
                                     _controllerOnChanged = '';
-                                    _transactionType = 'M'; //logical, sell in Finnish
+                                    _transactionType = 'S';
                                   });
 
                                   _showPurchaseDialogBottomSheet(context, securityBody, shortName, cashBalance);
