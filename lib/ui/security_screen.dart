@@ -321,7 +321,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           child: Container(
                             height: 200,
                             child: LineChart(
-                              _getLineChartData(),
+                              _getLineChartData(investment),
                               swapAnimationDuration: const Duration(milliseconds: 500),
                             ),
                           ),
@@ -331,7 +331,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   ) : Container(),
                   Container(height: 16),
                   Container(
-                    color: Colors.grey[200],
+                    color: Colors.grey[300],
                     child: Padding(
                       padding: EdgeInsets.only(left: 42, right: 42),
                       child: Column(children: <Widget>[
@@ -465,11 +465,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
     );
   }
 
-  LineChartData _getLineChartData() {
+  LineChartData _getLineChartData(Investment investment) {
     return LineChartData(
       lineTouchData: LineTouchData(
         touchTooltipData: LineTouchTooltipData(
-          tooltipBgColor: Colors.blueGrey.withOpacity(0.3),
+          tooltipRoundedRadius: 20,
+          tooltipBgColor: Colors.grey[300],
         ),
         touchCallback: (LineTouchResponse touchResponse) {
           if (touchResponse.props.last.runtimeType == FlPanEnd || touchResponse.props.last.runtimeType == FlLongPressEnd) {
@@ -552,16 +553,16 @@ class _SecurityScreenState extends State<SecurityScreen> {
       maxX: _maxX,*/
       maxY: _maxY,
       minY: _minY,
-      lineBarsData: _getLineBarDataList(),
+      lineBarsData: _getLineBarDataList(investment),
     );
   }
 
-  List<LineChartBarData> _getLineBarDataList() {
+  List<LineChartBarData> _getLineBarDataList(Investment investment) {
     final LineChartBarData linePortfolioMinus100 = LineChartBarData(
       spots: _graphSecurity,
       isCurved: false,
       colors: [
-        Colors.black,
+        Utils.getColor(investment.changePercent * 100),
       ],
       barWidth: 2,
       isStrokeCapRound: true,
@@ -569,9 +570,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
         show: false,
       ),
       belowBarData: BarAreaData(
-          show: false,
+          show: true,
+          gradientFrom: Offset(1, 0),
+          gradientTo: Offset(0, 2),
           colors: [
-            Colors.grey
+            Utils.getColor(investment.changePercent * 100),
+            Utils.getColorLight(investment.changePercent * 100)
           ]
       ),
     );

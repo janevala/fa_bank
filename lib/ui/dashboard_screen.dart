@@ -367,7 +367,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return LineChartData(
       lineTouchData: LineTouchData(
         touchTooltipData: LineTouchTooltipData(
-          tooltipBgColor: Colors.blueGrey.withOpacity(0.3),
+          tooltipRoundedRadius: 20,
+          tooltipBgColor: Colors.grey[300],
         ),
         touchCallback: (LineTouchResponse touchResponse) {
           if (touchResponse.props.last.runtimeType == FlPanEnd || touchResponse.props.last.runtimeType == FlLongPressEnd) {

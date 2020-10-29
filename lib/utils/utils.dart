@@ -14,6 +14,15 @@ class Utils {
       return Colors.black;
   }
 
+  static Color getColorLight(double d) {
+    if (d > 0)
+      return Colors.green[200];
+    else if (d < 0)
+      return FaColor.red[200];
+    else
+      return Colors.grey;
+  }
+
   static MoneyFormatterSettings getMoneySetting(String symbol, int decimal) {
     if (symbol.toUpperCase() == 'EUR') {
       return MoneyFormatterSettings(
