@@ -6,6 +6,7 @@ import 'package:fa_bank/podo/login/login_body.dart';
 import 'package:fa_bank/ui/backend_screen.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';
+import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
@@ -84,9 +85,8 @@ class _LoginScreenState extends State<LoginScreen> {
           listener: (context, state) {
             if (state is LoginFailure) {
               _showDialog(context, 'Error', state.error);
-              ;
             } else if (state is LoginSuccess) {
-              Navigator.pushNamedAndRemoveUntil(context, DashboardScreen.route, (r) => false);
+              Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
             }
           },
           child: SafeArea(
