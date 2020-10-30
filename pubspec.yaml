@@ -37,7 +37,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/codemate_logo_white.png
-    - assets/images/codemate_logo_black.png
     - assets/images/fa-bank.png
     - assets/images/fa-bank-login.png
+    - assets/images/login_bg.png

@@ -34,7 +34,7 @@ class App extends StatelessWidget {
               bodyText2: GoogleFonts.lato(textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
               bodyText1: GoogleFonts.lato(textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.normal)),
             )),
-        home: _isAlreadyLoggedIn ? DashboardScreen() : LoginScreen(),
+        home: _isAlreadyLoggedIn ? LandingScreen() : LoginScreen(),
         routes: {
           LoginScreen.route: (context) => LoginScreen(),
           LandingScreen.route: (context) => LandingScreen(),
