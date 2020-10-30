@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:community_material_icon/community_material_icon.dart';
 import 'package:fa_bank/bloc/dashboard_bloc.dart';
 import 'package:fa_bank/bloc/landing_bloc.dart';
 import 'package:fa_bank/injector.dart';
@@ -36,6 +37,10 @@ class _LandingScreenState extends State<LandingScreen> {
     _doRefreshToken();
   }
 
+  _showToast(BuildContext context, var text) {
+    Scaffold.of(context).showSnackBar(SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
+  }
+
   _doOnExpiry() async {
     if (_sharedPreferencesManager
         .isKeyExists(SharedPreferencesManager.keyAuthMSecs))
@@ -51,11 +56,6 @@ class _LandingScreenState extends State<LandingScreen> {
     return DateFormat('d MMM yyyy').format(dateTime);
   }
 
-  _showToast(BuildContext context, var text) {
-    Scaffold.of(context).showSnackBar(
-        SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
-  }
-
   _logout(BuildContext context) {
     locator<SharedPreferencesManager>().clearSessionRelated();
     Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
@@ -65,20 +65,6 @@ class _LandingScreenState extends State<LandingScreen> {
   Widget build(BuildContext context) {
     List<TradeOrder> tradeOrders = [];
     return Scaffold(
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        title: Image.asset('assets/images/fa-bank.png',
-            height: AppBar().preferredSize.height * 0.8),
-        backgroundColor: FaColor.red[900],
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.exit_to_app),
-            onPressed: () {
-              _logout(context);
-            },
-          ),
-        ],
-      ),
       body: BlocProvider<LandingBloc>(
         create: (context) => _landingBloc,
         child: BlocBuilder<LandingBloc, LandingState>(
@@ -121,102 +107,146 @@ class _LandingScreenState extends State<LandingScreen> {
             width: double.infinity),
         ),
         BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
+          filter: ImageFilter.blur(sigmaX: 1.0, sigmaY: 1.0),
           child: Container(
-            color: Colors.blueGrey[300].withOpacity(0.5),
+            color: FaColor.red[900].withOpacity(0.8),
+          ),
+        ),
+        Align(
+          alignment: FractionalOffset.topCenter,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  FaColor.red[900],
+                  FaColor.red[900],
+                  FaColor.red[50]
+                ]
+              )
+            ),
+            child: Padding(
+                padding: EdgeInsets.only(left: 64, right: 64, top: 96, bottom: 96),
+                child: Image.asset('assets/images/fa-bank-login.png')),
           ),
         ),
         Align(
           alignment: FractionalOffset.bottomCenter,
-          child: Table(
-            defaultColumnWidth: FixedColumnWidth(MediaQuery.of(context).size.width / 4),
-            border: TableBorder.all(color: Colors.black26, width: 1, style: BorderStyle.none),
-            children: [
-              TableRow(children: [
-                TableCell(child: _getTableCell()),
-                TableCell(child: _getTableCell()),
-                TableCell(child: _getTableCell()),
-                TableCell(child: _getTableCell()),
-              ])
-            ],
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 6),
+            child: Table(
+              defaultColumnWidth: FixedColumnWidth(MediaQuery.of(context).size.width / 4),
+              border: TableBorder.all(color: Colors.black26, width: 1, style: BorderStyle.none),
+              children: [
+                TableRow(children: [
+                  TableCell(child: _getDummyCell('Performance', 1)),
+                  TableCell(child: _getDummyCell('Positions', 2)),
+                  TableCell(child: _getDummyCell('Allocations', 3)),
+                  TableCell(child: _getDummyCell('Transactions', 4)),
+                ]),
+                TableRow(children: [
+                  TableCell(child: _getTradingCell('Trading')),
+                  TableCell(child: _getDummyCell('Deposit &  \nWithdraw', 6)),
+                  TableCell(child: _getDummyCell('FA Blog', 7)),
+                  TableCell(child: _getSignOutCell('Sign Out')),
+                ])
+              ],
+            ),
           ),
-        )
+        ),
       ],
     );
   }
 
-  Widget _getTableCell() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            Navigator.pushNamedAndRemoveUntil(
-                context, DashboardScreen.route, (r) => false);
-          });
-        },
-        child: Container(
-          decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(color: Colors.blueGrey.withOpacity(0.9), offset: Offset(1, 1), blurRadius: 10, spreadRadius: 1),
-              ],
-              border: Border.all(
-                color: Colors.grey[900],
-              ),
-              borderRadius: BorderRadius.all(Radius.circular(16))),
-          child: Container(
-            child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(16)),
-                child: AspectRatio(
-                  aspectRatio: 1 / 1,
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(Icons.bar_chart),
-                        Text('Boing Boing'),
-                      ]),
-                )),
-          ),
+  Widget _getIcon(int value) {
+    IconData ic = CommunityMaterialIcons.chart_areaspline_variant;
+    switch (value) {
+      case 1:
+        ic = CommunityMaterialIcons.speedometer;
+        break;
+      case 2:
+        ic = CommunityMaterialIcons.briefcase;
+        break;
+      case 3:
+        ic = CommunityMaterialIcons.chart_pie;
+        break;
+      case 4:
+        ic = CommunityMaterialIcons.clipboard_list_outline;
+        break;
+      case 5:
+        ic = CommunityMaterialIcons.chart_areaspline_variant;
+        break;
+      case 6:
+        ic = CommunityMaterialIcons.cash_100;
+        break;
+      case 7:
+        ic = CupertinoIcons.pencil_outline;
+        break;
+      case 8:
+        ic = Icons.logout;
+        break;
+    }
+    return Icon(ic, size: 50, color: Colors.white);
+  }
+
+  Widget _getTradingCell(String text) {
+    return InkWell(
+      onTap: () {
+        Navigator.pushNamedAndRemoveUntil(context, DashboardScreen.route, (r) => false);
+      },
+      child: Column(
+        children: [
+          _getIcon(5),
+          Padding(
+            padding: EdgeInsets.only(top: 4, bottom: 4),
+            child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
+              TextStyle(
+                  color: Colors.white),
+            )),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _getDummyCell(String text, int iconId) {
+    return Builder(
+      builder: (stupidToastContext) => InkWell(
+        onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+        child: Column(
+          children: [
+            _getIcon(iconId),
+            Padding(
+              padding: EdgeInsets.only(top: 4, bottom: 4),
+              child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
+                TextStyle(
+                    color: Colors.white),
+              )),
+            )
+          ],
         ),
       ),
     );
   }
 
-  Widget _widgetTitle(BuildContext context, PortfolioBody portfolio) {
-    return Padding(
-        padding: EdgeInsets.only(top: 12, bottom: 12),
-        child: Column(
-          children: <Widget>[
-            _widgetHeadline6(context, portfolio.portfolio.portfolioName),
-            Center(
-                child: Text(
-              portfolio.portfolio.client.name,
-              style: Theme.of(context).textTheme.subtitle2.merge(
-                    TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.grey[600]),
-                  ),
-            ))
-          ],
-        ));
-  }
-
-  Widget _widgetHeadline6(BuildContext context, String text) {
-    return Center(
-        child: Text(
-      text,
-      style: Theme.of(context).textTheme.headline6,
-    ));
-  }
-
-  Widget _widgetBodyText2(BuildContext context, String text) {
-    return Center(
-        child: Text(
-      text,
-      style: Theme.of(context).textTheme.bodyText2.merge(
-            TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600]),
-          ),
-    ));
+  Widget _getSignOutCell(String text) {
+    return InkWell(
+      onTap: () {
+        _logout(context);
+      },
+      child: Column(
+        children: [
+          _getIcon(8),
+          Padding(
+            padding: EdgeInsets.only(top: 4, bottom: 4),
+            child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
+              TextStyle(
+                  color: Colors.white),
+            )),
+          )
+        ],
+      ),
+    );
   }
 }

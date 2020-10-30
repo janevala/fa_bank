@@ -11,6 +11,7 @@ import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/portfolio/trade_order.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/investment_item.dart';
+import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
@@ -214,8 +215,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   _logout(BuildContext context) {
     locator<SharedPreferencesManager>().clearSessionRelated();
-//    RestartWidget.restartApp(context);
     Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
+  }
+
+  _return(BuildContext context) {
+    Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
   }
 
   @override
@@ -244,7 +248,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           IconButton(
             icon: Icon(Icons.exit_to_app),
             onPressed: () {
-              _logout(context);
+              _return(context);
             },
           ),
         ],

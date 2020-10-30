@@ -16,6 +16,7 @@ dependencies:
   dio:
   get_it:
   cupertino_icons:
+  community_material_icon:
   shared_preferences:
   flutter_bloc:
   google_fonts:
