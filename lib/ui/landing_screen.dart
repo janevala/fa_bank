@@ -15,6 +15,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LandingScreen extends StatefulWidget {
   static const String route = '/landing_screen';
@@ -127,7 +128,7 @@ class _LandingScreenState extends State<LandingScreen> {
               )
             ),
             child: Padding(
-                padding: EdgeInsets.only(left: 64, right: 64, top: 96, bottom: 96),
+                padding: EdgeInsets.only(left: 96, right: 96, top: 96, bottom: 96),
                 child: Image.asset('assets/images/fa-bank-login.png')),
           ),
         ),
@@ -148,7 +149,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 TableRow(children: [
                   TableCell(child: _getTradingCell('Trading')),
                   TableCell(child: _getDummyCell('Deposit &  \nWithdraw', 6)),
-                  TableCell(child: _getDummyCell('FA Blog', 7)),
+                  TableCell(child: _getBlogCell('FA Blog')),
                   TableCell(child: _getSignOutCell('Sign Out')),
                 ])
               ],
@@ -187,36 +188,19 @@ class _LandingScreenState extends State<LandingScreen> {
         ic = Icons.logout;
         break;
     }
-    return Icon(ic, size: 50, color: Colors.white);
+    return Icon(ic, size: 46, color: Colors.white);
   }
 
   Widget _getTradingCell(String text) {
-    return InkWell(
-      onTap: () {
-        Navigator.pushNamedAndRemoveUntil(context, DashboardScreen.route, (r) => false);
-      },
-      child: Column(
-        children: [
-          _getIcon(5),
-          Padding(
-            padding: EdgeInsets.only(top: 4, bottom: 4),
-            child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
-              TextStyle(
-                  color: Colors.white),
-            )),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _getDummyCell(String text, int iconId) {
-    return Builder(
-      builder: (stupidToastContext) => InkWell(
-        onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamedAndRemoveUntil(context, DashboardScreen.route, (r) => false);
+        },
         child: Column(
           children: [
-            _getIcon(iconId),
+            _getIcon(5),
             Padding(
               padding: EdgeInsets.only(top: 4, bottom: 4),
               child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
@@ -230,22 +214,77 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
+  Widget _getBlogCell(String text) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () async {
+          var url = 'https://fasolutions.com/blog/';
+          if (url.startsWith('www')) url = 'https://' + url;
+          if (await canLaunch(url)) {
+          await launch(url);
+          } else {
+          _showToast(context, 'Cannot open information');
+          }
+        },
+        child: Column(
+          children: [
+            _getIcon(7),
+            Padding(
+              padding: EdgeInsets.only(top: 4, bottom: 4),
+              child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
+                TextStyle(
+                    color: Colors.white),
+              )),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _getDummyCell(String text, int iconId) {
+    return Builder(
+      builder: (stupidToastContext) => Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+          child: Column(
+            children: [
+              _getIcon(iconId),
+              Padding(
+                padding: EdgeInsets.only(top: 4, bottom: 4),
+                child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
+                  TextStyle(
+                      color: Colors.white),
+                )),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _getSignOutCell(String text) {
-    return InkWell(
-      onTap: () {
-        _logout(context);
-      },
-      child: Column(
-        children: [
-          _getIcon(8),
-          Padding(
-            padding: EdgeInsets.only(top: 4, bottom: 4),
-            child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
-              TextStyle(
-                  color: Colors.white),
-            )),
-          )
-        ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          _logout(context);
+        },
+        child: Column(
+          children: [
+            _getIcon(8),
+            Padding(
+              padding: EdgeInsets.only(top: 4, bottom: 4),
+              child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
+                TextStyle(
+                    color: Colors.white),
+              )),
+            )
+          ],
+        ),
       ),
     );
   }

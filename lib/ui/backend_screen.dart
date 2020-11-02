@@ -7,11 +7,24 @@ import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info/package_info.dart';
 
 final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
 
-class BackendScreen extends StatelessWidget {
+class BackendScreen extends StatefulWidget {
   static const String route = '/backend_screen';
+
+  @override
+  _BackendScreenState createState() => _BackendScreenState();
+}
+
+class _BackendScreenState extends State<BackendScreen> {
+  PackageInfo _packageInfo = PackageInfo(
+    appName: 'Unknown',
+    packageName: 'Unknown',
+    version: 'Unknown',
+    buildNumber: 'Unknown',
+  );
 
   TextEditingController _controllerUserName = TextEditingController();
   TextEditingController _controllerPassword = TextEditingController();
@@ -19,6 +32,13 @@ class BackendScreen extends StatelessWidget {
   TextEditingController _controllerClientId = TextEditingController();
   TextEditingController _controllerClientSecret = TextEditingController();
   TextEditingController _controllerPortfolioId = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _initPackageInfo();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,32 +55,34 @@ class BackendScreen extends StatelessWidget {
       body: SafeArea(
         child: Container(
           child: Padding(
-            padding: EdgeInsets.all(32),
+            padding: EdgeInsets.only(top: 16, left: 32, right: 32),
             child: SingleChildScrollView(
                 child: ListView(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   children: <Widget>[
-                    _widgetSizedBox(16),
+                    SizedBox(height: 8),
                     _widgetLabel(context, 'USER NAME'),
                     _widgetFieldUserName(context),
-                    _widgetSizedBox(16),
+                    SizedBox(height: 16),
                     _widgetLabel(context, 'PASSWORD'),
                     _widgetFieldPlainTextPassword(context),
-                    _widgetSizedBox(16),
+                    SizedBox(height: 16),
                     _widgetLabel(context, 'BACKEND'),
                     _widgetFieldBackend(context),
-                    _widgetSizedBox(16),
+                    SizedBox(height: 16),
                     _widgetLabel(context, 'CLIENT ID'),
                     _widgetFieldClientId(context),
-                    _widgetSizedBox(16),
+                    SizedBox(height: 16),
                     _widgetLabel(context, 'CLIENT SECRET'),
                     _widgetFieldClientSecret(context),
-                    _widgetSizedBox(16),
+                    SizedBox(height: 16),
                     _widgetLabel(context, 'PORTFOLIO ID'),
                     _widgetFieldPortfolioId(context),
-                    _widgetSizedBox(16),
+                    SizedBox(height: 16),
                     _widgetSaveAndReboot(context),
+                    SizedBox(height: 8),
+                    _widgetVersion(context)
                   ],
                 ),
             ),
@@ -259,5 +281,23 @@ class BackendScreen extends StatelessWidget {
     );
   }
 
-  Widget _widgetSizedBox(double height) => SizedBox(height: height);
+  Widget _widgetVersion(BuildContext context) {
+    return Center(
+      child: Text(
+        'App version: ' + _packageInfo.version,
+        style: Theme.of(context).textTheme.subtitle2.merge(
+          TextStyle(
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _initPackageInfo() async {
+    final PackageInfo info = await PackageInfo.fromPlatform();
+    setState(() {
+      _packageInfo = info;
+    });
+  }
 }

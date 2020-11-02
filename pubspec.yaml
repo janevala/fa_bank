@@ -3,7 +3,7 @@ description: FA Bank
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.10+10
+version: 1.0.13+13
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -25,6 +25,7 @@ dependencies:
   url_launcher:
   date_range_picker:
   flutter_money_formatter:
+  package_info:
 
 dev_dependencies:
   flutter_test:
