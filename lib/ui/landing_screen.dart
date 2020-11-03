@@ -220,7 +220,6 @@ class _LandingScreenState extends State<LandingScreen> {
       child: InkWell(
         onTap: () async {
           var url = 'https://fasolutions.com/blog/';
-          if (url.startsWith('www')) url = 'https://' + url;
           if (await canLaunch(url)) {
           await launch(url);
           } else {
