@@ -128,7 +128,7 @@ class _LandingScreenState extends State<LandingScreen> {
               )
             ),
             child: Padding(
-                padding: EdgeInsets.only(left: 96, right: 96, top: 96, bottom: 96),
+                padding: EdgeInsets.only(left: 64, right: 64, top: 120, bottom: 120),
                 child: Image.asset('assets/images/fa-bank-login.png')),
           ),
         ),
@@ -161,7 +161,7 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 
   Widget _getIcon(int value) {
-    IconData ic = CommunityMaterialIcons.chart_areaspline_variant;
+    IconData ic = CommunityMaterialIcons.speedometer;
     switch (value) {
       case 1:
         ic = CommunityMaterialIcons.speedometer;
@@ -188,7 +188,7 @@ class _LandingScreenState extends State<LandingScreen> {
         ic = Icons.logout;
         break;
     }
-    return Icon(ic, size: 46, color: Colors.white);
+    return Icon(ic, size: 38, color: Colors.white);
   }
 
   Widget _getTradingCell(String text) {
