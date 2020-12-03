@@ -32,6 +32,7 @@ query PortfolioOverview {
           includeData:true
           drilldownEnabled:false
           limit: 0
+          includeBothTimeSeriesAndGrouppedAnalysisLegacy:false
         },
         includeDrilldownPositions:false
       }) {
