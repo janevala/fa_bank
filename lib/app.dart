@@ -27,7 +27,6 @@ class App extends StatelessWidget {
             primarySwatch: Colors.grey,
             primaryColor: Colors.grey[500],
             accentColor: Colors.blueGrey[500],
-            fontFamily: 'Lato',
             textTheme: GoogleFonts.latoTextTheme(
               Theme.of(context).textTheme,
             )),
@@ -50,14 +49,14 @@ class RestartWidget extends StatefulWidget {
   final Widget child;
 
   static void restartApp(BuildContext context) {
-    context.findAncestorStateOfType<_RestartWidgetState>().restartApp();
+    context.findAncestorStateOfType<RestartWidgetState>().restartApp();
   }
 
   @override
-  _RestartWidgetState createState() => _RestartWidgetState();
+  RestartWidgetState createState() => RestartWidgetState();
 }
 
-class _RestartWidgetState extends State<RestartWidget> {
+class RestartWidgetState extends State<RestartWidget> {
   Key key = UniqueKey();
 
   void restartApp() {

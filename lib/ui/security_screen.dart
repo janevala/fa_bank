@@ -161,12 +161,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     children: [
                       Padding(
                           padding: EdgeInsets.only(top: 16, bottom: 16),
-                          child: _widgetHeadline6(context, _transactionType == 'B' ? 'New Buy Order' : 'New Sell Order')),
+                          child: _widgetSubtitle2(context, _transactionType == 'B' ? 'New Buy Order' : 'New Sell Order')),
                       _widgetAmount(context),
                       _widgetDate(context),
-                      _widgetTextRow(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue, 1)),
-                      _widgetTextRow(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue), 1)),
-                      _widgetTextRow(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)), 1)),
+                      _widgetTextRowSubtitle2(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue, 1)),
+                      _widgetTextRowSubtitle2(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue), 1)),
+                      _widgetTextRowSubtitle2(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)), 1)),
                       _widgetConfirmation(context),
                       Container(height: 16),
                       Row(
@@ -338,8 +338,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         _widgetInformation(
                             context, securityBody.securities[0].url),
                         Divider(color: Colors.black),
-                        _widgetTextRow(context, 'Position Value', _getParsedValueWithCode('EUR', investment.positionValue, 2)),
-                        _widgetTextRow(context, 'Purchase Value', _getParsedValueWithCode('EUR', investment.purchaseValue, 2)),
+                        _widgetTextRowSubtitle2(context, 'Position Value', _getParsedValueWithCode('EUR', investment.positionValue, 2)),
+                        _widgetTextRowSubtitle2(context, 'Purchase Value', _getParsedValueWithCode('EUR', investment.purchaseValue, 2)),
                         Padding(
                             padding: EdgeInsets.only(top: 12, bottom: 12),
                             child: Row(
@@ -350,9 +350,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                     alignment: Alignment.centerLeft,
                                     child: Text(
                                       'Return',
-                                      style: Theme.of(context).textTheme.headline6.merge(
-                                        TextStyle(fontSize: 20),
-                                      ),
                                     ),
                                   ),
                                 ),
@@ -361,17 +358,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                     alignment: Alignment.centerRight,
                                     child: Text(
                                       _getParsedValueWithCode('EUR', investment.positionValue - investment.purchaseValue, 2),
-                                      style: Theme.of(context).textTheme.headline6.merge(
-                                        TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Utils.getColor(investment.positionValue - investment.purchaseValue)),
-                                      ),
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: Utils.getColor(investment.positionValue - investment.purchaseValue)),
                                     ),
                                   ),
                                 )
                               ],
                             )),
-                        _widgetTextRow(context, 'ESG Rating', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.esgObject.value.toStringAsFixed(0) : 'n/a'),
-                        _widgetTextRow(context, 'Risk Score', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.riskObject.value.toStringAsFixed(0) : 'n/a'),
-                        _widgetTextRow(context, 'Ticker', investment.security.securityCode),
+                        _widgetTextRowSubtitle2(context, 'ESG Rating', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.esgObject.value.toStringAsFixed(0) : 'n/a'),
+                        _widgetTextRowSubtitle2(context, 'Risk Score', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.riskObject.value.toStringAsFixed(0) : 'n/a'),
+                        _widgetTextRowSubtitle2(context, 'Ticker', investment.security.securityCode),
                       ]),
                     ),
                   )
@@ -875,7 +870,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Total Amount'),
-              _widgetBoldHeadline6(context, investment.amount.toStringAsFixed(0), Colors.black)
+              _widgetBoldSubtitle2(context, investment.amount.toStringAsFixed(0), Colors.black)
             ],
           ),
         ),
@@ -1020,7 +1015,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Latest Value'),
-              _widgetBoldHeadline6(context, _getParsedValue(securityBody.securities[0], securityBody.securities[0].marketData.latestValue), Colors.black)
+              _widgetBoldSubtitle2(context, _getParsedValue(securityBody.securities[0], securityBody.securities[0].marketData.latestValue), Colors.black)
             ],
           ),
         ),
@@ -1028,7 +1023,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Return'),
-              _widgetBoldHeadline6(context, (investment.changePercent * 100).toStringAsFixed(2).replaceFirst('.', ',') + '%', Utils.getColor(investment.changePercent * 100))
+              _widgetBoldSubtitle2(context, (investment.changePercent * 100).toStringAsFixed(2).replaceFirst('.', ',') + '%', Utils.getColor(investment.changePercent * 100))
             ],
           ),
         ),
@@ -1036,7 +1031,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           child: Column(
             children: <Widget>[
               _widgetBodyText2(context, 'Today'),
-              _widgetBoldHeadline6(context, _getTodayAsString(_countToday(securityBody.securities[0].graph)).replaceFirst('.', ','), Utils.getColor(_countToday(securityBody.securities[0].graph)))
+              _widgetBoldSubtitle2(context, _getTodayAsString(_countToday(securityBody.securities[0].graph)).replaceFirst('.', ','), Utils.getColor(_countToday(securityBody.securities[0].graph)))
             ],
           ),
         ),
@@ -1056,8 +1051,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 Center(
                     child: Text(
                   'Investment Details',
-                  style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 20)),
-                )),
+                  style: Theme.of(context).textTheme.headline6),
+                ),
                 Visibility(
                   visible: (url == null || url == '') ? false : true,
                   child: InkWell(
@@ -1083,7 +1078,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _widgetTextRow(BuildContext context, String label, String text) {
+  Widget _widgetTextRowSubtitle2(BuildContext context, String label, String text) {
     return Padding(
         padding: EdgeInsets.only(top: 12, bottom: 12),
         child: Row(
@@ -1111,7 +1106,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _widgetBoldHeadline6(BuildContext context, String text, Color color) {
+  Widget _widgetBoldSubtitle2(BuildContext context, String text, Color color) {
     return Center(
         child: Text(
       text,
@@ -1119,7 +1114,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ));
   }
 
-  Widget _widgetHeadline6(BuildContext context, String text) {
+  Widget _widgetSubtitle2(BuildContext context, String text) {
     return Center(
         child: Text(
       text,
