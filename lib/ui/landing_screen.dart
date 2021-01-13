@@ -1,10 +1,8 @@
 import 'dart:ui';
 
 import 'package:community_material_icon/community_material_icon.dart';
-import 'package:fa_bank/bloc/dashboard_bloc.dart';
 import 'package:fa_bank/bloc/landing_bloc.dart';
 import 'package:fa_bank/injector.dart';
-import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/portfolio/trade_order.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';

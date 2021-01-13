@@ -17,5 +17,7 @@ About: Demo and concept app, developed in Flutter and Graphql
     cd android/
     ./gradlew clean assembleRelease
 
+- To create new iOS release, use Xcode -> Product -> Archive
+
 ## TODO's
 - Caching could be done using more robust storage, for example Realmdb

@@ -26,6 +26,9 @@ dependencies:
   date_range_picker:
   flutter_money_formatter:
   package_info:
+  video_player:
+  visibility_detector:
+  flutter_platform_widgets:
 
 dev_dependencies:
   flutter_test:
@@ -43,3 +46,4 @@ flutter:
     - assets/images/fa-bank-login.png
     - assets/images/login_bg.png
     - assets/nationalities.json
+    - assets/demo.mp4

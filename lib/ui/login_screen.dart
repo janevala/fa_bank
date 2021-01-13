@@ -5,6 +5,7 @@ import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
 import 'package:fa_bank/ui/backend_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';
+import 'package:fa_bank/ui/kyc_screen.dart';
 import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/widget/spinner.dart';
@@ -20,7 +21,8 @@ class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+final SharedPreferencesManager _sharedPreferencesManager =
+    locator<SharedPreferencesManager>();
 
 class _LoginScreenState extends State<LoginScreen> {
   final LoginBloc _loginBloc = LoginBloc(LoginInitial());
@@ -30,7 +32,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _controllerPassword = TextEditingController();
 
   _showToast(BuildContext context, var text) {
-    Scaffold.of(context).showSnackBar(SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
+    Scaffold.of(context).showSnackBar(
+        SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
   }
 
   _showDialog(BuildContext context, String title, String content) {
@@ -85,7 +88,14 @@ class _LoginScreenState extends State<LoginScreen> {
             if (state is LoginFailure) {
               _showDialog(context, 'Error', state.error);
             } else if (state is LoginSuccess) {
-              Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
+              if (_sharedPreferencesManager
+                  .isKeyExists(SharedPreferencesManager.keyKycCompleted)) {
+                Navigator.pushNamedAndRemoveUntil(
+                    context, LandingScreen.route, (r) => false);
+              } else {
+                Navigator.pushNamedAndRemoveUntil(
+                    context, KycScreen.route, (r) => false);
+              }
             }
           },
           child: SafeArea(
@@ -101,17 +111,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: EdgeInsets.all(32),
                           child: ListView(
                             shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
+                            physics: NeverScrollableScrollPhysics(),
                             children: <Widget>[
                               _widgetImageHeader(),
                               _widgetSizedBox(16),
-                              _widgetLabel(context, 'USER NAME'),
-                              _widgetTextFieldUserName(context),
+                              _widgetLabel('USER NAME'),
+                              _widgetTextFieldUserName(),
                               _widgetSizedBox(16),
-                              _widgetLabel(context, 'PASSWORD'),
-                              _widgetTextFieldPassword(context),
+                              _widgetLabel('PASSWORD'),
+                              _widgetTextFieldPassword(),
                               _widgetSizedBox(64),
-                              _widgetButtonSignIn(context),
+                              _widgetButtonSignIn(),
                             ],
                           ),
                         ),
@@ -125,24 +135,37 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: <Widget>[
                             Builder(
                                 builder: (stupidToastContext) => InkWell(
-                                    onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                                    onTap: () => _showToast(
+                                        stupidToastContext, 'Not implemented'),
                                     child: Text(
                                       'FORGOT PASSWORD?',
-                                      style: Theme.of(context).textTheme.subtitle2.merge(
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .subtitle2
+                                          .merge(
+                                            TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
                                     ))),
                             Container(
                               height: 36,
                             ),
                             Builder(
                                 builder: (stupidToastContext) => InkWell(
-                                    onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                                    onTap: () =>
+                                        Navigator.pushNamedAndRemoveUntil(
+                                            context,
+                                            KycScreen.route,
+                                            (r) => false),
                                     child: Text(
                                       'PRIVACY POLICY',
-                                      style: Theme.of(context).textTheme.subtitle2.merge(
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .subtitle2
+                                          .merge(
+                                            TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
                                     ))),
                           ],
                         ),
@@ -175,15 +198,13 @@ class _LoginScreenState extends State<LoginScreen> {
     ));
   }
 
-  Widget _widgetButtonSignIn(BuildContext context) {
+  Widget _widgetButtonSignIn() {
     return Padding(
       padding: EdgeInsets.only(left: 64, right: 64),
       child: FlatButton(
           child: Text(
             'SIGN IN',
-            style: Theme.of(context).textTheme.subtitle2.merge(
-                  TextStyle(color: FaColor.red[900], fontWeight: FontWeight.bold),
-                ),
+            style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: FaColor.red[900], fontWeight: FontWeight.bold)),
           ),
           onPressed: () {
             String username = _controllerUserName.text.trim();
@@ -201,13 +222,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _widgetTextFieldUserName(BuildContext context) {
+  Widget _widgetTextFieldUserName() {
     return TextField(
-        style: Theme.of(context).textTheme.subtitle2.merge(
-              TextStyle(
-                color: Colors.white,
-              ),
-            ),
+        style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
         controller: _controllerUserName,
         keyboardType: TextInputType.text,
         cursorColor: Colors.white,
@@ -224,13 +241,9 @@ class _LoginScreenState extends State<LoginScreen> {
         ));
   }
 
-  Widget _widgetTextFieldPassword(BuildContext context) {
+  Widget _widgetTextFieldPassword() {
     return TextField(
-        style: Theme.of(context).textTheme.subtitle2.merge(
-              TextStyle(
-                color: Colors.white,
-              ),
-            ),
+        style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
         controller: _controllerPassword,
         keyboardType: TextInputType.text,
         obscureText: true,
@@ -248,14 +261,9 @@ class _LoginScreenState extends State<LoginScreen> {
         ));
   }
 
-  Widget _widgetLabel(BuildContext context, String label) {
-    return Text(
-      label,
-      style: Theme.of(context).textTheme.subtitle2.merge(
-            TextStyle(
-              color: Colors.white,
-            ),
-          ),
+  Widget _widgetLabel(String label) {
+    return Text(label,
+      style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
     );
   }
 

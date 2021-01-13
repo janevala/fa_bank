@@ -21,6 +21,8 @@ class SharedPreferencesManager {
   static const String keyClientId = 'clientId.$version';
   static const String keyClientSecret = 'clientSecret.$version';
 
+  static const String keyKycCompleted = 'kycCompleted.$version';
+
   static Future<SharedPreferencesManager> getInstance() async {
     if (_manager == null) {
       _manager = SharedPreferencesManager();
