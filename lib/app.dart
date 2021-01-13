@@ -28,11 +28,8 @@ class App extends StatelessWidget {
             primaryColor: Colors.grey[500],
             accentColor: Colors.blueGrey[500],
             fontFamily: 'Lato',
-            textTheme: TextTheme(
-              headline6: GoogleFonts.lato(textStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.normal)),
-              subtitle2: GoogleFonts.lato(textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.normal)),
-              bodyText2: GoogleFonts.lato(textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
-              bodyText1: GoogleFonts.lato(textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.normal)),
+            textTheme: GoogleFonts.latoTextTheme(
+              Theme.of(context).textTheme,
             )),
         home: _isAlreadyLoggedIn ? LandingScreen() : LoginScreen(),
         routes: {
