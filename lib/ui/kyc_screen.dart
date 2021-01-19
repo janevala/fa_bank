@@ -5,6 +5,7 @@ import 'package:fa_bank/bloc/kyc_bloc.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/login_screen.dart';
+import 'package:fa_bank/utils/list_utils.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
@@ -32,9 +33,8 @@ class _KycScreenState extends State<KycScreen> {
   PageController _pageController = PageController();
   var _currentPageValue = 0.0;
   List<Widget> _pageList = [];
-  List<String> _nationalityList = [];
-  String _selectedNationality;
-  DateTime _dob = DateTime.now();
+  List<String> _countryList = [];
+  String _countryOfBirth, _countryOfRecidency;
   final TextEditingController _controllerDate = TextEditingController();
 
   VideoPlayerController _videoController;
@@ -50,8 +50,9 @@ class _KycScreenState extends State<KycScreen> {
     _initializeVideoPlayerFuture = _videoController.initialize();
     _videoController.setLooping(false);
 
-    _nationalityList = Utils.getNationalities();
-    _selectedNationality = _nationalityList.first;
+    _countryList = ListUtils.getCountries();
+    _countryOfBirth = _countryList.first;
+    _countryOfRecidency = _countryList.first;
 
     _doRefreshToken();
   }
@@ -225,25 +226,123 @@ class _KycScreenState extends State<KycScreen> {
   }
 
   Widget _identifyVerificationGeneral() {
-    return Center(child: Column(
+    return Center(
+      child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        Container(
+          decoration: BoxDecoration(
+              color: Colors.transparent,
+              border: Border.all(
+                color: Colors.white,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(5))),
+          child: Icon(CommunityMaterialIcons.account_question, size: 120, color: Colors.white),
+        ),
         Text("Identity verification: General (1/7)", style: TextStyle(color: Colors.white, fontSize: 20)),
-        _widgetFirstLastName(),
-        _widgetNationality(),
-        _widgetDobPhone()
+        _widgetGenFirstLine(),
+        _widgetGenSecondLine(),
+        _widgetGenThirdLine()
       ],
     ),
     );
   }
 
   Widget _identifyVerificationRegisteredAddress() {
-    return Center(child: Text("Identity verification: Registered address", style: TextStyle(color: Colors.white, fontSize: 20)));
+    return Center(
+      child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+              color: Colors.transparent,
+              border: Border.all(
+                color: Colors.white,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(5))),
+          child: Icon(CommunityMaterialIcons.map_marker, size: 120, color: Colors.white),
+        ),
+        Text("Identity verification: Registered address", style: TextStyle(color: Colors.white, fontSize: 20)),
+        _widgetAddrFirstLine(),
+        _widgetAddrSecondLine(),
+        _widgetAddrThirdLine()
+      ],
+    ),
+    );
+  }
+
+  int _groupValue = -1;
+
+  Widget _myRadioButton({String title, int value, Function onChanged}) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+          unselectedWidgetColor: Colors.white,
+      ),
+      child: RadioListTile(
+        activeColor: Colors.white,
+        value: value,
+        groupValue: _groupValue,
+        onChanged: onChanged,
+        title: Text(title, style: TextStyle(color: Colors.white)),
+      ),
+    );
   }
 
   Widget _identifyVerificationSourceOfFunds() {
-    return Center(child: Text("Identity verification: Source of funds", style: TextStyle(color: Colors.white, fontSize: 20)));
+    return Center(
+      child: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      border: Border.all(
+                        color: Colors.white,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(5))),
+                  child: Icon(CommunityMaterialIcons.map_marker, size: 120, color: Colors.white),
+                ),
+                Text("Identity verification: Source of funds", style: TextStyle(color: Colors.white, fontSize: 20)),
+                _myRadioButton(
+                  title: "Employee",
+                  value: 0,
+                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                ),
+                _myRadioButton(
+                  title: "Trader / Investor",
+                  value: 1,
+                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                ),
+                _myRadioButton(
+                  title: "Freelance",
+                  value: 2,
+                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                ),
+                _myRadioButton(
+                  title: "Student",
+                  value: 3,
+                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                ),
+                _myRadioButton(
+                  title: "Business Owner",
+                  value: 4,
+                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                ),
+                _myRadioButton(
+                  title: "Unemployed / Retired",
+                  value: 5,
+                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                ),
+              ],
+            );
+          }
+      ),
+    );
   }
 
   Widget _identifyVerificationSustainabilityTest() {
@@ -264,7 +363,7 @@ class _KycScreenState extends State<KycScreen> {
     return DateFormat('d MMM yyyy').format(dateTime);
   }
 
-  Widget _widgetFirstLastName() {
+  Widget _widgetGenFirstLine() {
     return Padding(
         padding: EdgeInsets.only(left: 12, right: 12, top: 12),
         child: Row(
@@ -279,7 +378,7 @@ class _KycScreenState extends State<KycScreen> {
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
-                      hintText: 'First Name',
+                      hintText: 'First name',
                       hintStyle: TextStyle(color: Colors.white),
                       enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
                       focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
@@ -297,7 +396,7 @@ class _KycScreenState extends State<KycScreen> {
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
-                      hintText: 'Last Name',
+                      hintText: 'Last name',
                       hintStyle: TextStyle(color: Colors.white),
                       enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
                       focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
@@ -309,7 +408,70 @@ class _KycScreenState extends State<KycScreen> {
         ));
   }
 
-  Widget _widgetNationality() {
+  Widget _widgetGenSecondLine() {
+    return Padding(
+        padding: EdgeInsets.only(left: 12, right: 12, top: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: TextField(
+                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    controller: null,
+                    keyboardType: TextInputType.text,
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      hintText: 'National ID card',
+                      hintStyle: TextStyle(color: Colors.white),
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                      border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                    )),
+              ),
+            ),
+            Container(width: 12),
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () async {
+                    DateTime now = DateTime.now();
+                    DateTime picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime(now.year - 30, now.month, now.day),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime(now.year, now.month, now.day)
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        _controllerDate.text = _formatDateTime(picked);
+                      });
+                    }
+                  },
+                  child: AbsorbPointer(
+                    child: TextField(
+                        style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                        controller: _controllerDate,
+                        keyboardType: TextInputType.text,
+                        cursorColor: Colors.white,
+                        decoration: InputDecoration(
+                          hintText: 'Date of birth',
+                          hintStyle: TextStyle(color: Colors.white),
+                          enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                          focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                          border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                        )),
+                  ),
+                ),
+              ),
+            )
+          ],
+        ));
+  }
+
+  Widget _widgetGenThirdLine() {
     return Padding(
         padding: EdgeInsets.only(left: 12, right: 12, top: 12),
         child: Row(
@@ -325,20 +487,21 @@ class _KycScreenState extends State<KycScreen> {
                           canvasColor: Theme.of(context).accentColor,
                         ),
                         child: DropdownButton<String>(
+                          isExpanded: true,
                           style: TextStyle(
                             color: Colors.white,
                           ),
                           icon: Icon(Icons.arrow_drop_down, color: Colors.white),
-                          value: _selectedNationality,
+                          value: _countryOfBirth,
                           onChanged: (String newValue) {
                             setState(() {
-                              _selectedNationality = newValue;
+                              _countryOfBirth = newValue;
                             });
                           },
-                          items: _nationalityList.map<DropdownMenuItem<String>>((String value) {
+                          items: _countryList.map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
-                              child: Text(value),
+                              child: Text(value, overflow: TextOverflow.ellipsis),
                             );
                           }).toList(),
                         ),
@@ -357,7 +520,7 @@ class _KycScreenState extends State<KycScreen> {
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
-                      hintText: 'National ID Card',
+                      hintText: 'Phone number',
                       hintStyle: TextStyle(color: Colors.white),
                       enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
                       focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
@@ -369,7 +532,7 @@ class _KycScreenState extends State<KycScreen> {
         ));
   }
 
-  Widget _widgetDobPhone() {
+  Widget _widgetAddrFirstLine() {
     return Padding(
         padding: EdgeInsets.only(left: 12, right: 12, top: 12),
         child: Row(
@@ -378,36 +541,65 @@ class _KycScreenState extends State<KycScreen> {
             Flexible(
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                    onTap: () async {
-                      DateTime now = DateTime.now();
-                      DateTime picked = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime(now.year - 30, now.month, now.day),
-                          firstDate: DateTime(1900),
-                          lastDate: DateTime(now.year, now.month, now.day)
+                child: StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          canvasColor: Theme.of(context).accentColor,
+                        ),
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                          icon: Icon(Icons.arrow_drop_down, color: Colors.white),
+                          value: _countryOfBirth,
+                          onChanged: (String newValue) {
+                            setState(() {
+                              _countryOfBirth = newValue;
+                            });
+                          },
+                          items: _countryList.map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value, overflow: TextOverflow.ellipsis),
+                            );
+                          }).toList(),
+                        ),
                       );
-                      if (picked != null) {
-                        setState(() {
-                          _controllerDate.text = _formatDateTime(picked);
-                        });
-                      }
-                    },
-                  child: AbsorbPointer(
-                    child: TextField(
-                        style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
-                        controller: _controllerDate,
-                        keyboardType: TextInputType.text,
-                        cursorColor: Colors.white,
-                        decoration: InputDecoration(
-                          hintText: 'Date of birth',
-                          hintStyle: TextStyle(color: Colors.white),
-                          enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-                          focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-                          border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-                        )),
-                  ),
+                    }
                 ),
+              ),
+            ),
+            Container(width: 12),
+            Flexible(
+              child: Container(),
+            )
+          ],
+        ));
+  }
+
+  Widget _widgetAddrSecondLine() {
+    return Padding(
+        padding: EdgeInsets.only(left: 12, right: 12, top: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: TextField(
+                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    controller: null,
+                    keyboardType: TextInputType.text,
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      hintText: 'Address line 1',
+                      hintStyle: TextStyle(color: Colors.white),
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                      border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                    )),
               ),
             ),
             Container(width: 12),
@@ -420,7 +612,52 @@ class _KycScreenState extends State<KycScreen> {
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
-                      hintText: 'Mobile Phone Number',
+                      hintText: 'Address line 2',
+                      hintStyle: TextStyle(color: Colors.white),
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                      border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                    )),
+              ),
+            )
+          ],
+        ));
+  }
+
+  Widget _widgetAddrThirdLine() {
+    return Padding(
+        padding: EdgeInsets.only(left: 12, right: 12, top: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: TextField(
+                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    controller: null,
+                    keyboardType: TextInputType.text,
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      hintText: 'Building (if applicable)',
+                      hintStyle: TextStyle(color: Colors.white),
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                      border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+                    )),
+              ),
+            ),
+            Container(width: 12),
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextField(
+                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    controller: null,
+                    keyboardType: TextInputType.text,
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      hintText: 'Post code',
                       hintStyle: TextStyle(color: Colors.white),
                       enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
                       focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
@@ -490,7 +727,7 @@ class _KycScreenState extends State<KycScreen> {
                   child: PlatformText(text, style: Theme.of(context).textTheme.headline6.merge(TextStyle(color: Colors.white))),
                   color: FaColor.red[900],
                   onPressed: () {
-                    _pageController.nextPage(duration: Duration(milliseconds: 500), curve: Utils.getCurve(0));
+                    _pageController.nextPage(duration: Duration(milliseconds: 500), curve: ListUtils.getCurve(0));
                   },
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(5.0))),
@@ -515,7 +752,7 @@ class _KycScreenState extends State<KycScreen> {
                           child: PlatformText('Back', style: Theme.of(context).textTheme.headline6.merge(TextStyle(color: Colors.white))),
                           color: FaColor.red[900],
                           onPressed: () {
-                            _pageController.previousPage(duration: Duration(milliseconds: 500), curve: Utils.getCurve(0));
+                            _pageController.previousPage(duration: Duration(milliseconds: 500), curve: ListUtils.getCurve(0));
                           },
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5.0))),
@@ -530,7 +767,7 @@ class _KycScreenState extends State<KycScreen> {
                           child: PlatformText('Next', style: Theme.of(context).textTheme.headline6.merge(TextStyle(color: Colors.white))),
                           color: FaColor.red[900],
                           onPressed: () {
-                            _pageController.nextPage(duration: Duration(milliseconds: 500), curve: Utils.getCurve(0));
+                            _pageController.nextPage(duration: Duration(milliseconds: 500), curve: ListUtils.getCurve(0));
                           },
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5.0))),
