@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:camera/camera.dart';
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:fa_bank/bloc/kyc_bloc.dart';
 import 'package:fa_bank/injector.dart';
@@ -44,6 +45,15 @@ class _KycScreenState extends State<KycScreen> {
   bool _giveConsent = false;
   bool _readConsent = false;
 
+  CameraController _cameraController;
+  Future<void> _initializeControllerFuture;
+  List<CameraDescription> _cameras;
+  bool _cameraReady = true;
+
+  String _formatDateTime(DateTime dateTime) {
+    return DateFormat('d MMM yyyy').format(dateTime);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -63,8 +73,20 @@ class _KycScreenState extends State<KycScreen> {
   @override
   void dispose() {
     _videoController.dispose();
+    _cameraController.dispose();
 
     super.dispose();
+  }
+
+  _initCameras() async {
+    _cameras = await availableCameras();
+
+    _cameraController = CameraController(
+      _cameras.first,
+      ResolutionPreset.medium,
+    );
+
+    _initializeControllerFuture = _cameraController.initialize();
   }
 
   _showToast(BuildContext context, var text) {
@@ -110,7 +132,7 @@ class _KycScreenState extends State<KycScreen> {
     });
 
     return Scaffold(
-      body: BlocProvider<KycBloc>(
+      body: BlocProvider<KycBloc>(//currently not used use for anything, but keeping the wiring for now just in case
         create: (context) => _kycBloc,
         child: BlocBuilder<KycBloc, KycState>(
           builder: (context, state) {
@@ -235,10 +257,14 @@ class _KycScreenState extends State<KycScreen> {
             decoration: BoxDecoration(
                 color: Colors.transparent,
                 border: Border.all(
-                  color: Colors.white,
+                    color: Colors.white,
+                    width: 3
                 ),
-                borderRadius: BorderRadius.all(Radius.circular(5))),
-            child: Icon(CommunityMaterialIcons.airplane_takeoff, size: 120, color: Colors.white),
+                borderRadius: BorderRadius.all(Radius.circular(20))),
+            child: Padding(
+              padding: EdgeInsets.all(4),
+              child: Icon(CommunityMaterialIcons.airplane_takeoff, size: 100, color: Colors.white),
+            ),
           ),
           Padding(
             padding: EdgeInsets.all(16),
@@ -260,12 +286,19 @@ class _KycScreenState extends State<KycScreen> {
           decoration: BoxDecoration(
               color: Colors.transparent,
               border: Border.all(
-                color: Colors.white,
+                  color: Colors.white,
+                  width: 3
               ),
-              borderRadius: BorderRadius.all(Radius.circular(5))),
-          child: Icon(CommunityMaterialIcons.account_question, size: 120, color: Colors.white),
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          child: Padding(
+            padding: EdgeInsets.all(4),
+            child: Icon(CommunityMaterialIcons.account_question_outline, size: 100, color: Colors.white),
+          ),
         ),
-        Text("Identity verification: General (1/7)", style: TextStyle(color: Colors.white, fontSize: 20)),
+        Padding(
+          padding: EdgeInsets.all(16),
+          child: Text("Identity: General", style: TextStyle(color: Colors.white, fontSize: 20)),
+        ),
         _widgetGenFirstLine(),
         _widgetGenSecondLine(),
         _widgetGenThirdLine()
@@ -285,11 +318,18 @@ class _KycScreenState extends State<KycScreen> {
               color: Colors.transparent,
               border: Border.all(
                 color: Colors.white,
+                width: 3
               ),
-              borderRadius: BorderRadius.all(Radius.circular(5))),
-          child: Icon(CommunityMaterialIcons.map_marker, size: 120, color: Colors.white),
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          child: Padding(
+            padding: EdgeInsets.all(4),
+            child: Icon(CommunityMaterialIcons.map_marker, size: 100, color: Colors.white),
+          ),
         ),
-        Text("Identity verification: Registered address", style: TextStyle(color: Colors.white, fontSize: 20)),
+        Padding(
+          padding: EdgeInsets.all(16),
+          child: Text("Identity: Registered Address", style: TextStyle(color: Colors.white, fontSize: 20)),
+        ),
         _widgetAddrFirstLine(),
         _widgetAddrSecondLine(),
         _widgetAddrThirdLine()
@@ -304,6 +344,7 @@ class _KycScreenState extends State<KycScreen> {
           unselectedWidgetColor: Colors.white,
       ),
       child: RadioListTile(
+        dense: true,
         activeColor: Colors.white,
         value: value,
         groupValue: _incomeGroup,
@@ -325,12 +366,19 @@ class _KycScreenState extends State<KycScreen> {
                   decoration: BoxDecoration(
                       color: Colors.transparent,
                       border: Border.all(
-                        color: Colors.white,
+                          color: Colors.white,
+                          width: 3
                       ),
-                      borderRadius: BorderRadius.all(Radius.circular(5))),
-                  child: Icon(CommunityMaterialIcons.map_marker, size: 120, color: Colors.white),
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                  child: Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(CommunityMaterialIcons.account_cash_outline, size: 100, color: Colors.white),
+                  ),
                 ),
-                Text("Identity verification: Source of funds", style: TextStyle(color: Colors.white, fontSize: 20)),
+                Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text("Identity: Source of Funds", style: TextStyle(color: Colors.white, fontSize: 20)),
+                ),
                 _radioFundSource(
                   title: "Employee",
                   value: 0,
@@ -369,11 +417,11 @@ class _KycScreenState extends State<KycScreen> {
   }
 
   Widget _identifyVerificationSustainabilityTest() {
-    return Center(child: Text("Identity verification: Sustainability test", style: TextStyle(color: Colors.white, fontSize: 20)));
+    return Center(child: Text("Identity: Sustainability Test", style: TextStyle(color: Colors.white, fontSize: 20)));
   }
 
   Widget _askConsent() {
-    var lipsumText = lipsum.createText(numParagraphs: 3, numSentences: 6);
+    var lipsumText = lipsum.createText(numParagraphs: 4, numSentences: 6);
 
     return Center(
       child: Column(
@@ -384,18 +432,25 @@ class _KycScreenState extends State<KycScreen> {
             decoration: BoxDecoration(
                 color: Colors.transparent,
                 border: Border.all(
-                  color: Colors.white,
+                    color: Colors.white,
+                    width: 3
                 ),
-                borderRadius: BorderRadius.all(Radius.circular(5))),
-            child: Icon(CommunityMaterialIcons.check, size: 120, color: Colors.white),
+                borderRadius: BorderRadius.all(Radius.circular(20))),
+            child: Padding(
+              padding: EdgeInsets.all(4),
+              child: Icon(CommunityMaterialIcons.check, size: 100, color: Colors.white),
+            ),
           ),
-          Text("Consent and acceptance of risk in digital assets investment", style: TextStyle(color: Colors.white, fontSize: 20)),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
+            child: Text("Consent and acceptance of risk in investments (please scroll to the end)", style: TextStyle(color: Colors.white, fontSize: 20)),
+          ),
+          Padding(
+            padding: EdgeInsets.only(left: 16, right: 16, bottom: 8),
             child: StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
                 return Container(
-                  height: _screenHeight * 0.4,
+                  height: _screenHeight * 0.35,
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (ScrollNotification scrollInfo) {
                       if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
@@ -408,7 +463,7 @@ class _KycScreenState extends State<KycScreen> {
                       return false;
                     },
                     child: SingleChildScrollView(
-                      child: (Text(lipsumText, style: TextStyle(color: Colors.white, fontSize: 18))),
+                      child: (Text(lipsumText, style: TextStyle(color: Colors.white, fontSize: 16))),
                     ),
                   ),
                 );
@@ -422,7 +477,8 @@ class _KycScreenState extends State<KycScreen> {
                     unselectedWidgetColor: Colors.white,
                   ),
                   child: CheckboxListTile(
-                    title: Text("The customer has read and understood the risks of trading the Digital Assets as explained under this document for acknowledgment", style: TextStyle(color: Colors.white, fontSize: 18)),
+                    dense: true,
+                    title: Text("I have read and understood the risks of trading the Digital Assets as explained in the document for acknowledgment", style: TextStyle(color: Colors.white, fontSize: 14)),
                     value: _giveConsent,
                     onChanged: (newValue) {
                       _readConsent ? setState(() => _giveConsent = newValue) : false;
@@ -437,13 +493,68 @@ class _KycScreenState extends State<KycScreen> {
   }
 
   Widget _submitDocuments() {
-    return Center(child: Text("Document verification: Take your selfie photo, with the first page of your passport. When the process is completed, you will see the message: Verification is in progress. Due to the high traffic on our platform, the account verification process may take 3 - 7 days. We are doing our best to proceed with your submission as soon as possible.",
-          style: TextStyle(color: Colors.white, fontSize: 20)),
+    return Center(child: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+                color: Colors.transparent,
+                border: Border.all(
+                    color: Colors.white,
+                    width: 3
+                ),
+                borderRadius: BorderRadius.all(Radius.circular(20))),
+            child: Padding(
+              padding: EdgeInsets.all(4),
+              child: Icon(CommunityMaterialIcons.map_marker, size: 100, color: Colors.white),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Text("Identity: Documents. Take your selfie photo, along with the first page of your passport. When the process is completed, you will see the message: Verification is in progress. Due to the high traffic on our platform, the account verification process may take 3 - 7 days. We are doing our best to proceed with your submission as soon as possible.", style: TextStyle(color: Colors.white, fontSize: 20)),
+          ),
+          Stack(
+            children: [
+              Visibility(
+                visible: !_cameraReady,
+                child: StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                      return FlatButton(
+                      onPressed: () async {
+                          await _initCameras();
+                          setState(() {
+                            _cameraReady = true;
+                          });
+                        },
+                        child: Text('Press Me'),
+                      );
+                    })
+                ),
+              Visibility(
+                visible: _cameraReady,
+                child: Container(
+                  height: 100,
+                  width: 100,
+                  child: FutureBuilder<void>(
+                    future: _initializeControllerFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return CameraPreview(_cameraController);
+                      } else {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                    },
+                  ),
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    ),
     );
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return DateFormat('d MMM yyyy').format(dateTime);
   }
 
   Widget _widgetGenFirstLine() {
@@ -636,10 +747,10 @@ class _KycScreenState extends State<KycScreen> {
                             color: Colors.white,
                           ),
                           icon: Icon(Icons.arrow_drop_down, color: Colors.white),
-                          value: _countryOfBirth,
+                          value: _countryOfRecidency,
                           onChanged: (String newValue) {
                             setState(() {
-                              _countryOfBirth = newValue;
+                              _countryOfRecidency = newValue;
                             });
                           },
                           items: _countryList.map<DropdownMenuItem<String>>((String value) {
@@ -769,12 +880,12 @@ class _KycScreenState extends State<KycScreen> {
           });
         }
       },
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: Padding(
-          padding: EdgeInsets.only(top: 150),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(5.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
             child: Container(
                 width: MediaQuery.of(context).size.width * 0.95,
                 child: AspectRatio(
@@ -793,7 +904,12 @@ class _KycScreenState extends State<KycScreen> {
                       },
                     ))),
           ),
-        ),
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Text("All Set! Account verification process normally takes 1 - 2 business days. Please watch introduction video and then start exploring the app!",
+                style: TextStyle(color: Colors.white, fontSize: 20)),
+          ),
+        ],
       ),
     );
   }

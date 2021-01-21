@@ -30,6 +30,9 @@ dependencies:
   visibility_detector:
   flutter_platform_widgets:
   lipsum:
+  camera:
+  path_provider:
+  path:
 
 dev_dependencies:
   flutter_test:
