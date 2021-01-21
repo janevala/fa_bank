@@ -7,7 +7,6 @@ import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/list_utils.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
-import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +15,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:lipsum/lipsum.dart' as lipsum;
 
 class KycScreen extends StatefulWidget {
   static const String route = '/kyc_screen';
@@ -36,10 +36,13 @@ class _KycScreenState extends State<KycScreen> {
   List<String> _countryList = [];
   String _countryOfBirth, _countryOfRecidency;
   final TextEditingController _controllerDate = TextEditingController();
-
   VideoPlayerController _videoController;
   Future<void> _initializeVideoPlayerFuture;
   bool _videoFadeIn = false;
+  int _incomeGroup = -1;
+  double _screenWidth,  _screenHeight;
+  bool _giveConsent = false;
+  bool _readConsent = false;
 
   @override
   void initState() {
@@ -87,14 +90,17 @@ class _KycScreenState extends State<KycScreen> {
     _pageList.add(_identifyVerificationGeneral());
     _pageList.add(_identifyVerificationRegisteredAddress());
     _pageList.add(_identifyVerificationSourceOfFunds());
-    _pageList.add(_identifyVerificationSustainabilityTest());
+//    _pageList.add(_identifyVerificationSustainabilityTest());
     _pageList.add(_askConsent());
-    _pageList.add(_submitDocuments());
+//    _pageList.add(_submitDocuments());
     _pageList.add(_videoWidget());
   }
 
   @override
   Widget build(BuildContext context) {
+    _screenWidth = MediaQuery.of(context).size.width;
+    _screenHeight = MediaQuery.of(context).size.height;
+
     _buildPageList();
 
     _pageController.addListener(() {
@@ -118,14 +124,12 @@ class _KycScreenState extends State<KycScreen> {
             } else if (state is KycCache) {
               _spin = false;
               return Center(
-                child: Text('KycCache',
-                    style: Theme.of(context).textTheme.subtitle2),
+                child: Text('KycCache', style: Theme.of(context).textTheme.subtitle2),
               );
             } else if (state is KycFailure) {
               _spin = false;
               return Center(
-                child: Text('KycFailure',
-                    style: Theme.of(context).textTheme.subtitle2),
+                child: Text('KycFailure', style: Theme.of(context).textTheme.subtitle2),
               );
             }
 
@@ -141,7 +145,28 @@ class _KycScreenState extends State<KycScreen> {
       physics: NeverScrollableScrollPhysics(),
       controller: _pageController,
       itemBuilder: (context, position) {
-        if (position == _currentPageValue.floor()) {
+        return Transform(
+          transform: Matrix4.identity()..rotateY(_currentPageValue - position)..rotateZ(_currentPageValue - position),
+          child: Container(
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      FaColor.red[900],
+                      FaColor.red[900],
+                      FaColor.red[50]
+                    ])),
+            child: Stack(
+              children: [
+                _pageList[position],
+                _widgetOneButton('ASDF')
+              ],
+            ),
+          ),
+        );
+
+        /*if (position == _currentPageValue.floor()) {
           return Transform(
             transform: Matrix4.identity()..rotateY(_currentPageValue - position)..rotateZ(_currentPageValue - position),
             child: Container(
@@ -194,7 +219,7 @@ class _KycScreenState extends State<KycScreen> {
               child: Text("Page else", style: TextStyle(color: Colors.white, fontSize: 22.0)),
             ),
           );
-        }
+        }*/
       },
       itemCount: _pageList.length,
     );
@@ -273,9 +298,7 @@ class _KycScreenState extends State<KycScreen> {
     );
   }
 
-  int _groupValue = -1;
-
-  Widget _myRadioButton({String title, int value, Function onChanged}) {
+  Widget _radioFundSource({String title, int value, Function onChanged}) {
     return Theme(
       data: Theme.of(context).copyWith(
           unselectedWidgetColor: Colors.white,
@@ -283,7 +306,7 @@ class _KycScreenState extends State<KycScreen> {
       child: RadioListTile(
         activeColor: Colors.white,
         value: value,
-        groupValue: _groupValue,
+        groupValue: _incomeGroup,
         onChanged: onChanged,
         title: Text(title, style: TextStyle(color: Colors.white)),
       ),
@@ -308,35 +331,35 @@ class _KycScreenState extends State<KycScreen> {
                   child: Icon(CommunityMaterialIcons.map_marker, size: 120, color: Colors.white),
                 ),
                 Text("Identity verification: Source of funds", style: TextStyle(color: Colors.white, fontSize: 20)),
-                _myRadioButton(
+                _radioFundSource(
                   title: "Employee",
                   value: 0,
-                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                  onChanged: (newValue) => setState(() => _incomeGroup = newValue),
                 ),
-                _myRadioButton(
+                _radioFundSource(
                   title: "Trader / Investor",
                   value: 1,
-                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                  onChanged: (newValue) => setState(() => _incomeGroup = newValue),
                 ),
-                _myRadioButton(
+                _radioFundSource(
                   title: "Freelance",
                   value: 2,
-                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                  onChanged: (newValue) => setState(() => _incomeGroup = newValue),
                 ),
-                _myRadioButton(
+                _radioFundSource(
                   title: "Student",
                   value: 3,
-                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                  onChanged: (newValue) => setState(() => _incomeGroup = newValue),
                 ),
-                _myRadioButton(
+                _radioFundSource(
                   title: "Business Owner",
                   value: 4,
-                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                  onChanged: (newValue) => setState(() => _incomeGroup = newValue),
                 ),
-                _myRadioButton(
+                _radioFundSource(
                   title: "Unemployed / Retired",
                   value: 5,
-                  onChanged: (newValue) => setState(() => _groupValue = newValue),
+                  onChanged: (newValue) => setState(() => _incomeGroup = newValue),
                 ),
               ],
             );
@@ -350,7 +373,67 @@ class _KycScreenState extends State<KycScreen> {
   }
 
   Widget _askConsent() {
-    return Center(child: Text("Consent and acceptance of risk in digital asset investment", style: TextStyle(color: Colors.white, fontSize: 20)));
+    var lipsumText = lipsum.createText(numParagraphs: 3, numSentences: 6);
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+                color: Colors.transparent,
+                border: Border.all(
+                  color: Colors.white,
+                ),
+                borderRadius: BorderRadius.all(Radius.circular(5))),
+            child: Icon(CommunityMaterialIcons.check, size: 120, color: Colors.white),
+          ),
+          Text("Consent and acceptance of risk in digital assets investment", style: TextStyle(color: Colors.white, fontSize: 20)),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Container(
+                  height: _screenHeight * 0.4,
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (ScrollNotification scrollInfo) {
+                      if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+                        setState(() {
+                          _readConsent = true;
+                        });
+                        return true;
+                      }
+
+                      return false;
+                    },
+                    child: SingleChildScrollView(
+                      child: (Text(lipsumText, style: TextStyle(color: Colors.white, fontSize: 18))),
+                    ),
+                  ),
+                );
+              }),
+          ),
+          StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    canvasColor: Theme.of(context).accentColor,
+                    unselectedWidgetColor: Colors.white,
+                  ),
+                  child: CheckboxListTile(
+                    title: Text("The customer has read and understood the risks of trading the Digital Assets as explained under this document for acknowledgment", style: TextStyle(color: Colors.white, fontSize: 18)),
+                    value: _giveConsent,
+                    onChanged: (newValue) {
+                      _readConsent ? setState(() => _giveConsent = newValue) : false;
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                );
+              })
+        ],
+      ),
+    );
   }
 
   Widget _submitDocuments() {

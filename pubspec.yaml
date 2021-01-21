@@ -29,6 +29,7 @@ dependencies:
   video_player:
   visibility_detector:
   flutter_platform_widgets:
+  lipsum:
 
 dev_dependencies:
   flutter_test:
