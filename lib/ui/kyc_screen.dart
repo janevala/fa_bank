@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:fa_bank/bloc/kyc_bloc.dart';
+import 'package:fa_bank/ui/camera_screen.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/landing_screen.dart';
@@ -15,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:lipsum/lipsum.dart' as lipsum;
@@ -45,10 +48,8 @@ class _KycScreenState extends State<KycScreen> {
   bool _giveConsent = false;
   bool _readConsent = false;
 
-  CameraController _cameraController;
-  Future<void> _initializeControllerFuture;
-  List<CameraDescription> _cameras;
-  bool _cameraReady = true;
+  Permission _cameraPermission = Permission.camera;
+  PermissionStatus _cameraPermissionStatus = PermissionStatus.undetermined;
 
   String _formatDateTime(DateTime dateTime) {
     return DateFormat('d MMM yyyy').format(dateTime);
@@ -73,20 +74,8 @@ class _KycScreenState extends State<KycScreen> {
   @override
   void dispose() {
     _videoController.dispose();
-//    _cameraController.dispose();
 
     super.dispose();
-  }
-
-  _initCameras() async {
-    _cameras = await availableCameras();
-
-    _cameraController = CameraController(
-      _cameras.first,
-      ResolutionPreset.medium,
-    );
-
-    _initializeControllerFuture = _cameraController.initialize();
   }
 
   _showToast(BuildContext context, var text) {
@@ -107,14 +96,30 @@ class _KycScreenState extends State<KycScreen> {
     Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
   }
 
+  Future<void> _checkCameraPermission() async {
+    final _s = await _cameraPermission.status;
+
+    setState(() {
+      _cameraPermissionStatus = _s;
+    });
+  }
+
+  Future<void> _requestCameraPermission() async {
+    final _s = await _cameraPermission.request();
+
+    setState(() {
+      _cameraPermissionStatus = _s;
+    });
+  }
+
   _buildPageList() {
     _pageList.add(_welcomeWidget());
+    _pageList.add(_submitDocuments());
     _pageList.add(_identifyGeneral());
     _pageList.add(_identifyRegisteredAddress());
     _pageList.add(_widgetSourceOfFunds());
 //    _pageList.add(_identifyVerificationSustainabilityTest());
     _pageList.add(_widgetConsent());
-//    _pageList.add(_submitDocuments());
     _pageList.add(_videoWidget());
   }
 
@@ -182,61 +187,6 @@ class _KycScreenState extends State<KycScreen> {
             child: _pageList[position],
           ),
         );
-
-        /*if (position == _currentPageValue.floor()) {
-          return Transform(
-            transform: Matrix4.identity()..rotateY(_currentPageValue - position)..rotateZ(_currentPageValue - position),
-            child: Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                    FaColor.red[900],
-                    FaColor.red[900],
-                    FaColor.red[50]
-                  ])),
-              child: Stack(
-                children: [
-                  _pageList[position],
-                  _widgetOneButton('ASDF')
-                ],
-              ),
-            ),
-          );
-        } else if (position == _currentPageValue.floor() + 1) {
-          return Transform(
-            transform: Matrix4.identity()..rotateY(_currentPageValue - position)..rotateZ(_currentPageValue - position),
-            child: Container(
-                decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                      FaColor.red[900],
-                      FaColor.red[900],
-                      FaColor.red[50]
-                    ])),
-                child: Container(
-                  color: Colors.transparent,
-                )),
-          );
-        } else {
-          return Container(
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                  FaColor.red[900],
-                  FaColor.red[900],
-                  FaColor.red[50]
-                ])),
-            child: Center(
-              child: Text("Page else", style: TextStyle(color: Colors.white, fontSize: 22.0)),
-            ),
-          );
-        }*/
       },
       itemCount: _pageList.length,
     );
@@ -383,33 +333,23 @@ class _KycScreenState extends State<KycScreen> {
                   child: Text("Identity: Source of Funds", style: TextStyle(color: Colors.white, fontSize: 20)),
                 ),
                 _radioFundSource(
-                  title: "Employee",
+                  title: "Inheritance",
                   value: 0,
                   onChanged: (newValue) => setState(() => _incomeGroup = newValue),
                 ),
                 _radioFundSource(
-                  title: "Trader / Investor",
+                  title: "Salary",
                   value: 1,
                   onChanged: (newValue) => setState(() => _incomeGroup = newValue),
                 ),
                 _radioFundSource(
-                  title: "Freelance",
+                  title: "Ownership of a Business",
                   value: 2,
                   onChanged: (newValue) => setState(() => _incomeGroup = newValue),
                 ),
                 _radioFundSource(
-                  title: "Student",
+                  title: "Investments",
                   value: 3,
-                  onChanged: (newValue) => setState(() => _incomeGroup = newValue),
-                ),
-                _radioFundSource(
-                  title: "Business Owner",
-                  value: 4,
-                  onChanged: (newValue) => setState(() => _incomeGroup = newValue),
-                ),
-                _radioFundSource(
-                  title: "Unemployed / Retired",
-                  value: 5,
                   onChanged: (newValue) => setState(() => _incomeGroup = newValue),
                 ),
                 Container(height: 32),
@@ -484,7 +424,7 @@ class _KycScreenState extends State<KycScreen> {
                   ),
                   child: CheckboxListTile(
                     dense: true,
-                    title: Text("I have read and understood the risks of trading the Digital Assets as explained in the document for acknowledgment", style: TextStyle(color: Colors.white, fontSize: 14)),
+                    title: Text("I have read and understood the risks of trading, as explained in the document above", style: TextStyle(color: Colors.white, fontSize: 14)),
                     value: _giveConsent,
                     onChanged: (newValue) {
                       _readConsent ? setState(() => _giveConsent = newValue) : false;
@@ -515,52 +455,51 @@ class _KycScreenState extends State<KycScreen> {
               borderRadius: BorderRadius.all(Radius.circular(20))),
           child: Padding(
             padding: EdgeInsets.all(4),
-            child: Icon(CommunityMaterialIcons.map_marker, size: 100, color: Colors.white),
+            child: Icon(CommunityMaterialIcons.camera, size: 100, color: Colors.white),
           ),
         ),
         Padding(
           padding: EdgeInsets.all(16),
-          child: Text("Identity: Documents. Take your selfie photo, along with the first page of your passport. When the process is completed, you will see the message: Verification is in progress. Due to the high traffic on our platform, the account verification process may take 3 - 7 days. We are doing our best to proceed with your submission as soon as possible.", style: TextStyle(color: Colors.white, fontSize: 20)),
+          child: Text("Identity: Documents. Take your selfie photo, along with the first page of your passport.", style: TextStyle(color: Colors.white, fontSize: 20)),
         ),
         Stack(
           children: [
-            Visibility(
-              visible: !_cameraReady,
-              child: StatefulBuilder(
-                  builder: (BuildContext context, StateSetter setState) {
-                    return FlatButton(
-                    onPressed: () async {
-                        await _initCameras();
-                        setState(() {
-                          _cameraReady = true;
-                        });
-                      },
-                      child: Text('Press Me'),
-                    );
-                  })
-              ),
-            Visibility(
-              visible: _cameraReady,
-              child: Container(
-                height: 100,
-                width: 100,
-                child: FutureBuilder<void>(
-                  future: _initializeControllerFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return CameraPreview(_cameraController);
-                    } else {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                  },
-                ),
-              ),
-            )
+            Container(
+              child: _grantedCameraWidget()
+//              child: _cameraPermissionStatus.isGranted ? _grantedCameraWidget() : _ungrantedCameraWidget(),
+            ),
           ],
         )
       ],
     ),
     );
+  }
+
+  Widget _grantedCameraWidget() {
+    return Center(
+      child: Column(
+        children: [
+          FlatButton(
+            onPressed: () {
+              _requestCameraPermission();
+            },
+            child: Text('PERMISSION'),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.pushNamedAndRemoveUntil(context, CameraScreen.route, (r) => false);
+            },
+            child: Text('OPEN CAMERA'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _ungrantedCameraWidget() {
+    return FlatButton(onPressed: () async {
+      _requestCameraPermission();
+    }, child: Text('ADSF'));
   }
 
   Widget _videoWidget() {
@@ -598,7 +537,7 @@ class _KycScreenState extends State<KycScreen> {
             ),
             Padding(
               padding: EdgeInsets.all(16),
-              child: Text("Account verification process normally takes 1 - 2 business days. Please watch introduction video and then start exploring the app!",
+              child: Text("Account verification process normally takes 1 - 2 business days. Please watch introduction video and then start exploring the app! When the process is completed, you will see the message: Verification is in progress. Due to the high traffic on our platform, the account verification process may take 3 - 7 days. We are doing our best to proceed with your submission as soon as possible.",
                   style: TextStyle(color: Colors.white, fontSize: 20)),
             ),
             Container(height: 32),
@@ -932,7 +871,7 @@ class _KycScreenState extends State<KycScreen> {
 
                       Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
                     } else {
-                      _pageController.nextPage(duration: Duration(milliseconds: 500), curve: ListUtils.getCurve(0));
+                      _pageController.nextPage(duration: Duration(milliseconds: 600), curve: ListUtils.getCurve(0));
                     }
                   },
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))),

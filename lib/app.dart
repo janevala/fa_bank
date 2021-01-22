@@ -1,3 +1,4 @@
+import 'package:fa_bank/ui/camera_screen.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/ui/backend_screen.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
@@ -59,6 +60,7 @@ class _AppState extends State<App> {
           SecurityScreen.route: (context) => SecurityScreen(),
           BackendScreen.route: (context) => BackendScreen(),
           KycScreen.route: (context) => KycScreen(),
+          CameraScreen.route: (context) => CameraScreen(),
         },
       ),
     );
