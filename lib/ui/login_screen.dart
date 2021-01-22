@@ -88,13 +88,10 @@ class _LoginScreenState extends State<LoginScreen> {
             if (state is LoginFailure) {
               _showDialog(context, 'Error', state.error);
             } else if (state is LoginSuccess) {
-              if (_sharedPreferencesManager
-                  .isKeyExists(SharedPreferencesManager.keyKycCompleted)) {
-                Navigator.pushNamedAndRemoveUntil(
-                    context, LandingScreen.route, (r) => false);
+              if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyKycCompleted)) {
+                Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
               } else {
-                Navigator.pushNamedAndRemoveUntil(
-                    context, KycScreen.route, (r) => false);
+                Navigator.pushNamedAndRemoveUntil(context, KycScreen.route, (r) => false);
               }
             }
           },
@@ -135,37 +132,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: <Widget>[
                             Builder(
                                 builder: (stupidToastContext) => InkWell(
-                                    onTap: () => _showToast(
-                                        stupidToastContext, 'Not implemented'),
-                                    child: Text(
-                                      'FORGOT PASSWORD?',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .subtitle2
-                                          .merge(
-                                            TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
+                                    onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                                      child: Text('FORGOT PASSWORD?', style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold)),
                                     ))),
                             Container(
                               height: 36,
                             ),
                             Builder(
                                 builder: (stupidToastContext) => InkWell(
-                                    onTap: () =>
-                                        Navigator.pushNamedAndRemoveUntil(
-                                            context,
-                                            KycScreen.route,
-                                            (r) => false),
-                                    child: Text(
-                                      'PRIVACY POLICY',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .subtitle2
-                                          .merge(
-                                            TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
+                                    onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                                      child: Text('PRIVACY POLICY', style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold)),
                                     ))),
                           ],
                         ),
