@@ -24,6 +24,15 @@ class Utils {
       return Colors.grey;
   }
 
+  static int randomInt(int max) {
+    return Random().nextInt(max);
+  }
+
+  static int randomIntRange(int min, int max) {
+    return (min + Random().nextInt(max - min));
+  }
+
+
   static MoneyFormatterSettings getMoneySetting(String symbol, int decimal) {
     if (symbol.toUpperCase() == 'EUR') {
       return MoneyFormatterSettings(

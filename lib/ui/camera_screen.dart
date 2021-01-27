@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:camera/camera.dart';
+import 'package:fa_bank/ui/fa_color.dart';
+import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +27,7 @@ class _CameraScreenState extends State<CameraScreen> {
   bool isUpdatingLocalImage = false;
   List<CameraDescription> _cameras;
   CameraDescription _cameraDescription;
+  bool _doMockWait = false;
 
   @override
   void initState() {
@@ -74,11 +77,15 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _mockWait() async {
-    int rand = Random().nextInt(2000);
+    setState(() {
+      _doMockWait = true;
+    });
+    int rand = Utils.randomIntRange(1500, 2500);
     await Future.delayed(Duration(milliseconds: rand));
+    setState(() {
+      _doMockWait = false;
+    });
   }
-
-  String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
 
   Widget _buildCameraPreview() {
     final size = MediaQuery.of(context).size;
@@ -87,20 +94,21 @@ class _CameraScreenState extends State<CameraScreen> {
     return FutureBuilder<void>(
       future: _initializeControllerFuture,
       builder: (context, snapshot) {
-        if (_controller == null || !_controller.value.isInitialized) {
-          return Container(color: Colors.black);
-        } else if (snapshot.connectionState == ConnectionState.done) {
+        if (snapshot.connectionState == ConnectionState.done) {
           return Transform.scale(
             scale: _controller.value.aspectRatio / deviceRatio,
             child: Center(
-              child: Stack(
-                children: [
-                  AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: CameraPreview(_controller),
-                  ),
-                  Spinner(),
-                ],
+              child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: Stack(
+                  children: [
+                    CameraPreview(_controller),
+                    Visibility(
+                      visible: _doMockWait,
+                      child: Spinner(),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -110,6 +118,8 @@ class _CameraScreenState extends State<CameraScreen> {
       },
     );
   }
+
+  String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
 
   Future<String> takePicture(BuildContext context) async {
     await _initializeControllerFuture;
@@ -123,20 +133,21 @@ class _CameraScreenState extends State<CameraScreen> {
     }*/
 
     final extDir = await getApplicationDocumentsDirectory();
-    final dirPath = '${extDir.path}';
-    await Directory(dirPath).create(recursive: true);
-    final filePath = '$dirPath/${timestamp()}.jpg';
+    await Directory(extDir.path).create(recursive: true);
+    final filePath = extDir.path + '/' + timestamp() + '.jpg';
 
     if (_controller.value.isTakingPicture) {
       return null;
     }
 
     try {
-//      await _controller.takePicture(filePath);
+//       await _controller.takePicture(filePath);
     } on CameraException catch (e) {
-//      showToast(context, 'Error: ${e.code}\n${e.description}');
+      print('ERRR ' + e.description);
       return null;
     }
+
+    await _mockWait();
 
     return filePath;
   }
@@ -149,6 +160,8 @@ class _CameraScreenState extends State<CameraScreen> {
 //            model.openExpense(context, File(filePath));
 //            showToast(context, 'Picture saved to $filePath');
 //            openImagePreviewDialog(context, filePath);
+
+            Navigator.of(context).pop(true);
           }
         }
       });
@@ -187,9 +200,9 @@ class _CameraScreenState extends State<CameraScreen> {
                       child: Center(
                         child: IconButton(
                             icon: const Icon(Icons.close),
-                            color: Theme.of(context).primaryColor,
+                            color: Colors.black,
                             iconSize: 36.0,
-                            onPressed: () {}),
+                            onPressed: () => Navigator.of(context).pop(false)),
                       )),
                 ],
               ),
@@ -221,9 +234,8 @@ class _CameraScreenState extends State<CameraScreen> {
                         child: Builder(
                           builder: (BuildContext buildContext) {
                             return FloatingActionButton(
-                                backgroundColor:
-                                Theme.of(context).primaryColor,
-                                onPressed: () {});
+                                backgroundColor: FaColor.red[900],
+                                onPressed: () => onCaptureButtonPressed(context));
                           },
                         ),
                       )),

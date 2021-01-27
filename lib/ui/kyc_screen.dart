@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:camera/camera.dart';
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:fa_bank/bloc/kyc_bloc.dart';
 import 'package:fa_bank/ui/camera_screen.dart';
@@ -11,6 +10,7 @@ import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/list_utils.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +40,7 @@ class _KycScreenState extends State<KycScreen> {
   List<Widget> _pageList = [];
   List<String> _countryList = [];
   String _countryOfBirth, _countryOfRecidency;
-  final TextEditingController _controllerDate = TextEditingController();
+  TextEditingController _controllerDate = TextEditingController();
   VideoPlayerController _videoController;
   Future<void> _initializeVideoPlayerFuture;
   int _incomeGroup = -1;
@@ -50,6 +50,10 @@ class _KycScreenState extends State<KycScreen> {
 
   Permission _cameraPermission = Permission.camera;
   PermissionStatus _cameraPermissionStatus = PermissionStatus.undetermined;
+  bool _cameraPermissionsOk = false;
+  bool _cameraPictureOk = false;
+
+  bool _doMockWait = false;
 
   String _formatDateTime(DateTime dateTime) {
     return DateFormat('d MMM yyyy').format(dateTime);
@@ -96,29 +100,51 @@ class _KycScreenState extends State<KycScreen> {
     Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
   }
 
-  Future<void> _checkCameraPermission() async {
+  _checkCameraPermission(StateSetter setState) async {
     final _s = await _cameraPermission.status;
 
     setState(() {
       _cameraPermissionStatus = _s;
+      if (_cameraPermissionStatus.isGranted) _cameraPermissionsOk = true;
     });
   }
 
-  Future<void> _requestCameraPermission() async {
+  Future<void> _requestCameraPermission(StateSetter setState) async {
     final _s = await _cameraPermission.request();
 
     setState(() {
       _cameraPermissionStatus = _s;
+      if (_cameraPermissionStatus.isGranted) _cameraPermissionsOk = true;
+    });
+  }
+
+  Future<void> _handleCameraAndReturnValue(StateSetter setState) async {
+    final _result = await Navigator.pushNamed(context, CameraScreen.route);//we assume dynamic return type is bool, it would be better to be explicit
+    if (_result) {
+      setState(() {
+        _cameraPictureOk = true;
+      });
+    }
+  }
+
+  Future<void> _mockWait(StateSetter setState) async {
+    setState(() {
+      _doMockWait = true;
+    });
+    int rand = Utils.randomIntRange(1500, 2500);
+    await Future.delayed(Duration(milliseconds: rand));
+    setState(() {
+      _doMockWait = false;
     });
   }
 
   _buildPageList() {
     _pageList.add(_welcomeWidget());
-    _pageList.add(_submitDocuments());
     _pageList.add(_identifyGeneral());
     _pageList.add(_identifyRegisteredAddress());
     _pageList.add(_widgetSourceOfFunds());
 //    _pageList.add(_identifyVerificationSustainabilityTest());
+    _pageList.add(_submitDocuments());
     _pageList.add(_widgetConsent());
     _pageList.add(_videoWidget());
   }
@@ -217,7 +243,23 @@ class _KycScreenState extends State<KycScreen> {
                 style: TextStyle(color: Colors.white, fontSize: 20)),
           ),
           Container(height: 46),
-          _widgetOneButton('Lets Start!', false)
+          Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                height: 80,
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: SizedBox.expand(
+                    child: FlatButton(
+                        child: PlatformText("Lets Start!", style: Theme.of(context).textTheme.headline6.merge(TextStyle(color: Colors.white))),
+                        color: FaColor.red[900],
+                        onPressed: () async {
+                          _pageController.nextPage(duration: Duration(milliseconds: 600), curve: ListUtils.getCurve(0));
+                        },
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))),
+                  ),
+                ),
+              ))
         ],
       ),
     );
@@ -441,65 +483,67 @@ class _KycScreenState extends State<KycScreen> {
   }
 
   Widget _submitDocuments() {
-    return Center(child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-              color: Colors.transparent,
-              border: Border.all(
-                  color: Colors.white,
-                  width: 3
-              ),
-              borderRadius: BorderRadius.all(Radius.circular(20))),
-          child: Padding(
-            padding: EdgeInsets.all(4),
-            child: Icon(CommunityMaterialIcons.camera, size: 100, color: Colors.white),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.all(16),
-          child: Text("Identity: Documents. Take your selfie photo, along with the first page of your passport.", style: TextStyle(color: Colors.white, fontSize: 20)),
-        ),
-        Stack(
-          children: [
-            Container(
-              child: _grantedCameraWidget()
-//              child: _cameraPermissionStatus.isGranted ? _grantedCameraWidget() : _ungrantedCameraWidget(),
-            ),
-          ],
-        )
-      ],
-    ),
+    return Center(
+      child: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      border: Border.all(
+                          color: Colors.white,
+                          width: 3
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                  child: Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(CommunityMaterialIcons.camera, size: 100, color: Colors.white),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text("Identity: Documents", style: TextStyle(color: Colors.white, fontSize: 20)),
+                ),
+                _widgetTogglePermissionCamera(setState),
+                Container(height: 16),
+                Visibility(
+                    visible: _cameraPictureOk,
+                    child: _widgetBackNext())
+              ],
+            );
+          }),
     );
   }
 
-  Widget _grantedCameraWidget() {
+  Widget _widgetTogglePermissionCamera(StateSetter setState) {
+    _checkCameraPermission(setState);
+
     return Center(
       child: Column(
         children: [
-          FlatButton(
-            onPressed: () {
-              _requestCameraPermission();
-            },
-            child: Text('PERMISSION'),
+          Visibility(
+            visible: !_cameraPermissionsOk,
+            child: FlatButton(
+              onPressed: () {
+                _requestCameraPermission(setState);
+              },
+              child: Text("Click to check the camera permission", style: TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.underline)),
+            ),
           ),
-          FlatButton(
-            onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(context, CameraScreen.route, (r) => false);
-            },
-            child: Text('OPEN CAMERA'),
+          Visibility(
+            visible: _cameraPermissionsOk,
+            child: FlatButton(
+              onPressed: () => _handleCameraAndReturnValue(setState),
+              child:  Text("Open camera and take selfie along with the first page of your passport", style: TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.underline)),
+            ),
           ),
         ],
-      ),
+      )
     );
-  }
 
-  Widget _ungrantedCameraWidget() {
-    return FlatButton(onPressed: () async {
-      _requestCameraPermission();
-    }, child: Text('ADSF'));
   }
 
   Widget _videoWidget() {
@@ -514,36 +558,69 @@ class _KycScreenState extends State<KycScreen> {
         }
       },
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                  width: MediaQuery.of(context).size.width * 0.95,
-                  child: AspectRatio(
-                      aspectRatio: 16 / 9,
-                      child: FutureBuilder(
-                        future: _initializeVideoPlayerFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.done) {
-                            return VideoPlayer(_videoController);
-                          } else {
-                            return Center(child: CircularProgressIndicator());
-                          }
-                        },
-                      ))),
-            ),
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Text("Account verification process normally takes 1 - 2 business days. Please watch introduction video and then start exploring the app! When the process is completed, you will see the message: Verification is in progress. Due to the high traffic on our platform, the account verification process may take 3 - 7 days. We are doing our best to proceed with your submission as soon as possible.",
-                  style: TextStyle(color: Colors.white, fontSize: 20)),
-            ),
-            Container(height: 32),
-            _widgetOneButton('Ready!', true)
-          ],
-        ),
+        child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Stack(
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                            width: MediaQuery.of(context).size.width * 0.95,
+                            child: AspectRatio(
+                                aspectRatio: 16 / 9,
+                                child: FutureBuilder(
+                                  future: _initializeVideoPlayerFuture,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.done) {
+                                      return VideoPlayer(_videoController);
+                                    } else {
+                                      return Center(child: CircularProgressIndicator());
+                                    }
+                                  },
+                                ))),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text("Account verification process normally takes 1 - 2 business days. When the verification process is completed, you will get full access to all features in the app. Please watch the introduction video and then start exploring the app!",
+                            style: TextStyle(color: Colors.white, fontSize: 20)),
+                      ),
+                      Container(height: 32),
+                      Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Container(
+                            height: 80,
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: SizedBox.expand(
+                                child: FlatButton(
+                                    child: PlatformText("Ready!", style: Theme.of(context).textTheme.headline6.merge(TextStyle(color: Colors.white))),
+                                    color: FaColor.red[900],
+                                    onPressed: () async {
+                                      _sharedPreferencesManager.putBool(SharedPreferencesManager.keyKycCompleted, true);
+
+                                      _videoController.pause();
+
+                                      await _mockWait(setState);
+
+                                      Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
+                                    },
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))),
+                              ),
+                            ),
+                          ))
+                    ],
+                  ),
+                  Visibility(
+                    visible: _doMockWait,
+                    child: Spinner(),
+                  )
+                ],
+              );
+            }),
       ),
     );
   }
@@ -851,32 +928,6 @@ class _KycScreenState extends State<KycScreen> {
               ),
             )
           ],
-        ));
-  }
-
-  Widget _widgetOneButton(String text, bool finish) {
-    return Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          height: 80,
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: SizedBox.expand(
-              child: FlatButton(
-                  child: PlatformText(text, style: Theme.of(context).textTheme.headline6.merge(TextStyle(color: Colors.white))),
-                  color: FaColor.red[900],
-                  onPressed: () {
-                    if (finish) {
-                      _sharedPreferencesManager.putBool(SharedPreferencesManager.keyKycCompleted, true);
-
-                      Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
-                    } else {
-                      _pageController.nextPage(duration: Duration(milliseconds: 600), curve: ListUtils.getCurve(0));
-                    }
-                  },
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))),
-            ),
-          ),
         ));
   }
 
