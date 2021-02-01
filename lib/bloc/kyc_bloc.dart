@@ -16,11 +16,9 @@ class KycFailure extends KycState {
 }
 
 class KycSuccess extends KycState {
-  KycSuccess();
 }
 
 class KycCache extends KycState {
-  KycCache();
 }
 
 class KycEvent extends KycState {

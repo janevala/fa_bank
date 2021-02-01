@@ -300,4 +300,78 @@ class ListUtils {
       "Zimbabwe"
     ];
   }
+
+  static List<List<String>> getSustainabilityTest() {
+    return [
+      [
+        "Currently, your financial obligations and daily expenses (i.e. house-vehicle loan payment, personal expenses and family expenses) equal what percentage to your total income?",
+        "More than 75% of the total income",
+        "50-75% of the total income",
+        "25-50% of the total income",
+        "less than 25% of the total income"
+      ],
+      [
+        "How would you explain your financial status?",
+        "Having more Assets than Liabilities",
+        "Having Assets equal to Liabilities",
+        "Having less Assets than Liabilities"
+      ],
+      [
+        "What is the key objective for your investments?",
+        "The investment principal shall be secure and generate constant earning even if the earnings are low",
+        "Focus on having constant earnings and can accept the lost of the investment principal to some extent",
+        "Focus on having higher earnings and can accept high potential of loosing some of the investment principal",
+        "Focus on having highest earnings and can accept the lost of most of the investment principal"
+      ],
+      [
+        "You will start to be anxious about your investment assets if your portfolio drops by x%",
+        "5% of less",
+        "More than 5% to 10%",
+        "More than 10% to 20%",
+        "More than 20%"
+      ],
+      [
+        "Do you have any previous experience in investing in the following asset types? (select all that apply)",
+        "Stocks",
+        "Mutual Funds",
+        "Exchange Traded Fronds",
+        "Bonds",
+        "Derivatives",
+        "Options"
+      ],
+      [
+        "Do you have any previous experience in investing in risky and complex products?",
+        "Never",
+        "One-time experience",
+        "Having experience of less than 1 year",
+        "Having experience of more than 1 year"
+      ],
+      [
+        "Are you trading on your own behalf?",
+        "Yes",
+        "No"
+      ],
+      [
+        "Please specify your true purpose of opening an account",
+        "Investment",
+        "Retirement",
+        "Other (Please specify)"
+      ],
+      [
+        "In the past 3 months, have you transferred investments internationally or not?",
+        "Yes",
+        "No"
+      ],
+      [
+        "Are you/your spouse holding a position or having previously held a political position in any country?",
+        "Yes",
+        "No"
+      ],
+      [
+        "Have you previously reported assets and liabilities accounts to government agencies as required by law or not?",
+        "Yes",
+        "No"
+      ],
+    ];
+  }
 }

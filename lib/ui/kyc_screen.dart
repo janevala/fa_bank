@@ -54,6 +54,8 @@ class _KycScreenState extends State<KycScreen> {
   bool _cameraPictureOk = false;
 
   bool _doMockWait = false;
+  
+  List<List<String>> _questionnaire = ListUtils.getSustainabilityTest();
 
   String _formatDateTime(DateTime dateTime) {
     return DateFormat('d MMM yyyy').format(dateTime);
@@ -140,10 +142,10 @@ class _KycScreenState extends State<KycScreen> {
 
   _buildPageList() {
     _pageList.add(_welcomeWidget());
+    _pageList.add(_identifySustainabilityTest());
     _pageList.add(_identifyGeneral());
     _pageList.add(_identifyRegisteredAddress());
     _pageList.add(_widgetSourceOfFunds());
-//    _pageList.add(_identifyVerificationSustainabilityTest());
     _pageList.add(_submitDocuments());
     _pageList.add(_widgetConsent());
     _pageList.add(_videoWidget());
@@ -404,8 +406,79 @@ class _KycScreenState extends State<KycScreen> {
     );
   }
 
-  Widget _identifyVerificationSustainabilityTest() {
-    return Center(child: Text("Identity: Sustainability Test", style: TextStyle(color: Colors.white, fontSize: 20)));
+
+  String _selection = '';
+
+  Widget _identifySustainabilityTest() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 64, left: 16, right: 16),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    border: Border.all(
+                        color: Colors.white,
+                        width: 3
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(20))),
+                child: Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(CommunityMaterialIcons.format_list_bulleted_type, size: 100, color: Colors.white),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Text("Financial Sustainability Questionnaire", style: TextStyle(color: Colors.white, fontSize: 20)),
+              ),
+              Container(height: 16),
+              Column(
+                children: <Widget>[
+                  for (var i = 0; i < _questionnaire.length; i++)
+                    for (var j = 0; j < _questionnaire[i].length; j++)
+                      _widgetColumnElement(i, j)
+                ]
+              ),
+              Container(height: 16),
+              _widgetBackNext()
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _widgetColumnElement(int group, int question) {
+    if (question == 0) {
+      return Padding(
+        padding: EdgeInsets.only(top: 16),
+        child: Align(
+          alignment: Alignment.centerLeft,
+            child: Text(_questionnaire[group][0], style: TextStyle(color: Colors.white, fontSize: 16))),
+      );
+    } else {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          unselectedWidgetColor: Colors.white,
+        ),
+        child: RadioListTile(
+          dense: true,
+          activeColor: Colors.white,
+          value: _questionnaire[group][question],
+          groupValue: _questionnaire[group],
+          onChanged: (val) {
+            setState(() {
+              _selection = val;
+            });
+          },
+          title: Text(_questionnaire[group][question], style: TextStyle(color: Colors.white)),
+        ),
+      );
+    }
   }
 
   Widget _widgetConsent() {
