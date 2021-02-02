@@ -1,9 +1,7 @@
-
-
 String getPortfolioQuery(int uid) {
   return """
 query PortfolioOverview {
-  portfolio(id: """ + uid.toString() + """) {
+  portfolio(id: $uid) {
     client: primaryContact {
       name
     }
@@ -62,7 +60,7 @@ query PortfolioOverview {
 String getSecurityQuery(String securityCode) {
   return """
 query Security {
-  securities(securityCode:\"""" + securityCode + """\") {
+  securities(securityCode:\"$securityCode\") {
     name
     securityCode
     marketData: latestMarketData {
@@ -89,13 +87,13 @@ String getTransactionMutation(String parentPortfolio, String security, String am
 mutation addOrder {
   importTradeOrders(tradeOrderList: [
     {
-      parentPortfolio: \"""" + parentPortfolio + """\"
-      security: \"""" + security + """\"
-      amount: \"""" + amount + """\"
-      unitPrice: \"""" + price + """\"
-      currency: \"""" + currency + """\"
-      type: \"""" + type + """\"
-      transactionDate: \"""" + dateString + """\"
+      parentPortfolio: \"$parentPortfolio\"
+      security: \"$security\"
+      amount: \"$amount\"
+      unitPrice: \"$price\"
+      currency: \"$currency\"
+      type: \"$type\"
+      transactionDate: \"$dateString\"
       status: "4"
     }
   ])

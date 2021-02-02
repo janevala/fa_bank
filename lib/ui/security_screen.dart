@@ -349,7 +349,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                   child: Align(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-                                      'Return',
+                                      'Return', style: Theme.of(context).textTheme.subtitle2
                                     ),
                                   ),
                                 ),
@@ -358,7 +358,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                     alignment: Alignment.centerRight,
                                     child: Text(
                                       _getParsedValueWithCode('EUR', investment.positionValue - investment.purchaseValue, 2),
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Utils.getColor(investment.positionValue - investment.purchaseValue)),
+                                      style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold, color: Utils.getColor(investment.positionValue - investment.purchaseValue))),
                                     ),
                                   ),
                                 )

@@ -8,6 +8,7 @@ import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/ui/login_screen.dart';
+import 'package:fa_bank/ui/questionnaire_group.dart';
 import 'package:fa_bank/utils/list_utils.dart';
 import 'package:fa_bank/utils/shared_preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
@@ -142,10 +143,10 @@ class _KycScreenState extends State<KycScreen> {
 
   _buildPageList() {
     _pageList.add(_welcomeWidget());
-    _pageList.add(_identifySustainabilityTest());
     _pageList.add(_identifyGeneral());
     _pageList.add(_identifyRegisteredAddress());
     _pageList.add(_widgetSourceOfFunds());
+    _pageList.add(_identifySustainabilityTest());
     _pageList.add(_submitDocuments());
     _pageList.add(_widgetConsent());
     _pageList.add(_videoWidget());
@@ -406,9 +407,6 @@ class _KycScreenState extends State<KycScreen> {
     );
   }
 
-
-  String _selection = '';
-
   Widget _identifySustainabilityTest() {
     return Center(
       child: Padding(
@@ -433,15 +431,14 @@ class _KycScreenState extends State<KycScreen> {
               ),
               Padding(
                 padding: EdgeInsets.all(16),
-                child: Text("Financial Sustainability Questionnaire", style: TextStyle(color: Colors.white, fontSize: 20)),
+                child: Text("Sustainability Questionnaire", style: TextStyle(color: Colors.white, fontSize: 20)),
               ),
               Container(height: 16),
               Column(
-                children: <Widget>[
-                  for (var i = 0; i < _questionnaire.length; i++)
-                    for (var j = 0; j < _questionnaire[i].length; j++)
-                      _widgetColumnElement(i, j)
-                ]
+                  children: <Widget>[
+                    for (var i = 0; i < _questionnaire.length; i++)
+                      QuestionnaireGroup(questionnaireGroup: _questionnaire[i])
+                  ]
               ),
               Container(height: 16),
               _widgetBackNext()
@@ -450,35 +447,6 @@ class _KycScreenState extends State<KycScreen> {
         ),
       ),
     );
-  }
-
-  Widget _widgetColumnElement(int group, int question) {
-    if (question == 0) {
-      return Padding(
-        padding: EdgeInsets.only(top: 16),
-        child: Align(
-          alignment: Alignment.centerLeft,
-            child: Text(_questionnaire[group][0], style: TextStyle(color: Colors.white, fontSize: 16))),
-      );
-    } else {
-      return Theme(
-        data: Theme.of(context).copyWith(
-          unselectedWidgetColor: Colors.white,
-        ),
-        child: RadioListTile(
-          dense: true,
-          activeColor: Colors.white,
-          value: _questionnaire[group][question],
-          groupValue: _questionnaire[group],
-          onChanged: (val) {
-            setState(() {
-              _selection = val;
-            });
-          },
-          title: Text(_questionnaire[group][question], style: TextStyle(color: Colors.white)),
-        ),
-      );
-    }
   }
 
   Widget _widgetConsent() {
