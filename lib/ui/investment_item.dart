@@ -65,9 +65,7 @@ class InvestmentItem extends StatelessWidget {
                         child: Text(
                           investment.security.name,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.subtitle2.merge(
-                            TextStyle(fontSize: 17, color: Colors.black),
-                          ),
+                          style: TextStyle(fontSize: 17, color: Colors.black),
                         ))
                 ),
                 Container(height: rowHeight, width: 10, child: VerticalDivider(thickness: 2, color: Colors.grey[300])),
@@ -75,8 +73,8 @@ class InvestmentItem extends StatelessWidget {
                     flex: 3,
                     child: Column(
                       children: <Widget>[
-                        _widgetBodyText2(context, 'Pos. Value'),
-                        _widgetHeadline6(
+                        _widgetBodyText(context, 'Pos. Value'),
+                        _widgetHeadline(
                             context, strPositionValue, Colors.black),
                       ],
                     )),
@@ -85,8 +83,8 @@ class InvestmentItem extends StatelessWidget {
                     flex: 3,
                     child: Column(
                       children: <Widget>[
-                        _widgetBodyText2(context, 'Amount'),
-                        _widgetHeadline6(context, investment.amount.toStringAsFixed(0),
+                        _widgetBodyText(context, 'Amount'),
+                        _widgetHeadline(context, investment.amount.toStringAsFixed(0),
                             Colors.black),
                       ],
                     )),
@@ -94,8 +92,8 @@ class InvestmentItem extends StatelessWidget {
                   flex: 3,
                   child: Column(
                     children: <Widget>[
-                      _widgetBodyText2(context, 'Return'),
-                      _widgetHeadline6(context, (investment.changePercent * 100).toStringAsFixed(1).replaceFirst('.', ',') + '%',
+                      _widgetBodyText(context, 'Return'),
+                      _widgetHeadline(context, (investment.changePercent * 100).toStringAsFixed(1).replaceFirst('.', ',') + '%',
                           Utils.getColor(investment.changePercent * 100)),
                     ],
                   ),
@@ -110,25 +108,21 @@ class InvestmentItem extends StatelessWidget {
     );
   }
 
-  Widget _widgetHeadline6(BuildContext context, String text, Color color) {
+  Widget _widgetHeadline(BuildContext context, String text, Color color) {
     return Align(
         alignment: Alignment.centerLeft,
         child: Text(
           text,
-          style: Theme.of(context).textTheme.subtitle2.merge(
-                TextStyle(fontSize: 16, color: color, fontWeight: FontWeight.bold),
-              ),
+          style: TextStyle(fontSize: 16, color: color, fontWeight: FontWeight.bold),
         ));
   }
 
-  Widget _widgetBodyText2(BuildContext context, String text) {
+  Widget _widgetBodyText(BuildContext context, String text) {
     return Align(
         alignment: Alignment.centerLeft,
         child: Text(
           text,
-          style: Theme.of(context).textTheme.bodyText2.merge(
-                TextStyle(color: Colors.grey[600]),
-              ),
+          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
         ));
   }
 }

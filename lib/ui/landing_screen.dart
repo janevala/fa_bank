@@ -77,16 +77,10 @@ class _LandingScreenState extends State<LandingScreen> {
               );
             } else if (state is LandingCache) {
               _spin = false;
-              return Center(
-                child: Text('LandingCache',
-                    style: Theme.of(context).textTheme.subtitle2),
-              );
+              return Center(child: Text('LandingCache'));
             } else if (state is LandingFailure) {
               _spin = false;
-              return Center(
-                child: Text('LandingFailure',
-                    style: Theme.of(context).textTheme.subtitle2),
-              );
+              return Center(child: Text('LandingFailure'));
             }
 
             return Spinner();
@@ -201,10 +195,7 @@ class _LandingScreenState extends State<LandingScreen> {
             _getIcon(5),
             Padding(
               padding: EdgeInsets.only(top: 4, bottom: 4),
-              child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
-                TextStyle(
-                    color: Colors.white),
-              )),
+              child: Text(text, style: TextStyle(fontSize: 14, color: Colors.white)),
             )
           ],
         ),
@@ -229,10 +220,7 @@ class _LandingScreenState extends State<LandingScreen> {
             _getIcon(7),
             Padding(
               padding: EdgeInsets.only(top: 4, bottom: 4),
-              child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
-                TextStyle(
-                    color: Colors.white),
-              )),
+              child: Text(text, style: TextStyle(fontSize: 14, color: Colors.white)),
             )
           ],
         ),
@@ -251,10 +239,7 @@ class _LandingScreenState extends State<LandingScreen> {
               _getIcon(iconId),
               Padding(
                 padding: EdgeInsets.only(top: 4, bottom: 4),
-                child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
-                  TextStyle(
-                      color: Colors.white),
-                )),
+                child: Text(text, style: TextStyle(fontSize: 14, color: Colors.white)),
               )
             ],
           ),
@@ -275,10 +260,7 @@ class _LandingScreenState extends State<LandingScreen> {
             _getIcon(8),
             Padding(
               padding: EdgeInsets.only(top: 4, bottom: 4),
-              child: Text(text, style: Theme.of(context).textTheme.bodyText2.merge(
-                TextStyle(
-                    color: Colors.white),
-              )),
+              child: Text(text, style: TextStyle(fontSize: 14, color: Colors.white)),
             )
           ],
         ),

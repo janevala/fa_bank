@@ -42,14 +42,13 @@ class _AppState extends State<App> {
             accentColor: Colors.blueGrey[500],
 //adjusting fonts in the app is work in progress, bellow section should be changed
             fontFamily: 'Lato',
-            textTheme: TextTheme(
+/*            textTheme: TextTheme(
               headline6: GoogleFonts.lato(textStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.normal)),
               subtitle2: GoogleFonts.lato(textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.normal)),
               bodyText2: GoogleFonts.lato(textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
-              bodyText1: GoogleFonts.lato(textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.normal)),
-
-/*            textTheme: GoogleFonts.latoTextTheme(
-              Theme.of(context).textTheme,*/
+              bodyText1: GoogleFonts.lato(textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.normal)),*/
+            textTheme: GoogleFonts.latoTextTheme(
+              Theme.of(context).textTheme,
             )
         ),
         home: _alreadyLoggedIn ? LandingScreen() : LoginScreen(),

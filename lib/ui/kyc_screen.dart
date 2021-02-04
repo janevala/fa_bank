@@ -180,12 +180,12 @@ class _KycScreenState extends State<KycScreen> {
             } else if (state is KycCache) {
               _spin = false;
               return Center(
-                child: Text('KycCache', style: Theme.of(context).textTheme.subtitle2),
+                child: Text('KycCache', style: TextStyle(fontSize: 18)),
               );
             } else if (state is KycFailure) {
               _spin = false;
               return Center(
-                child: Text('KycFailure', style: Theme.of(context).textTheme.subtitle2),
+                child: Text('KycFailure', style: TextStyle(fontSize: 18)),
               );
             }
 
@@ -254,7 +254,7 @@ class _KycScreenState extends State<KycScreen> {
                   padding: EdgeInsets.all(20),
                   child: SizedBox.expand(
                     child: FlatButton(
-                        child: PlatformText("Lets Start!", style: Theme.of(context).textTheme.headline6.merge(TextStyle(color: Colors.white))),
+                        child: PlatformText("Lets Start!", style: TextStyle(fontSize: 22, color: Colors.white)),
                         color: FaColor.red[900],
                         onPressed: () async {
                           _pageController.nextPage(duration: Duration(milliseconds: 600), curve: ListUtils.getCurve(0));
@@ -638,7 +638,7 @@ class _KycScreenState extends State<KycScreen> {
                               padding: EdgeInsets.all(20),
                               child: SizedBox.expand(
                                 child: FlatButton(
-                                    child: PlatformText("Ready!", style: Theme.of(context).textTheme.headline6.merge(TextStyle(color: Colors.white))),
+                                    child: PlatformText("Ready!", style: TextStyle(fontSize: 22, color: Colors.white)),
                                     color: FaColor.red[900],
                                     onPressed: () async {
                                       _sharedPreferencesManager.putBool(SharedPreferencesManager.keyKycCompleted, true);
@@ -676,7 +676,7 @@ class _KycScreenState extends State<KycScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: TextField(
-                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                     controller: null,
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -694,7 +694,7 @@ class _KycScreenState extends State<KycScreen> {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextField(
-                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                     controller: null,
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -721,7 +721,7 @@ class _KycScreenState extends State<KycScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: TextField(
-                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                     controller: null,
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -755,7 +755,7 @@ class _KycScreenState extends State<KycScreen> {
                   },
                   child: AbsorbPointer(
                     child: TextField(
-                        style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                        style: TextStyle(fontSize: 18, color: Colors.white),
                         controller: _controllerDate,
                         keyboardType: TextInputType.text,
                         cursorColor: Colors.white,
@@ -818,7 +818,7 @@ class _KycScreenState extends State<KycScreen> {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextField(
-                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                     controller: null,
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -892,7 +892,7 @@ class _KycScreenState extends State<KycScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: TextField(
-                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                     controller: null,
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -910,7 +910,7 @@ class _KycScreenState extends State<KycScreen> {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextField(
-                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                     controller: null,
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -937,7 +937,7 @@ class _KycScreenState extends State<KycScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: TextField(
-                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                     controller: null,
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -955,7 +955,7 @@ class _KycScreenState extends State<KycScreen> {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextField(
-                    style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                     controller: null,
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -985,7 +985,7 @@ class _KycScreenState extends State<KycScreen> {
                     padding: EdgeInsets.all(20),
                     child: SizedBox.expand(
                       child: FlatButton(
-                          child: PlatformText('Back', style: Theme.of(context).textTheme.headline6.merge(TextStyle(color: Colors.white))),
+                          child: PlatformText('Back', style: TextStyle(fontSize: 22, color: Colors.white)),
                           color: FaColor.red[900],
                           onPressed: () {
                             _pageController.previousPage(duration: Duration(milliseconds: 500), curve: ListUtils.getCurve(0));
@@ -999,7 +999,7 @@ class _KycScreenState extends State<KycScreen> {
                     padding: EdgeInsets.all(20),
                     child: SizedBox.expand(
                       child: FlatButton(
-                          child: PlatformText('Next', style: Theme.of(context).textTheme.headline6.merge(TextStyle(color: Colors.white))),
+                          child: PlatformText('Next', style: TextStyle(fontSize: 22, color: Colors.white)),
                           color: FaColor.red[900],
                           onPressed: () {
                             _pageController.nextPage(duration: Duration(milliseconds: 500), curve: ListUtils.getCurve(0));

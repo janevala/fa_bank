@@ -143,23 +143,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         if (Platform.isIOS) {
           return CupertinoAlertDialog(
-            title: Text(title, style: Theme.of(context).textTheme.subtitle2),
+            title: Text(title, style: TextStyle(fontSize: 18)),
             content: _widgetTradeOrderList(context, tradeOrders),
             actions: [
               FlatButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: Text('Ok', style: Theme.of(context).textTheme.subtitle2),
+                child: Text('Ok', style: TextStyle(fontSize: 18)),
               ),
             ],
           );
         } else {
           return AlertDialog(
-            title: Text(title, style: Theme.of(context).textTheme.subtitle2),
+            title: Text(title, style: TextStyle(fontSize: 18)),
             content: _widgetTradeOrderList(context, tradeOrders),
             actions: [
               FlatButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: Text('Ok', style: Theme.of(context).textTheme.subtitle2),
+                child: Text('Ok', style: TextStyle(fontSize: 18)),
               ),
             ],
           );
@@ -195,16 +195,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(titleText,
-              style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 16)),
+              style: TextStyle(fontSize: 16),
               overflow: TextOverflow.ellipsis),
           Container(height: 4),
           Row(
             children: <Widget>[
               Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.date_range, size: 18)),
-              Padding(padding: EdgeInsets.only(right: 8), child: Text(dateText, style: Theme.of(context).textTheme.bodyText2)),
+              Padding(padding: EdgeInsets.only(right: 8), child: Text(dateText, style: TextStyle(fontSize: 14))),
               Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.business_center, size: 18)),
-              Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName, style: Theme.of(context).textTheme.bodyText2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor)))),
-              Text(tradeOrder.amount.toInt().toString(), style: Theme.of(context).textTheme.bodyText2.merge(TextStyle(fontWeight: FontWeight.bold, color: typeColor)), overflow: TextOverflow.ellipsis),
+              Padding(padding: EdgeInsets.only(right: 4), child: Text(tradeOrder.typeName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: typeColor))),
+              Text(tradeOrder.amount.toInt().toString(), style: TextStyle(fontSize:14, fontWeight: FontWeight.bold, color: typeColor), overflow: TextOverflow.ellipsis),
             ],
           ),
           Divider(color: Colors.grey[500], thickness: 1)
@@ -263,19 +263,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _spin = false;
               _animate = true;
               if (state.portfolioBody.portfolio == null) return Center(
-                child: Text('Error', style: Theme.of(context).textTheme.subtitle2),
+                child: Text('Error', style: TextStyle(fontSize: 18))
               );
               tradeOrders = state.portfolioBody.portfolio.tradeOrders;
               return _widgetMainView(context, state.portfolioBody);
             } else if (state is DashboardCache) {
               _animate = false;
               if (state.portfolioBody.portfolio == null) return Center(
-                child: Text('Error', style: Theme.of(context).textTheme.subtitle2),
+                child: Text('Error', style: TextStyle(fontSize: 18)),
               );
               return _widgetMainView(context, state.portfolioBody);
             } else if (state is DashboardFailure) {
               return Center(
-                child: Text(state.error, style: Theme.of(context).textTheme.subtitle2),
+                child: Text(state.error, style: TextStyle(fontSize: 18)),
               );
             }
 
@@ -288,7 +288,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _widgetMainView(BuildContext context, PortfolioBody portfolioBody) {
     if (portfolioBody.portfolio == null) return Center(
-      child: Text('Error', style: Theme.of(context).textTheme.subtitle2),
+      child: Text('Error', style: TextStyle(fontSize: 18)),
     );
 
     _graphRaw = portfolioBody.portfolio.graph;
@@ -326,15 +326,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
-                                  Expanded(child: Align(
-                                      alignment: Alignment.topCenter,
-                                      child: Text(_maxY.toString(), style: Theme.of(context).textTheme.bodyText1))),
-                                  Expanded(child: Align(
-                                      alignment: Alignment.center,
-                                      child: Text(((_maxY+_minY) / 2).toStringAsFixed(1), style: Theme.of(context).textTheme.bodyText1))),
-                                  Expanded(child: Align(
-                                    alignment: Alignment.bottomCenter,
-                                      child: Text(_minY.toString(), style: Theme.of(context).textTheme.bodyText1)))
+                                  Expanded(child: Align(alignment: Alignment.topCenter, child: Text(_maxY.toString(), style: TextStyle(fontSize: 12)))),
+                                  Expanded(child: Align(alignment: Alignment.center, child: Text(((_maxY+_minY) / 2).toStringAsFixed(1), style: TextStyle(fontSize: 12)))),
+                                  Expanded(child: Align(alignment: Alignment.bottomCenter, child: Text(_minY.toString(), style: TextStyle(fontSize: 12))))
                                 ],
                               ),
                             )),
@@ -399,7 +393,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       titlesData: FlTitlesData(
         bottomTitles: SideTitles(
           showTitles: false,
-          getTextStyles: (value) => Theme.of(context).textTheme.bodyText1,
+          getTextStyles: (value) => TextStyle(fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
               case 1:
@@ -410,7 +404,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         leftTitles: SideTitles(
           showTitles: false,
-          getTextStyles: (value) => Theme.of(context).textTheme.bodyText1,
+          getTextStyles: (value) => TextStyle(fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
               case 60:
@@ -513,7 +507,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Center(
           child: Text(
             _chartTimeMSecs > 0 ? _formatDateTime(DateTime.fromMillisecondsSinceEpoch(_chartTimeMSecs.toInt())) : _formatDateTime(_dateRangeFirst) + ' - ' + _formatDateTime(_dateRangeLast),
-            style: Theme.of(context).textTheme.bodyText2,
+            style: TextStyle(fontSize: 14),
           ),
         ),
       ),
@@ -525,13 +519,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         padding: EdgeInsets.only(top: 12, bottom: 12),
         child: Column(
           children: <Widget>[
-            _widgetHeadline6(context, portfolio.portfolio.portfolioName),
+            _widgetHeadline(context, portfolio.portfolio.portfolioName),
             Center(
                 child: Text(
               portfolio.portfolio.client.name,
-              style: Theme.of(context).textTheme.subtitle2.merge(
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600]),
-                  ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[600]),
             ))
           ],
         ));
@@ -568,9 +560,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Center(
                   child: RichText(
                     text: TextSpan(
-                      style: Theme.of(context).textTheme.bodyText2.merge(
-                            TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
-                          ),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
                       children: [
                         WidgetSpan(
                           child: Icon(Icons.date_range, size: 20),
@@ -590,12 +580,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: FlatButton(
                     color: _pressWeekAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_week,
-                        style: Theme.of(context).textTheme.bodyText2.merge(
-                              TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: _pressWeekAttention ? Colors.white : Colors.black),
-                            )),
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: _pressWeekAttention ? Colors.white : Colors.black)),
                     onPressed: () => setState(() {
                           if (_pressWeekAttention)
                             _graphDateCriteria = 'all';
@@ -626,12 +614,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: FlatButton(
                   color: _pressMonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_month,
-                      style: Theme.of(context).textTheme.bodyText2.merge(
-                            TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: _pressMonthAttention ? Colors.white : Colors.black),
-                          )),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _pressMonthAttention ? Colors.white : Colors.black)),
                   onPressed: () => setState(() {
                         if (_pressMonthAttention)
                           _graphDateCriteria = 'all';
@@ -663,12 +649,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: FlatButton(
                   color: _press3MonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_threeMonth,
-                      style: Theme.of(context).textTheme.bodyText2.merge(
-                            TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: _press3MonthAttention ? Colors.white : Colors.black),
-                          )),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _press3MonthAttention ? Colors.white : Colors.black)),
                   onPressed: () => setState(() {
                         if (_press3MonthAttention)
                           _graphDateCriteria = 'all';
@@ -700,12 +684,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: FlatButton(
                     color: _press6MonthAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_sixMonth,
-                        style: Theme.of(context).textTheme.bodyText2.merge(
-                              TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: _press6MonthAttention ? Colors.white : Colors.black),
-                            )),
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: _press6MonthAttention ? Colors.white : Colors.black)),
                     onPressed: () => setState(() {
                           if (_press6MonthAttention)
                             _graphDateCriteria = 'all';
@@ -736,12 +718,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: FlatButton(
                     color: _pressYTDAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_ytd,
-                        style: Theme.of(context).textTheme.bodyText2.merge(
-                              TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: _pressYTDAttention ? Colors.white : Colors.black),
-                            )),
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: _pressYTDAttention ? Colors.white : Colors.black)),
                     onPressed: () => setState(() {
                           if (_pressYTDAttention)
                             _graphDateCriteria = 'all';
@@ -769,7 +749,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _widgetParsedNumberText(BuildContext context, String str) {
     final formatter = NumberFormat("#,###");// using comma here will not work, even by escaping with back slash
     String newString = formatter.format(int.parse(str));
-    return Text('€' + newString.replaceAll(',', '.'), style: Theme.of(context).textTheme.headline6.merge(TextStyle(fontSize: 19)));
+    return Text('€' + newString.replaceAll(',', '.'), style: TextStyle(fontSize: 19));
   }
 
   Widget _widgetSummary(BuildContext context, PortfolioBody portfolio) {
@@ -796,9 +776,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Total Value'),
+              _widgetBodyText(context, 'Total Value'),
               Center(
-                  child: Text(strNetAssetValue, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19))),
+                  child: Text(strNetAssetValue, style: TextStyle(fontSize: 19)),
               ),
             ],
           ),
@@ -806,9 +786,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Market Value'),
+              _widgetBodyText(context, 'Market Value'),
               Center(
-                child: Text(strMarketValue, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19))),
+                child: Text(strMarketValue, style: TextStyle(fontSize: 19)),
               )
             ],
           ),
@@ -816,9 +796,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Cash Balance'),
+              _widgetBodyText(context, 'Cash Balance'),
               Center(
-                child: Text(strCashBalance, style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19))),
+                child: Text(strCashBalance, style: TextStyle(fontSize: 19)),
               )
             ],
           ),
@@ -840,7 +820,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Flexible(
           child: Text(
             'Investments',
-            style: Theme.of(context).textTheme.bodyText2,
+            style: TextStyle(fontSize: 14)
           ),
         ),
         Flexible(
@@ -852,7 +832,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Flexible(
           child: Text(
             'Benchmark',
-            style: Theme.of(context).textTheme.bodyText2,
+            style: TextStyle(fontSize: 14),
           ),
         ),
       ]),
@@ -874,21 +854,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             }));
   }
 
-  Widget _widgetHeadline6(BuildContext context, String text) {
+  Widget _widgetHeadline(BuildContext context, String text) {
     return Center(
-        child: Text(
-      text,
-      style: Theme.of(context).textTheme.headline6,
+        child: Text(text, style: TextStyle(fontSize: 22),
     ));
   }
 
-  Widget _widgetBodyText2(BuildContext context, String text) {
+  Widget _widgetBodyText(BuildContext context, String text) {
     return Center(
         child: Text(
       text,
-      style: Theme.of(context).textTheme.bodyText2.merge(
-            TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600]),
-          ),
+      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey[600]),
     ));
   }
 

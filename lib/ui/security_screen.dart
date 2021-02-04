@@ -161,12 +161,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     children: [
                       Padding(
                           padding: EdgeInsets.only(top: 16, bottom: 16),
-                          child: _widgetSubtitle2(context, _transactionType == 'B' ? 'New Buy Order' : 'New Sell Order')),
+                          child: _widgetSubtitle(context, _transactionType == 'B' ? 'New Buy Order' : 'New Sell Order')),
                       _widgetAmount(context),
                       _widgetDate(context),
-                      _widgetTextRowSubtitle2(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue, 1)),
-                      _widgetTextRowSubtitle2(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue), 1)),
-                      _widgetTextRowSubtitle2(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)), 1)),
+                      _widgetTextRowSubtitle(context, 'Ask:', _getParsedValueWithCode('EUR', latestValue, 1)),
+                      _widgetTextRowSubtitle(context, 'Estimated Price:', _getParsedValueWithCode('EUR', _calculateEstimated(latestValue), 1)),
+                      _widgetTextRowSubtitle(context, 'Estimated Balance:', _getParsedValueWithCode('EUR', _calculateBalance(cashBalance, _calculateEstimated(latestValue)), 1)),
                       _widgetConfirmation(context),
                       Container(height: 16),
                       Row(
@@ -176,15 +176,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                 child: Padding(
                                   padding: EdgeInsets.only(right: 20),
                                   child: FlatButton(
-                                      child: Text('CANCEL',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headline6
-                                              .merge(
-                                            TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 20),
-                                          )),
+                                      child: Text('CANCEL', style: TextStyle(color: Colors.black, fontSize: 20)),
                                       color: Colors.white,
                                       onPressed: () {
                                         FocusScope.of(context).unfocus();
@@ -230,9 +222,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         iconTheme: IconThemeData(color: Colors.white),
         title: Text(
           security.name,
-          style: Theme.of(context).textTheme.headline6.merge(
-            TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-          ),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: FaColor.red[900],
       ),
@@ -255,7 +245,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               return _widgetMainView(context, state.securityBody, investment, shortName, cashBalance);
             } else if (state is SecurityFailure) {
               return Center(
-                child: Text(state.error, style: Theme.of(context).textTheme.subtitle2),
+                child: Text(state.error, style: TextStyle(fontSize: 18)),
               );
             }
 
@@ -305,15 +295,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
-                                  Expanded(child: Align(
-                                      alignment: Alignment.topCenter,
-                                      child: Text(_maxY.toString(), style: Theme.of(context).textTheme.bodyText1))),
-                                  Expanded(child: Align(
-                                      alignment: Alignment.center,
-                                      child: Text(((_maxY+_minY) / 2).toStringAsFixed(1), style: Theme.of(context).textTheme.bodyText1))),
-                                  Expanded(child: Align(
-                                      alignment: Alignment.bottomCenter,
-                                      child: Text(_minY.toString(), style: Theme.of(context).textTheme.bodyText1)))
+                                  Expanded(child: Align(alignment: Alignment.topCenter, child: Text(_maxY.toString(), style: TextStyle(fontSize: 12)))),
+                                  Expanded(child: Align(alignment: Alignment.center, child: Text(((_maxY+_minY) / 2).toStringAsFixed(1), style: TextStyle(fontSize: 12)))),
+                                  Expanded(child: Align(alignment: Alignment.bottomCenter, child: Text(_minY.toString(), style: TextStyle(fontSize: 12))))
                                 ],
                               ),
                             )),
@@ -338,8 +322,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         _widgetInformation(
                             context, securityBody.securities[0].url),
                         Divider(color: Colors.black),
-                        _widgetTextRowSubtitle2(context, 'Position Value', _getParsedValueWithCode('EUR', investment.positionValue, 2)),
-                        _widgetTextRowSubtitle2(context, 'Purchase Value', _getParsedValueWithCode('EUR', investment.purchaseValue, 2)),
+                        _widgetTextRowSubtitle(context, 'Position Value', _getParsedValueWithCode('EUR', investment.positionValue, 2)),
+                        _widgetTextRowSubtitle(context, 'Purchase Value', _getParsedValueWithCode('EUR', investment.purchaseValue, 2)),
                         Padding(
                             padding: EdgeInsets.only(top: 12, bottom: 12),
                             child: Row(
@@ -348,9 +332,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                 Flexible(
                                   child: Align(
                                     alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      'Return', style: Theme.of(context).textTheme.subtitle2
-                                    ),
+                                    child: Text('Return', style: TextStyle(fontSize: 18)),
                                   ),
                                 ),
                                 Flexible(
@@ -358,15 +340,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
                                     alignment: Alignment.centerRight,
                                     child: Text(
                                       _getParsedValueWithCode('EUR', investment.positionValue - investment.purchaseValue, 2),
-                                      style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold, color: Utils.getColor(investment.positionValue - investment.purchaseValue))),
+                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Utils.getColor(investment.positionValue - investment.purchaseValue)),
                                     ),
                                   ),
                                 )
                               ],
                             )),
-                        _widgetTextRowSubtitle2(context, 'ESG Rating', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.esgObject.value.toStringAsFixed(0) : 'n/a'),
-                        _widgetTextRowSubtitle2(context, 'Risk Score', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.riskObject.value.toStringAsFixed(0) : 'n/a'),
-                        _widgetTextRowSubtitle2(context, 'Ticker', investment.security.securityCode),
+                        _widgetTextRowSubtitle(context, 'ESG Rating', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.esgObject.value.toStringAsFixed(0) : 'n/a'),
+                        _widgetTextRowSubtitle(context, 'Risk Score', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.riskObject.value.toStringAsFixed(0) : 'n/a'),
+                        _widgetTextRowSubtitle(context, 'Ticker', investment.security.securityCode),
                       ]),
                     ),
                   )
@@ -387,15 +369,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           padding: EdgeInsets.all(20),
                           child: SizedBox.expand(
                             child: FlatButton(
-                                child: Text('SELL',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headline6
-                                        .merge(
-                                      TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 20),
-                                    )),
+                                child: Text('SELL', style: TextStyle(color: Colors.white, fontSize: 20)),
                                 color: FaColor.red[900],
                                 onPressed: () {
                                   setState(() {
@@ -417,15 +391,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           padding: EdgeInsets.all(20),
                           child: SizedBox.expand(
                             child: FlatButton(
-                                child: Text('BUY',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headline6
-                                        .merge(
-                                      TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 20),
-                                    )),
+                                child: Text('BUY', style: TextStyle(color: Colors.white, fontSize: 20)),
                                 color: Colors.green,
                                 onPressed: () {
                                   setState(() {
@@ -492,7 +458,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
       titlesData: FlTitlesData(
         bottomTitles: SideTitles(
           showTitles: false,
-          getTextStyles: (value) => Theme.of(context).textTheme.bodyText1,
+          getTextStyles: (value) => TextStyle(fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
               case 1:
@@ -503,7 +469,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ),
         leftTitles: SideTitles(
           showTitles: false,
-          getTextStyles: (value) => Theme.of(context).textTheme.bodyText1,
+          getTextStyles: (value) => TextStyle(fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
               case 60:
@@ -593,13 +559,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   Widget _widgetSendButton(BuildContext context, SecurityBody securityBody, String shortName) {
     return FlatButton(
-        child: Text('SEND',
-            style: Theme.of(context).textTheme.headline6.merge(
-              TextStyle(
-                  color:
-                  Colors.white,
-                  fontSize: 20),
-            )),
+        child: Text('SEND', style: TextStyle(color: Colors.white, fontSize: 20)),
         color: _transactionType == 'B' ? Colors.green : FaColor.red[900],
         onPressed: () async {
           FocusScope.of(context).unfocus();
@@ -658,9 +618,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 child: Center(
                   child: RichText(
                     text: TextSpan(
-                      style: Theme.of(context).textTheme.bodyText2.merge(
-                            TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
-                          ),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
                       children: [
                         WidgetSpan(
                           child: Icon(Icons.date_range, size: 20),
@@ -680,12 +638,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 child: FlatButton(
                     color: _pressWeekAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_week,
-                        style: Theme.of(context).textTheme.bodyText2.merge(
-                              TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: _pressWeekAttention ? Colors.white : Colors.black),
-                            )),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _pressWeekAttention ? Colors.white : Colors.black)),
                     onPressed: () => setState(() {
                           if (_pressWeekAttention)
                             _graphDateCriteria = 'all';
@@ -716,12 +669,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               child: FlatButton(
                   color: _pressMonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_month,
-                      style: Theme.of(context).textTheme.bodyText2.merge(
-                            TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: _pressMonthAttention ? Colors.white : Colors.black),
-                          )),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _pressMonthAttention ? Colors.white : Colors.black)),
                   onPressed: () => setState(() {
                         if (_pressMonthAttention)
                           _graphDateCriteria = 'all';
@@ -753,12 +701,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               child: FlatButton(
                   color: _press3MonthAttention ? FaColor.red[900] : Colors.white,
                   child: Text(_threeMonth,
-                      style: Theme.of(context).textTheme.bodyText2.merge(
-                            TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: _press3MonthAttention ? Colors.white : Colors.black),
-                          )),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _press3MonthAttention ? Colors.white : Colors.black)),
                   onPressed: () => setState(() {
                         if (_press3MonthAttention)
                           _graphDateCriteria = 'all';
@@ -790,12 +733,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 child: FlatButton(
                     color: _press6MonthAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_sixMonth,
-                        style: Theme.of(context).textTheme.bodyText2.merge(
-                              TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: _press6MonthAttention ? Colors.white : Colors.black),
-                            )),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _press6MonthAttention ? Colors.white : Colors.black)),
                     onPressed: () => setState(() {
                           if (_press6MonthAttention)
                             _graphDateCriteria = 'all';
@@ -826,12 +764,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 child: FlatButton(
                     color: _pressYTDAttention ? FaColor.red[900] : Colors.white,
                     child: Text(_ytd,
-                        style: Theme.of(context).textTheme.bodyText2.merge(
-                              TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: _pressYTDAttention ? Colors.white : Colors.black),
-                            )),
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _pressYTDAttention ? Colors.white : Colors.black)),
                     onPressed: () => setState(() {
                           if (_pressYTDAttention)
                             _graphDateCriteria = 'all';
@@ -869,16 +802,16 @@ class _SecurityScreenState extends State<SecurityScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Total Amount'),
-              _widgetBoldSubtitle2(context, investment.amount.toStringAsFixed(0), Colors.black)
+              _widgetBodyText(context, 'Total Amount'),
+              _widgetBoldSubtitle(context, investment.amount.toStringAsFixed(0), Colors.black)
             ],
           ),
         ),
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Total Current Value'),
-              Text(_getParsedValue(securityBody.securities[0], (investment.amount * securityBody.securities[0].marketData.latestValue)), style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19)))
+              _widgetBodyText(context, 'Total Current Value'),
+              Text(_getParsedValue(securityBody.securities[0], (investment.amount * securityBody.securities[0].marketData.latestValue)), style: TextStyle(fontSize: 19))
             ],
           ),
         ),
@@ -916,9 +849,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Amount:',
-                  style: Theme.of(context).textTheme.headline6.merge(
-                        TextStyle(fontSize: 20),
-                      ),
+                  style: TextStyle(fontSize: 20),
                 ),
               ),
             ),
@@ -927,7 +858,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 alignment: Alignment.centerRight,
                 child: TextField(
                   textAlign: TextAlign.end,
-                  style: Theme.of(context).textTheme.subtitle2,
+                  style: TextStyle(fontSize: 18),
                   controller: _controllerAmount,
                   keyboardType: Platform.isIOS ? TextInputType.numberWithOptions(signed: true) : TextInputType.number,
                   onChanged: (text) {
@@ -957,9 +888,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Valid:',
-                  style: Theme.of(context).textTheme.headline6.merge(
-                        TextStyle(fontSize: 20),
-                      ),
+                  style: TextStyle(fontSize: 20),
                 ),
               ),
             ),
@@ -968,7 +897,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 alignment: Alignment.centerRight,
                 child: TextField(
                   textAlign: TextAlign.end,
-                  style: Theme.of(context).textTheme.subtitle2,
+                  style: TextStyle(fontSize: 18),
                   enabled: false,
                   controller: _controllerDate,
                   keyboardType: TextInputType.datetime,
@@ -999,9 +928,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             ),
             Text(
               'Confirm new order',
-              style: Theme.of(context).textTheme.headline6.merge(
-                TextStyle(fontSize: 20),
-              ),
+              style: TextStyle(fontSize: 20),
             )
           ],
         ));
@@ -1014,24 +941,24 @@ class _SecurityScreenState extends State<SecurityScreen> {
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Latest Value'),
-              _widgetBoldSubtitle2(context, _getParsedValue(securityBody.securities[0], securityBody.securities[0].marketData.latestValue), Colors.black)
+              _widgetBodyText(context, 'Latest Value'),
+              _widgetBoldSubtitle(context, _getParsedValue(securityBody.securities[0], securityBody.securities[0].marketData.latestValue), Colors.black)
             ],
           ),
         ),
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Return'),
-              _widgetBoldSubtitle2(context, (investment.changePercent * 100).toStringAsFixed(2).replaceFirst('.', ',') + '%', Utils.getColor(investment.changePercent * 100))
+              _widgetBodyText(context, 'Return'),
+              _widgetBoldSubtitle(context, (investment.changePercent * 100).toStringAsFixed(2).replaceFirst('.', ',') + '%', Utils.getColor(investment.changePercent * 100))
             ],
           ),
         ),
         Flexible(
           child: Column(
             children: <Widget>[
-              _widgetBodyText2(context, 'Today'),
-              _widgetBoldSubtitle2(context, _getTodayAsString(_countToday(securityBody.securities[0].graph)).replaceFirst('.', ','), Utils.getColor(_countToday(securityBody.securities[0].graph)))
+              _widgetBodyText(context, 'Today'),
+              _widgetBoldSubtitle(context, _getTodayAsString(_countToday(securityBody.securities[0].graph)).replaceFirst('.', ','), Utils.getColor(_countToday(securityBody.securities[0].graph)))
             ],
           ),
         ),
@@ -1049,9 +976,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Center(
-                    child: Text(
-                  'Investment Details',
-                  style: Theme.of(context).textTheme.headline6),
+                    child: Text('Investment Details', style: TextStyle(fontSize: 22)),
                 ),
                 Visibility(
                   visible: (url == null || url == '') ? false : true,
@@ -1078,7 +1003,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _widgetTextRowSubtitle2(BuildContext context, String label, String text) {
+  Widget _widgetTextRowSubtitle(BuildContext context, String label, String text) {
     return Padding(
         padding: EdgeInsets.only(top: 12, bottom: 12),
         child: Row(
@@ -1087,18 +1012,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
             Flexible(
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.subtitle2,
+                child: Text(label, style: TextStyle(fontSize: 18),
                 ),
               ),
             ),
             Flexible(
               child: Align(
                 alignment: Alignment.centerRight,
-                child: Text(
-                  text,
-                  style: Theme.of(context).textTheme.subtitle2,
+                child: Text(text, style: TextStyle(fontSize: 18),
                 ),
               ),
             )
@@ -1106,29 +1027,20 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ));
   }
 
-  Widget _widgetBoldSubtitle2(BuildContext context, String text, Color color) {
+  Widget _widgetBoldSubtitle(BuildContext context, String text, Color color) {
     return Center(
-        child: Text(
-      text,
-      style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19, color: color)),
+        child: Text(text, style: TextStyle(fontSize: 19, color: color),
     ));
   }
 
-  Widget _widgetSubtitle2(BuildContext context, String text) {
+  Widget _widgetSubtitle(BuildContext context, String text) {
     return Center(
-        child: Text(
-      text,
-      style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontSize: 19)),
+        child: Text(text, style: TextStyle(fontSize: 19),
     ));
   }
 
-  Widget _widgetBodyText2(BuildContext context, String text) {
-    return Center(
-        child: Text(
-      text,
-      style: Theme.of(context).textTheme.bodyText2.merge(
-            TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600]),
-          ),
+  Widget _widgetBodyText(BuildContext context, String text) {
+    return Center(child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey[600]),
     ));
   }
 

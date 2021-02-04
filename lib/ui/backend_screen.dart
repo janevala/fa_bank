@@ -96,12 +96,8 @@ class _BackendScreenState extends State<BackendScreen> {
     return Padding(
       padding: EdgeInsets.only(left: 32, right: 32),
       child: FlatButton(
-          child: Text(
-            'SAVE AND RESTART',
-            style: Theme.of(context).textTheme.subtitle2.merge(
-                  TextStyle(color: FaColor.red[900], fontWeight: FontWeight.bold),
-                ),
-          ),
+          child: Text('SAVE AND RESTART',
+            style: TextStyle(fontSize: 18, color: FaColor.red[900], fontWeight: FontWeight.bold)),
           onPressed: () async {
             String username = _controllerUserName.text.trim();
             String password = _controllerPassword.text.trim();
@@ -133,11 +129,7 @@ class _BackendScreenState extends State<BackendScreen> {
 
   Widget _widgetFieldUserName(BuildContext context) {
     return TextField(
-        style: Theme.of(context).textTheme.subtitle2.merge(
-              TextStyle(
-                color: Colors.white,
-              ),
-            ),
+        style: TextStyle(fontSize: 18, color: Colors.white),
         controller: _controllerUserName,
         keyboardType: TextInputType.text,
         cursorColor: Colors.white,
@@ -156,11 +148,7 @@ class _BackendScreenState extends State<BackendScreen> {
 
   Widget _widgetFieldPlainTextPassword(BuildContext context) {
     return TextField(
-        style: Theme.of(context).textTheme.subtitle2.merge(
-          TextStyle(
-            color: Colors.white,
-          ),
-        ),
+        style: TextStyle(fontSize: 18, color: Colors.white),
         controller: _controllerPassword,
         keyboardType: TextInputType.text,
         cursorColor: Colors.white,
@@ -179,11 +167,7 @@ class _BackendScreenState extends State<BackendScreen> {
 
   Widget _widgetFieldBackend(BuildContext context) {
     return TextField(
-        style: Theme.of(context).textTheme.subtitle2.merge(
-          TextStyle(
-            color: Colors.white,
-          ),
-        ),
+        style: TextStyle(fontSize: 18, color: Colors.white),
         controller: _controllerBackend,
         keyboardType: TextInputType.text,
         cursorColor: Colors.white,
@@ -202,11 +186,7 @@ class _BackendScreenState extends State<BackendScreen> {
 
   Widget _widgetFieldClientId(BuildContext context) {
     return TextField(
-        style: Theme.of(context).textTheme.subtitle2.merge(
-          TextStyle(
-            color: Colors.white,
-          ),
-        ),
+        style: TextStyle(fontSize: 18, color: Colors.white),
         controller: _controllerClientId,
         keyboardType: TextInputType.text,
         cursorColor: Colors.white,
@@ -225,12 +205,7 @@ class _BackendScreenState extends State<BackendScreen> {
 
   Widget _widgetFieldClientSecret(BuildContext context) {
     return TextField(
-        style: Theme.of(context).textTheme.subtitle2.merge(
-          TextStyle(
-            color: Colors.white,
-              fontSize: 16
-          ),
-        ),
+        style: TextStyle(color: Colors.white, fontSize: 16),
         controller: _controllerClientSecret,
         keyboardType: TextInputType.text,
         cursorColor: Colors.white,
@@ -249,11 +224,7 @@ class _BackendScreenState extends State<BackendScreen> {
 
   Widget _widgetFieldPortfolioId(BuildContext context) {
     return TextField(
-        style: Theme.of(context).textTheme.subtitle2.merge(
-          TextStyle(
-            color: Colors.white,
-          ),
-        ),
+        style: TextStyle(fontSize: 18, color: Colors.white),
         controller: _controllerPortfolioId,
         keyboardType: Platform.isIOS ? TextInputType.numberWithOptions(signed: true) : TextInputType.number,
         cursorColor: Colors.white,
@@ -273,11 +244,7 @@ class _BackendScreenState extends State<BackendScreen> {
   Widget _widgetLabel(BuildContext context, String label) {
     return Text(
       label,
-      style: Theme.of(context).textTheme.subtitle2.merge(
-            TextStyle(
-              color: Colors.white,
-            ),
-          ),
+      style: TextStyle(fontSize: 18, color: Colors.white),
     );
   }
 
@@ -285,11 +252,7 @@ class _BackendScreenState extends State<BackendScreen> {
     return Center(
       child: Text(
         'App version: ' + _packageInfo.version,
-        style: Theme.of(context).textTheme.subtitle2.merge(
-          TextStyle(
-            color: Colors.white,
-          ),
-        ),
+        style: TextStyle(fontSize: 18, color: Colors.white),
       ),
     );
   }

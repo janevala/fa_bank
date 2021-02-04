@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Builder(
                                 builder: (stupidToastContext) => InkWell(
                                     onTap: () => _showToast(stupidToastContext, 'Not implemented'),
-                                      child: Text('FORGOT PASSWORD?', style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold)),
+                                      child: Text('FORGOT PASSWORD?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                     ))),
                             Container(
                               height: 36,
@@ -141,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Builder(
                                 builder: (stupidToastContext) => InkWell(
                                     onTap: () => _showToast(stupidToastContext, 'Not implemented'),
-                                      child: Text('PRIVACY POLICY', style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(fontWeight: FontWeight.bold)),
+                                      child: Text('PRIVACY POLICY', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                     ))),
                           ],
                         ),
@@ -166,21 +166,13 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _widgetHeadline6(BuildContext context, String text) {
-    return Center(
-        child: Text(
-      text,
-      style: Theme.of(context).textTheme.headline6,
-    ));
-  }
-
   Widget _widgetButtonSignIn() {
     return Padding(
       padding: EdgeInsets.only(left: 64, right: 64),
       child: FlatButton(
           child: Text(
             'SIGN IN',
-            style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: FaColor.red[900], fontWeight: FontWeight.bold)),
+            style: TextStyle(fontSize: 18, color: FaColor.red[900], fontWeight: FontWeight.bold),
           ),
           onPressed: () {
             String username = _controllerUserName.text.trim();
@@ -200,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _widgetTextFieldUserName() {
     return TextField(
-        style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+        style: TextStyle(fontSize: 18, color: Colors.white),
         controller: _controllerUserName,
         keyboardType: TextInputType.text,
         cursorColor: Colors.white,
@@ -219,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _widgetTextFieldPassword() {
     return TextField(
-        style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+        style: TextStyle(fontSize: 18, color: Colors.white),
         controller: _controllerPassword,
         keyboardType: TextInputType.text,
         obscureText: true,
@@ -239,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _widgetLabel(String label) {
     return Text(label,
-      style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white)),
+      style: TextStyle(fontSize: 18, color: Colors.white),
     );
   }
 
