@@ -417,12 +417,7 @@ class _KycScreenState extends State<KycScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    border: Border.all(
-                        color: Colors.white,
-                        width: 3
-                    ),
+                decoration: BoxDecoration(color: Colors.transparent, border: Border.all(color: Colors.white, width: 3),
                     borderRadius: BorderRadius.all(Radius.circular(20))),
                 child: Padding(
                   padding: EdgeInsets.all(4),
@@ -820,7 +815,7 @@ class _KycScreenState extends State<KycScreen> {
                 child: TextField(
                     style: TextStyle(fontSize: 18, color: Colors.white),
                     controller: null,
-                    keyboardType: TextInputType.text,
+                    keyboardType: TextInputType.number,
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
                       hintText: 'Phone number',
@@ -957,7 +952,7 @@ class _KycScreenState extends State<KycScreen> {
                 child: TextField(
                     style: TextStyle(fontSize: 18, color: Colors.white),
                     controller: null,
-                    keyboardType: TextInputType.text,
+                    keyboardType: TextInputType.number,
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
                       hintText: 'Post code',

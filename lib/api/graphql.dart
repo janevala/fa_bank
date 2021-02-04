@@ -56,11 +56,10 @@ query PortfolioOverview {
 }
 //note withoutPositionData false = slower query
 
-
 String getSecurityQuery(String securityCode) {
   return """
 query Security {
-  securities(securityCode:\"$securityCode\") {
+  securities(securityCode: \"$securityCode\") {
     name
     securityCode
     marketData: latestMarketData {

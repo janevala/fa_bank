@@ -331,7 +331,8 @@ class ListUtils {
         "More than 20%"
       ],
       [
-        "Do you have any previous experience in investing in the following asset types? (select all that apply)",
+//        "Do you have any previous experience in investing in the following asset types? (select all that apply)",
+        "Do you have any previous experience in investing in the following asset types?",
         "Stocks",
         "Mutual Funds",
         "Exchange Traded Fronds",
@@ -355,7 +356,8 @@ class ListUtils {
         "Please specify your true purpose of opening an account",
         "Investment",
         "Retirement",
-        "Other (Please specify)"
+//        "Other (Please specify)"
+        "Other"
       ],
       [
         "In the past 3 months, have you transferred investments internationally or not?",

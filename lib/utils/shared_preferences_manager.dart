@@ -4,7 +4,7 @@ class SharedPreferencesManager {
   static SharedPreferencesManager _manager;
   static SharedPreferences _preferences;
 
-  static const int version = 6;
+  static const int version = 7;
   static const String keyAccessToken = 'accessToken.$version';
   static const String keyRefreshToken = 'refreshToken.$version';
   static const String keyIsLogin = 'isLogin.$version';
