@@ -122,7 +122,7 @@ class _KycScreenState extends State<KycScreen> {
   }
 
   Future<void> _handleCameraAndReturnValue(StateSetter setState) async {
-    final _result = await Navigator.pushNamed(context, CameraScreen.route);//we assume dynamic return type is bool, it would be better to be explicit
+    final _result = await Navigator.pushNamed(context, CameraScreen.route);//works but is not typesafe
     if (_result) {
       setState(() {
         _cameraPictureOk = true;
@@ -166,7 +166,7 @@ class _KycScreenState extends State<KycScreen> {
     });
 
     return Scaffold(
-      body: BlocProvider<KycBloc>(//currently not used use for anything, but keeping the wiring for now just in case
+      body: BlocProvider<KycBloc>(//keeping the BloC wiring here, just in case we need communicate this with backend in future
         create: (context) => _kycBloc,
         child: BlocBuilder<KycBloc, KycState>(
           builder: (context, state) {
@@ -566,14 +566,14 @@ class _KycScreenState extends State<KycScreen> {
               onPressed: () {
                 _requestCameraPermission(setState);
               },
-              child: Text("Click to check the camera permission", style: TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.underline)),
+              child: Text("Click to check the camera permission", style: TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.underline), textAlign: TextAlign.center),
             ),
           ),
           Visibility(
             visible: _cameraPermissionsOk,
             child: FlatButton(
               onPressed: () => _handleCameraAndReturnValue(setState),
-              child:  Text("Open camera and take selfie along with the first page of your passport", style: TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.underline)),
+              child:  Text("Open camera and take selfie along with the first page of your passport", style: TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.underline), textAlign: TextAlign.center),
             ),
           ),
         ],
