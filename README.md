@@ -19,5 +19,7 @@ About: Demo and concept app, developed in Flutter and Graphql
 
 - To create new iOS release, use Xcode -> Product -> Archive
 
-## TODO's
-- Caching could be done using more robust storage, for example Realmdb
+- Backend configuration is assets/config.b64 Base 64 encoded file.
+
+- Generate backend config
+    openssl base64  -A -in config.json -out config.b64

@@ -51,3 +51,5 @@ flutter:
     - assets/images/fa-bank-login.png
     - assets/images/login_bg.png
     - assets/demo.mp4
+    - assets/config.b64
+    - assets/config.json

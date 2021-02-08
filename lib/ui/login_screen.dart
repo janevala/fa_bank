@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:fa_bank/bloc/login_bloc.dart';
 import 'package:fa_bank/injector.dart';
+import 'package:fa_bank/podo/config_model.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
 import 'package:fa_bank/ui/backend_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';
@@ -31,6 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final TextEditingController _controllerPassword = TextEditingController();
 
+  ConfigModel _configModel;
+
   _showToast(BuildContext context, var text) {
     Scaffold.of(context).showSnackBar(
         SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
@@ -59,18 +63,35 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
 
-    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyLoginUserName))
-      _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginUserName, 'codemate');
-    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyLoginPassword))
-      _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginPassword, 'sNY5x18tfy4W');
-    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyBackend))
-      _sharedPreferencesManager.putString(SharedPreferencesManager.keyBackend, 'https://demo4.fasolutions.com/');
-    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyClientId))
-      _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientId, 'fa-back');
-    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyClientSecret))
-      _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientSecret, 'd7PjBjHR-s7B2-EdW4-hH4W-25WRcgZdhTxc');
-    if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyPortfolioId))
-      _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, 313706);
+    _loadConfigs();
+
+  }
+
+  _loadConfigs() async {
+    try {
+      var b64str = await DefaultAssetBundle.of(context).loadString("assets/config.b64");
+      var b64chr = Base64Decoder().convert(b64str);
+
+      _configModel = ConfigModel.fromJson(json.decode(String.fromCharCodes(b64chr)));
+
+      if (_configModel != null) {
+        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyLoginUserName))
+          _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginUserName, _configModel.loginUserName);
+        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyLoginPassword))
+          _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginPassword, _configModel.loginPassword);
+        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyBackend))
+          _sharedPreferencesManager.putString(SharedPreferencesManager.keyBackend, _configModel.backend);
+        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyClientId))
+          _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientId, _configModel.clientId);
+        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyClientSecret))
+          _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientSecret, _configModel.clientSecret);
+        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyPortfolioId))
+          _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, _configModel.portfolioId);
+      }
+
+    } catch (error, stacktrace) {
+      print(error);
+    }
   }
 
   @override
@@ -174,15 +195,17 @@ class _LoginScreenState extends State<LoginScreen> {
             'SIGN IN',
             style: TextStyle(fontSize: 18, color: FaColor.red[900], fontWeight: FontWeight.bold),
           ),
-          onPressed: () {
-            String username = _controllerUserName.text.trim();
-            String password = _controllerPassword.text.trim();
-            if (username.isEmpty || password.isEmpty) {
-              var user = _sharedPreferencesManager.getString(SharedPreferencesManager.keyLoginUserName);
-              var pass = _sharedPreferencesManager.getString(SharedPreferencesManager.keyLoginPassword);
-              _loginBloc.add(LoginEvent(LoginBody(user, pass, 'password')));
-            } else {
-              _loginBloc.add(LoginEvent(LoginBody(username, password, 'password')));
+          onPressed: () async {
+            if (_configModel != null) {
+              String username = _controllerUserName.text.trim();
+              String password = _controllerPassword.text.trim();
+              if (username.isEmpty || password.isEmpty) {
+                var user = _sharedPreferencesManager.getString(SharedPreferencesManager.keyLoginUserName);
+                var pass = _sharedPreferencesManager.getString(SharedPreferencesManager.keyLoginPassword);
+                _loginBloc.add(LoginEvent(LoginBody(user, pass, 'password')));
+              } else {
+                _loginBloc.add(LoginEvent(LoginBody(username, password, 'password')));
+              }
             }
           },
           color: Colors.white,
