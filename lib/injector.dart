@@ -4,6 +4,6 @@ import 'package:get_it/get_it.dart';
 GetIt locator = GetIt.instance;
 
 Future setupLocator() async {
-  PreferencesManager sharedPreferencesManager = await PreferencesManager.getInstance();
-  locator.registerSingleton<PreferencesManager>(sharedPreferencesManager);
+  PreferencesManager preferencesManager = await PreferencesManager.getInstance();
+  locator.registerSingleton<PreferencesManager>(preferencesManager);
 }

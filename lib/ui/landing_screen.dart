@@ -7,7 +7,9 @@ import 'package:fa_bank/podo/portfolio/trade_order.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/login_screen.dart';
+import 'package:fa_bank/utils/list_utils.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
+import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,18 +24,29 @@ class LandingScreen extends StatefulWidget {
   _LandingScreenState createState() => _LandingScreenState();
 }
 
-final PreferencesManager _sharedPreferencesManager =
-    locator<PreferencesManager>();
+final PreferencesManager _preferencesManager = locator<PreferencesManager>();
 
-class _LandingScreenState extends State<LandingScreen> {
+class _LandingScreenState extends State<LandingScreen> with TickerProviderStateMixin {
   final LandingBloc _landingBloc = LandingBloc(LandingInitial());
   bool _spin = true;
+  AnimationController _fadeController;
+  Animation _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
 
+    _fadeController = AnimationController(vsync: this, duration: Duration(seconds: 4))..repeat(reverse: true);
+    _fadeAnimation = Tween(begin: 1.0, end: 0.9).animate(CurvedAnimation(parent: _fadeController, curve: ListUtils.getRandomCurve()));
+
     _doRefreshToken();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+
+    super.dispose();
   }
 
   _showToast(BuildContext context, var text) {
@@ -41,10 +54,8 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 
   _doOnExpiry() async {
-    if (_sharedPreferencesManager
-        .isKeyExists(PreferencesManager.keyAuthMSecs))
-      await _sharedPreferencesManager
-          .clearKey(PreferencesManager.keyAuthMSecs);
+    if (_preferencesManager.isKeyExists(PreferencesManager.keyAuthMSecs))
+      await _preferencesManager.clearKey(PreferencesManager.keyAuthMSecs);
   }
 
   _doRefreshToken() async {
@@ -99,10 +110,13 @@ class _LandingScreenState extends State<LandingScreen> {
             height: double.infinity,
             width: double.infinity),
         ),
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 1.0, sigmaY: 1.0),
-          child: Container(
-            color: FaColor.red[900].withOpacity(0.8),
+        FadeTransition(
+          opacity: _fadeAnimation,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 1.0, sigmaY: 1.0),
+            child: Container(
+              color: FaColor.red[900].withOpacity(0.8),
+            ),
           ),
         ),
         Align(

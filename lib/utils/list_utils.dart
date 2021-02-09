@@ -6,6 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 
 class ListUtils {
+
+  static Curve getRandomCurve() {
+    return getCurve(-1);
+  }
+
   // https://api.flutter.dev/flutter/animation/Curves-class.html
   static Curve getCurve(int id) {
     var array = [
@@ -52,7 +57,7 @@ class ListUtils {
       Curves.elasticInOut
     ];
 
-    return id == 0 ? array[id] : array[Random().nextInt(array.length)];
+    return id == -1 ? array[Random().nextInt(array.length)] : array[id];
   }
 
   static List<String> getCountries() {
