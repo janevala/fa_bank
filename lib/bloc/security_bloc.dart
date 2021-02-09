@@ -8,7 +8,7 @@ import 'package:fa_bank/podo/mutation/mutation_response.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// "Security" as in financial nomenclature, not data or information security.
@@ -53,7 +53,7 @@ class SecurityEvent extends SecurityState {
 
 class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
   final ApiRepository _apiRepository = ApiRepository();
-  final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+  final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
   SecurityBloc(SecurityState initialState) : super(initialState);
 
@@ -63,8 +63,8 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
   @override
   Stream<SecurityState> mapEventToState(SecurityEvent event) async* {
     bool expired = true;
-    if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs)) {
-      int wasThen = _sharedPreferencesManager.getInt(SharedPreferencesManager.keyAuthMSecs);
+    if (_sharedPreferencesManager.isKeyExists(PreferencesManager.keyAuthMSecs)) {
+      int wasThen = _sharedPreferencesManager.getInt(PreferencesManager.keyAuthMSecs);
       int isNow = DateTime.now().millisecondsSinceEpoch;
       int elapsed = isNow - wasThen;
       if (elapsed < 50000) { // auth token expiry 60000
@@ -76,7 +76,7 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
 
     Token token;
     if (expired) {
-      String refreshToken = _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
+      String refreshToken = _sharedPreferencesManager.getString(PreferencesManager.keyRefreshToken);
       RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
       token = await _apiRepository.postRefreshAuth(refreshTokenBody);
       if (token.error != null) {
@@ -84,34 +84,34 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
         return;
       }
 
-      await _sharedPreferencesManager.putString(SharedPreferencesManager.keyAccessToken, token.accessToken);
-      await _sharedPreferencesManager.putString(SharedPreferencesManager.keyRefreshToken, token.refreshToken);
-      await _sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, true);
-      await _sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
+      await _sharedPreferencesManager.putString(PreferencesManager.keyAccessToken, token.accessToken);
+      await _sharedPreferencesManager.putString(PreferencesManager.keyRefreshToken, token.refreshToken);
+      await _sharedPreferencesManager.putBool(PreferencesManager.keyIsLogin, true);
+      await _sharedPreferencesManager.putInt(PreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
     }
 
     SecurityBody securityBody;
     if (event.mutationData == null) { //we do query
-        String securityCode  = _sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityCode);
-        if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keySecurityBody + securityCode)) {
-          var securityString = _sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityBody + securityCode);
+        String securityCode  = _sharedPreferencesManager.getString(PreferencesManager.keySecurityCode);
+        if (_sharedPreferencesManager.isKeyExists(PreferencesManager.keySecurityBody + securityCode)) {
+          var securityString = _sharedPreferencesManager.getString(PreferencesManager.keySecurityBody + securityCode);
           securityBody = SecurityBody.fromJson(jsonDecode(securityString));
           yield SecurityCache(securityBody);
         }
 
-        String accessToken = token == null ? _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
+        String accessToken = token == null ? _sharedPreferencesManager.getString(PreferencesManager.keyAccessToken) : token.accessToken;
         securityBody = await _apiRepository.postSecurityQuery(accessToken, securityCode);
         if (securityBody.error != null) {
           yield SecurityFailure(securityBody.error);
           return;
         }
 
-        await _sharedPreferencesManager.putString(SharedPreferencesManager.keySecurityBody + securityCode, jsonEncode(securityBody.toJson()));
+        await _sharedPreferencesManager.putString(PreferencesManager.keySecurityBody + securityCode, jsonEncode(securityBody.toJson()));
 
         yield SecurityQuerySuccess(securityBody);
 
     } else { //do mutation
-      String accessToken = token == null ? _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
+      String accessToken = token == null ? _sharedPreferencesManager.getString(PreferencesManager.keyAccessToken) : token.accessToken;
       MutationResponse mutationResponse = await _apiRepository.postSecurityMutation(accessToken, event.mutationData);
       if (mutationResponse.error != null) {
         yield SecurityFailure(mutationResponse.error);
@@ -119,9 +119,9 @@ class SecurityBloc extends Bloc<SecurityEvent, SecurityState> {
       }
 
       if (securityBody == null) {
-        String securityCode  = _sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityCode);
-        if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keySecurityBody + securityCode)) {
-          var securityString = _sharedPreferencesManager.getString(SharedPreferencesManager.keySecurityBody + securityCode);
+        String securityCode  = _sharedPreferencesManager.getString(PreferencesManager.keySecurityCode);
+        if (_sharedPreferencesManager.isKeyExists(PreferencesManager.keySecurityBody + securityCode)) {
+          var securityString = _sharedPreferencesManager.getString(PreferencesManager.keySecurityBody + securityCode);
           securityBody = SecurityBody.fromJson(jsonDecode(securityString));
           yield SecurityMutationSuccess(securityBody);
         }

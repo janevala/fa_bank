@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:fa_bank/api/repository.dart';
 import 'package:fa_bank/injector.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 
 abstract class KycState {}
 
@@ -26,7 +26,7 @@ class KycEvent extends KycState {
 
 class KycBloc extends Bloc<KycEvent, KycState> {
   final ApiRepository _apiRepository = ApiRepository();
-  final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+  final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
   KycBloc(KycState initialState) : super(initialState);
 

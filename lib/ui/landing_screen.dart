@@ -7,7 +7,7 @@ import 'package:fa_bank/podo/portfolio/trade_order.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/login_screen.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +22,8 @@ class LandingScreen extends StatefulWidget {
   _LandingScreenState createState() => _LandingScreenState();
 }
 
-final SharedPreferencesManager _sharedPreferencesManager =
-    locator<SharedPreferencesManager>();
+final PreferencesManager _sharedPreferencesManager =
+    locator<PreferencesManager>();
 
 class _LandingScreenState extends State<LandingScreen> {
   final LandingBloc _landingBloc = LandingBloc(LandingInitial());
@@ -42,9 +42,9 @@ class _LandingScreenState extends State<LandingScreen> {
 
   _doOnExpiry() async {
     if (_sharedPreferencesManager
-        .isKeyExists(SharedPreferencesManager.keyAuthMSecs))
+        .isKeyExists(PreferencesManager.keyAuthMSecs))
       await _sharedPreferencesManager
-          .clearKey(SharedPreferencesManager.keyAuthMSecs);
+          .clearKey(PreferencesManager.keyAuthMSecs);
   }
 
   _doRefreshToken() async {
@@ -56,7 +56,7 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 
   _logout(BuildContext context) {
-    locator<SharedPreferencesManager>().clearSessionRelated();
+    locator<PreferencesManager>().clearSessionRelated();
     Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
   }
 

@@ -3,7 +3,7 @@ import 'package:fa_bank/api/repository.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/login/login_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 
 abstract class LoginState {}
 
@@ -27,7 +27,7 @@ class LoginEvent extends LoginState {
 }
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+  final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
   LoginBloc(LoginState initialState) : super(initialState);
 
@@ -50,11 +50,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       yield LoginFailure(token.error);
       return;
     }
-    await _sharedPreferencesManager.putString(SharedPreferencesManager.keyAccessToken, token.accessToken);
-    await _sharedPreferencesManager.putString(SharedPreferencesManager.keyRefreshToken, token.refreshToken);
-    await _sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, true);
-    await _sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
-    await _sharedPreferencesManager.putString(SharedPreferencesManager.keyPortfolioUserName, loginBody.username);
+    await _sharedPreferencesManager.putString(PreferencesManager.keyAccessToken, token.accessToken);
+    await _sharedPreferencesManager.putString(PreferencesManager.keyRefreshToken, token.refreshToken);
+    await _sharedPreferencesManager.putBool(PreferencesManager.keyIsLogin, true);
+    await _sharedPreferencesManager.putInt(PreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
+    await _sharedPreferencesManager.putString(PreferencesManager.keyPortfolioUserName, loginBody.username);
     yield LoginSuccess();
   }
 }

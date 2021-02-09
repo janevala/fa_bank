@@ -6,7 +6,7 @@ import 'package:fa_bank/ui/kyc_screen.dart';
 import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/ui/security_screen.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -16,15 +16,15 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+  final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
   bool _alreadyLoggedIn = false;
 
   @override
   void initState() {
     super.initState();
 
-    _alreadyLoggedIn = _sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyIsLogin)
-        ? _sharedPreferencesManager.getBool(SharedPreferencesManager.keyIsLogin)
+    _alreadyLoggedIn = _sharedPreferencesManager.isKeyExists(PreferencesManager.keyIsLogin)
+        ? _sharedPreferencesManager.getBool(PreferencesManager.keyIsLogin)
         : false;
   }
 

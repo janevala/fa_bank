@@ -3,11 +3,11 @@ import 'package:fa_bank/api/repository.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 
 class DioLoggingInterceptors extends InterceptorsWrapper {
   final Dio _dio;
-  final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+  final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
   DioLoggingInterceptors(this._dio);
 
@@ -27,8 +27,8 @@ class DioLoggingInterceptors extends InterceptorsWrapper {
 
     if (options.headers.containsKey('requirestoken')) {
       options.headers.remove('requirestoken');
-      print('accessToken: ${_sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken)}');
-      String accessToken = _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken);
+      print('accessToken: ${_sharedPreferencesManager.getString(PreferencesManager.keyAccessToken)}');
+      String accessToken = _sharedPreferencesManager.getString(PreferencesManager.keyAccessToken);
       options.headers.addAll({'Authorization': 'Bearer $accessToken'});
     }
     return options;
@@ -54,19 +54,19 @@ class DioLoggingInterceptors extends InterceptorsWrapper {
     print("<-- End error");
 
     int responseCode = dioError.response.statusCode;
-    String oldAccessToken = _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken);
+    String oldAccessToken = _sharedPreferencesManager.getString(PreferencesManager.keyAccessToken);
     if (oldAccessToken != null && responseCode == 401 && _sharedPreferencesManager != null) {
       _dio.interceptors.requestLock.lock();
       _dio.interceptors.responseLock.lock();
 
-      String refreshToken = _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
+      String refreshToken = _sharedPreferencesManager.getString(PreferencesManager.keyRefreshToken);
       RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
       ApiRepository apiAuthRepository = ApiRepository();
       Token token = await apiAuthRepository.postRefreshAuth(refreshTokenBody);
       String newAccessToken = token.accessToken;
       String newRefreshToken = token.refreshToken;
-      await _sharedPreferencesManager.putString(SharedPreferencesManager.keyAccessToken, newAccessToken);
-      await _sharedPreferencesManager.putString(SharedPreferencesManager.keyRefreshToken, newRefreshToken);
+      await _sharedPreferencesManager.putString(PreferencesManager.keyAccessToken, newAccessToken);
+      await _sharedPreferencesManager.putString(PreferencesManager.keyRefreshToken, newRefreshToken);
 
       RequestOptions options = dioError.response.request;
       options.headers.addAll({'requirestoken': true});

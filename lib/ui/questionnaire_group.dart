@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:fa_bank/ui/fa_color.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

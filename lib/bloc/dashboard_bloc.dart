@@ -6,7 +6,7 @@ import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 
 abstract class DashboardState {}
 
@@ -37,7 +37,7 @@ class DashboardEvent extends DashboardState {
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final ApiRepository _apiRepository = ApiRepository();
-  final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+  final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
   DashboardBloc(DashboardState initialState) : super(initialState);
 
@@ -47,8 +47,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   @override
   Stream<DashboardState> mapEventToState(DashboardEvent event) async* {
     bool expired = true;
-    if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs)) {
-      int wasThen = _sharedPreferencesManager.getInt(SharedPreferencesManager.keyAuthMSecs);
+    if (_sharedPreferencesManager.isKeyExists(PreferencesManager.keyAuthMSecs)) {
+      int wasThen = _sharedPreferencesManager.getInt(PreferencesManager.keyAuthMSecs);
       int isNow = DateTime.now().millisecondsSinceEpoch;
       int elapsed = isNow - wasThen;
       if (elapsed < 50000) { // auth token expiry 60000
@@ -58,15 +58,15 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
     yield DashboardLoading();
 
-    if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyPortfolioBody)) {
-      var portfolioString = _sharedPreferencesManager.getString(SharedPreferencesManager.keyPortfolioBody);
+    if (_sharedPreferencesManager.isKeyExists(PreferencesManager.keyPortfolioBody)) {
+      var portfolioString = _sharedPreferencesManager.getString(PreferencesManager.keyPortfolioBody);
       PortfolioBody p = PortfolioBody.fromJson(jsonDecode(portfolioString));
       yield DashboardCache(p);
     }
 
     Token token;
     if (expired) {
-      String refreshToken = _sharedPreferencesManager.getString(SharedPreferencesManager.keyRefreshToken);
+      String refreshToken = _sharedPreferencesManager.getString(PreferencesManager.keyRefreshToken);
       RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
       token = await _apiRepository.postRefreshAuth(refreshTokenBody);
       if (token.error != null) {
@@ -74,22 +74,22 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         return;
       }
 
-      await _sharedPreferencesManager.putString(SharedPreferencesManager.keyAccessToken, token.accessToken);
-      await _sharedPreferencesManager.putString(SharedPreferencesManager.keyRefreshToken, token.refreshToken);
-      await _sharedPreferencesManager.putBool(SharedPreferencesManager.keyIsLogin, true);
-      await _sharedPreferencesManager.putInt(SharedPreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
+      await _sharedPreferencesManager.putString(PreferencesManager.keyAccessToken, token.accessToken);
+      await _sharedPreferencesManager.putString(PreferencesManager.keyRefreshToken, token.refreshToken);
+      await _sharedPreferencesManager.putBool(PreferencesManager.keyIsLogin, true);
+      await _sharedPreferencesManager.putInt(PreferencesManager.keyAuthMSecs, DateTime.now().millisecondsSinceEpoch);
     }
 
-    if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyPortfolioId)) {
-      int userId  = _sharedPreferencesManager.getInt(SharedPreferencesManager.keyPortfolioId);
-      String accessToken = token == null ? _sharedPreferencesManager.getString(SharedPreferencesManager.keyAccessToken) : token.accessToken;
+    if (_sharedPreferencesManager.isKeyExists(PreferencesManager.keyPortfolioId)) {
+      int userId  = _sharedPreferencesManager.getInt(PreferencesManager.keyPortfolioId);
+      String accessToken = token == null ? _sharedPreferencesManager.getString(PreferencesManager.keyAccessToken) : token.accessToken;
       PortfolioBody portfolioBody = await _apiRepository.postPortfolioQuery(accessToken, userId);
       if (portfolioBody.error != null) {
         yield DashboardFailure(portfolioBody.error);
         return;
       }
 
-      await _sharedPreferencesManager.putString(SharedPreferencesManager.keyPortfolioBody, jsonEncode(portfolioBody.toJson()));
+      await _sharedPreferencesManager.putString(PreferencesManager.keyPortfolioBody, jsonEncode(portfolioBody.toJson()));
 
       yield DashboardSuccess(portfolioBody);
     } else {

@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:fa_bank/api/repository.dart';
 import 'package:fa_bank/injector.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 
 abstract class LandingState {}
 
@@ -28,7 +28,7 @@ class LandingEvent extends LandingState {
 
 class LandingBloc extends Bloc<LandingEvent, LandingState> {
   final ApiRepository _apiRepository = ApiRepository();
-  final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+  final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
   LandingBloc(LandingState initialState) : super(initialState);
 

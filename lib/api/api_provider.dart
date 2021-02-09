@@ -11,16 +11,16 @@ import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
 import 'package:fa_bank/utils/dio_logging_interceptors.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:flutter/cupertino.dart';
 
-final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
 class ApiProvider {
   final Dio _dio = Dio();
 
   ApiProvider() {
-    _dio.options.baseUrl = _sharedPreferencesManager.getString(SharedPreferencesManager.keyBackend);
+    _dio.options.baseUrl = _sharedPreferencesManager.getString(PreferencesManager.keyBackend);
     _dio.interceptors.add(DioLoggingInterceptors(_dio));
   }
 
@@ -123,8 +123,8 @@ class ApiProvider {
   }
 
   Future<Token> loginUser(LoginBody loginBody) async {
-    var clientId = _sharedPreferencesManager.getString(SharedPreferencesManager.keyClientId);
-    var clientSecret = _sharedPreferencesManager.getString(SharedPreferencesManager.keyClientSecret);
+    var clientId = _sharedPreferencesManager.getString(PreferencesManager.keyClientId);
+    var clientSecret = _sharedPreferencesManager.getString(PreferencesManager.keyClientSecret);
     var dataString = loginBody.tokenString() + '&client_id=' + clientId + '&client_secret=' + clientSecret;
 
     try {
@@ -143,8 +143,8 @@ class ApiProvider {
   }
 
   Future<Token> refreshAuth(RefreshTokenBody refreshTokenBody) async {
-    var clientId = _sharedPreferencesManager.getString(SharedPreferencesManager.keyClientId);
-    var clientSecret = _sharedPreferencesManager.getString(SharedPreferencesManager.keyClientSecret);
+    var clientId = _sharedPreferencesManager.getString(PreferencesManager.keyClientId);
+    var clientSecret = _sharedPreferencesManager.getString(PreferencesManager.keyClientSecret);
     var dataString = refreshTokenBody.tokenString() + '&client_id=' + clientId + '&client_secret=' + clientSecret;
 
     try {

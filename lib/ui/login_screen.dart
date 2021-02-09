@@ -9,7 +9,7 @@ import 'package:fa_bank/ui/backend_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/kyc_screen.dart';
 import 'package:fa_bank/ui/landing_screen.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,8 +23,7 @@ class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-final SharedPreferencesManager _sharedPreferencesManager =
-    locator<SharedPreferencesManager>();
+final PreferencesManager _preferencesManager = locator<PreferencesManager>();
 
 class _LoginScreenState extends State<LoginScreen> {
   final LoginBloc _loginBloc = LoginBloc(LoginInitial());
@@ -75,18 +74,18 @@ class _LoginScreenState extends State<LoginScreen> {
       _configModel = ConfigModel.fromJson(json.decode(String.fromCharCodes(b64chr)));
 
       if (_configModel != null) {
-        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyLoginUserName))
-          _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginUserName, _configModel.loginUserName);
-        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyLoginPassword))
-          _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginPassword, _configModel.loginPassword);
-        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyBackend))
-          _sharedPreferencesManager.putString(SharedPreferencesManager.keyBackend, _configModel.backend);
-        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyClientId))
-          _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientId, _configModel.clientId);
-        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyClientSecret))
-          _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientSecret, _configModel.clientSecret);
-        if (!_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyPortfolioId))
-          _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, _configModel.portfolioId);
+        if (!_preferencesManager.isKeyExists(PreferencesManager.keyLoginUserName))
+          _preferencesManager.putString(PreferencesManager.keyLoginUserName, _configModel.loginUserName);
+        if (!_preferencesManager.isKeyExists(PreferencesManager.keyLoginPassword))
+          _preferencesManager.putString(PreferencesManager.keyLoginPassword, _configModel.loginPassword);
+        if (!_preferencesManager.isKeyExists(PreferencesManager.keyBackend))
+          _preferencesManager.putString(PreferencesManager.keyBackend, _configModel.backend);
+        if (!_preferencesManager.isKeyExists(PreferencesManager.keyClientId))
+          _preferencesManager.putString(PreferencesManager.keyClientId, _configModel.clientId);
+        if (!_preferencesManager.isKeyExists(PreferencesManager.keyClientSecret))
+          _preferencesManager.putString(PreferencesManager.keyClientSecret, _configModel.clientSecret);
+        if (!_preferencesManager.isKeyExists(PreferencesManager.keyPortfolioId))
+          _preferencesManager.putInt(PreferencesManager.keyPortfolioId, _configModel.portfolioId);
       }
 
     } catch (error, stacktrace) {
@@ -109,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
             if (state is LoginFailure) {
               _showDialog(context, 'Error', state.error);
             } else if (state is LoginSuccess) {
-              if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyKycCompleted)) {
+              if (_preferencesManager.isKeyExists(PreferencesManager.keyKycCompleted)) {
                 Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
               } else {
                 Navigator.pushNamedAndRemoveUntil(context, KycScreen.route, (r) => false);
@@ -200,8 +199,8 @@ class _LoginScreenState extends State<LoginScreen> {
               String username = _controllerUserName.text.trim();
               String password = _controllerPassword.text.trim();
               if (username.isEmpty || password.isEmpty) {
-                var user = _sharedPreferencesManager.getString(SharedPreferencesManager.keyLoginUserName);
-                var pass = _sharedPreferencesManager.getString(SharedPreferencesManager.keyLoginPassword);
+                var user = _preferencesManager.getString(PreferencesManager.keyLoginUserName);
+                var pass = _preferencesManager.getString(PreferencesManager.keyLoginPassword);
                 _loginBloc.add(LoginEvent(LoginBody(user, pass, 'password')));
               } else {
                 _loginBloc.add(LoginEvent(LoginBody(username, password, 'password')));

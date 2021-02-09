@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SharedPreferencesManager {
-  static SharedPreferencesManager _manager;
+class PreferencesManager {
+  static PreferencesManager _manager;
   static SharedPreferences _preferences;
 
   static const int version = 8;
@@ -15,17 +15,15 @@ class SharedPreferencesManager {
   static const String keySecurityBody = 'securityBody.$version.';
   static const String keyLoginUserName = 'loginUserName.$version';
   static const String keyLoginPassword = 'loginPassword.$version';
-
   static const String keyBackend = 'backend.$version';
   static const String keyPortfolioId = 'portfolioId.$version';
   static const String keyClientId = 'clientId.$version';
   static const String keyClientSecret = 'clientSecret.$version';
-
   static const String keyKycCompleted = 'kycCompleted.$version';
 
-  static Future<SharedPreferencesManager> getInstance() async {
+  static Future<PreferencesManager> getInstance() async {
     if (_manager == null) {
-      _manager = SharedPreferencesManager();
+      _manager = PreferencesManager();
     }
     if (_preferences == null) {
       _preferences = await SharedPreferences.getInstance();
@@ -59,7 +57,7 @@ class SharedPreferencesManager {
 
   Future<bool> clearAll() => _preferences.clear();
 
-  Future<bool> clearSessionRelated() {
+  clearSessionRelated() {
     _preferences.remove(keyAccessToken);
     _preferences.remove(keyRefreshToken);
     _preferences.remove(keyIsLogin);

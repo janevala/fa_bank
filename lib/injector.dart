@@ -1,9 +1,9 @@
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:get_it/get_it.dart';
 
 GetIt locator = GetIt.instance;
 
 Future setupLocator() async {
-  SharedPreferencesManager sharedPreferencesManager = await SharedPreferencesManager.getInstance();
-  locator.registerSingleton<SharedPreferencesManager>(sharedPreferencesManager);
+  PreferencesManager sharedPreferencesManager = await PreferencesManager.getInstance();
+  locator.registerSingleton<PreferencesManager>(sharedPreferencesManager);
 }

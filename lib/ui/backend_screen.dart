@@ -3,13 +3,13 @@ import 'dart:io';
 import 'package:fa_bank/app.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/ui/fa_color.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info/package_info.dart';
 
-final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
 class BackendScreen extends StatefulWidget {
   static const String route = '/backend_screen';
@@ -43,12 +43,12 @@ class _BackendScreenState extends State<BackendScreen> {
   @override
   Widget build(BuildContext context) {
 
-    _controllerUserName.text = _sharedPreferencesManager.getString(SharedPreferencesManager.keyLoginUserName);
-    _controllerPassword.text = _sharedPreferencesManager.getString(SharedPreferencesManager.keyLoginPassword);
-    _controllerBackend.text = _sharedPreferencesManager.getString(SharedPreferencesManager.keyBackend);
-    _controllerClientId.text = _sharedPreferencesManager.getString(SharedPreferencesManager.keyClientId);
-    _controllerClientSecret.text = _sharedPreferencesManager.getString(SharedPreferencesManager.keyClientSecret);
-    _controllerPortfolioId.text = _sharedPreferencesManager.getInt(SharedPreferencesManager.keyPortfolioId).toString();
+    _controllerUserName.text = _sharedPreferencesManager.getString(PreferencesManager.keyLoginUserName);
+    _controllerPassword.text = _sharedPreferencesManager.getString(PreferencesManager.keyLoginPassword);
+    _controllerBackend.text = _sharedPreferencesManager.getString(PreferencesManager.keyBackend);
+    _controllerClientId.text = _sharedPreferencesManager.getString(PreferencesManager.keyClientId);
+    _controllerClientSecret.text = _sharedPreferencesManager.getString(PreferencesManager.keyClientSecret);
+    _controllerPortfolioId.text = _sharedPreferencesManager.getInt(PreferencesManager.keyPortfolioId).toString();
 
     return Scaffold(
       backgroundColor: FaColor.red[900],
@@ -108,12 +108,12 @@ class _BackendScreenState extends State<BackendScreen> {
             if (username.isNotEmpty || password.isNotEmpty || backend.isNotEmpty || clientId.isNotEmpty || clientSecret.isNotEmpty || portfolioId.isNotEmpty ) {
               await _sharedPreferencesManager.clearAll();
 
-              await _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginUserName, username);
-              await _sharedPreferencesManager.putString(SharedPreferencesManager.keyLoginPassword, password);
-              await _sharedPreferencesManager.putString(SharedPreferencesManager.keyBackend, backend);
-              await _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientId, clientId);
-              await _sharedPreferencesManager.putString(SharedPreferencesManager.keyClientSecret, clientSecret);
-              await _sharedPreferencesManager.putInt(SharedPreferencesManager.keyPortfolioId, int.parse(portfolioId));
+              await _sharedPreferencesManager.putString(PreferencesManager.keyLoginUserName, username);
+              await _sharedPreferencesManager.putString(PreferencesManager.keyLoginPassword, password);
+              await _sharedPreferencesManager.putString(PreferencesManager.keyBackend, backend);
+              await _sharedPreferencesManager.putString(PreferencesManager.keyClientId, clientId);
+              await _sharedPreferencesManager.putString(PreferencesManager.keyClientSecret, clientSecret);
+              await _sharedPreferencesManager.putInt(PreferencesManager.keyPortfolioId, int.parse(portfolioId));
 
               await Future.delayed(const Duration(seconds: 1));
 

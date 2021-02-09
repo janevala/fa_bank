@@ -13,7 +13,7 @@ import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/investment_item.dart';
 import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/ui/login_screen.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
@@ -31,7 +31,7 @@ class DashboardScreen extends StatefulWidget {
   _DashboardScreenState createState() => _DashboardScreenState();
 }
 
-final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+final PreferencesManager _preferencesManager = locator<PreferencesManager>();
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final DashboardBloc _dashboardUserBloc = DashboardBloc(DashboardInitial());
@@ -69,8 +69,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   _doOnExpiry() async {
-    if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs))
-      await _sharedPreferencesManager.clearKey(SharedPreferencesManager.keyAuthMSecs);
+    if (_preferencesManager.isKeyExists(PreferencesManager.keyAuthMSecs))
+      await _preferencesManager.clearKey(PreferencesManager.keyAuthMSecs);
   }
 
   _doRefreshToken() async {
@@ -83,39 +83,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   _showToast(BuildContext context, var text) {
     Scaffold.of(context).showSnackBar(SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
-  }
-
-  Widget _dataTable(BuildContext context, List<TradeOrder> tradeOrders) {
-    return DataTable(
-      columns: const <DataColumn>[
-        DataColumn(
-          label: Text(
-            'Date',
-            style: TextStyle(fontStyle: FontStyle.italic),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Stock',
-            style: TextStyle(fontStyle: FontStyle.italic),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Buy/Sell',
-            style: TextStyle(fontStyle: FontStyle.italic),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Amount',
-            style: TextStyle(fontStyle: FontStyle.italic),
-          ),
-        ),
-      ],
-
-      rows: _getDataRows(tradeOrders),
-    );
   }
 
   List<DataRow> _getDataRows(List<TradeOrder> tradeOrders) {
@@ -214,7 +181,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   _logout(BuildContext context) {
-    locator<SharedPreferencesManager>().clearSessionRelated();
+    locator<PreferencesManager>().clearSessionRelated();
     Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
   }
 

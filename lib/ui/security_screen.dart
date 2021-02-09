@@ -10,7 +10,7 @@ import 'package:fa_bank/podo/security/security.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/investment_item.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/result_container.dart';
 import 'package:fa_bank/widget/spinner.dart';
@@ -35,7 +35,7 @@ class SecurityScreen extends StatefulWidget {
   _SecurityScreenState createState() => _SecurityScreenState();
 }
 
-final SharedPreferencesManager _sharedPreferencesManager = locator<SharedPreferencesManager>();
+final PreferencesManager _preferencesManager = locator<PreferencesManager>();
 
 enum ConfirmAction { CANCEL, PROCEED }
 
@@ -86,8 +86,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   _doOnExpiry() async {
-    if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs))
-      await _sharedPreferencesManager.clearKey(SharedPreferencesManager.keyAuthMSecs);
+    if (_preferencesManager.isKeyExists(PreferencesManager.keyAuthMSecs))
+      await _preferencesManager.clearKey(PreferencesManager.keyAuthMSecs);
   }
 
   _doRefreshToken() async {

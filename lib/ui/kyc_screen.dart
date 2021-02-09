@@ -10,7 +10,7 @@ import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/ui/questionnaire_group.dart';
 import 'package:fa_bank/utils/list_utils.dart';
-import 'package:fa_bank/utils/shared_preferences_manager.dart';
+import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
@@ -30,8 +30,7 @@ class KycScreen extends StatefulWidget {
   _KycScreenState createState() => _KycScreenState();
 }
 
-final SharedPreferencesManager _sharedPreferencesManager =
-    locator<SharedPreferencesManager>();
+final PreferencesManager _preferencesManager = locator<PreferencesManager>();
 
 class _KycScreenState extends State<KycScreen> {
   final KycBloc _kycBloc = KycBloc(KycInitial());
@@ -90,8 +89,8 @@ class _KycScreenState extends State<KycScreen> {
   }
 
   _doOnExpiry() async {
-    if (_sharedPreferencesManager.isKeyExists(SharedPreferencesManager.keyAuthMSecs))
-      await _sharedPreferencesManager.clearKey(SharedPreferencesManager.keyAuthMSecs);
+    if (_preferencesManager.isKeyExists(PreferencesManager.keyAuthMSecs))
+      await _preferencesManager.clearKey(PreferencesManager.keyAuthMSecs);
   }
 
   _doRefreshToken() async {
@@ -99,7 +98,7 @@ class _KycScreenState extends State<KycScreen> {
   }
 
   _logout(BuildContext context) {
-    locator<SharedPreferencesManager>().clearSessionRelated();
+    locator<PreferencesManager>().clearSessionRelated();
     Navigator.pushNamedAndRemoveUntil(context, LoginScreen.route, (r) => false);
   }
 
@@ -636,7 +635,7 @@ class _KycScreenState extends State<KycScreen> {
                                     child: PlatformText("Ready!", style: TextStyle(fontSize: 22, color: Colors.white)),
                                     color: FaColor.red[900],
                                     onPressed: () async {
-                                      _sharedPreferencesManager.putBool(SharedPreferencesManager.keyKycCompleted, true);
+                                      _preferencesManager.putBool(PreferencesManager.keyKycCompleted, true);
 
                                       _videoController.pause();
 
