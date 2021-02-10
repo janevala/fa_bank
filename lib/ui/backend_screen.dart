@@ -5,6 +5,7 @@ import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info/package_info.dart';
@@ -226,7 +227,7 @@ class _BackendScreenState extends State<BackendScreen> {
     return TextField(
         style: TextStyle(fontSize: 18, color: Colors.white),
         controller: _controllerPortfolioId,
-        keyboardType: Platform.isIOS ? TextInputType.numberWithOptions(signed: true) : TextInputType.number,
+        keyboardType: !kIsWeb && Platform.isIOS ? TextInputType.numberWithOptions(signed: true) : TextInputType.number,
         cursorColor: Colors.white,
         decoration: InputDecoration(
           enabledBorder: UnderlineInputBorder(

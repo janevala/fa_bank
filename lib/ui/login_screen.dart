@@ -12,6 +12,7 @@ import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        if (Platform.isIOS) {
+        if (!kIsWeb && Platform.isIOS) {
           return CupertinoAlertDialog(
             title: Text(title),
             content: Text(content),

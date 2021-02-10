@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Spinner extends StatelessWidget {
@@ -12,7 +13,7 @@ class Spinner extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       child: Center(
-        child: Platform.isIOS ? _buildCupertinoSpinner(context) : _buildMaterialSpinner(context),
+        child: !kIsWeb && Platform.isIOS ? _buildCupertinoSpinner(context) : _buildMaterialSpinner(context),
       ),
     );
   }

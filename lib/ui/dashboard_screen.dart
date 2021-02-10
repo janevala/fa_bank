@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 import 'package:fa_bank/bloc/dashboard_bloc.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/portfolio/daily_value.dart';
@@ -17,6 +16,7 @@ import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
@@ -108,7 +108,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         int numOfOrders = tradeOrders.length;
         String title = 'Trade Orders ($numOfOrders)';
 
-        if (Platform.isIOS) {
+        if (!kIsWeb && Platform.isIOS) {
           return CupertinoAlertDialog(
             title: Text(title, style: TextStyle(fontSize: 18)),
             content: _widgetTradeOrderList(context, tradeOrders),
@@ -154,7 +154,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _widgetTradeOrder(BuildContext context, TradeOrder tradeOrder) {
     Color typeColor = Utils.getColor(tradeOrder.typeName == 'Buy' ? 1 : -1);
     String dateText = DateFormat('dd.MM.yyyy').format(tradeOrder.transactionDate);
-    String titleText = Platform.isIOS ? tradeOrder.securityName : tradeOrder.securityName + ' (' + tradeOrder.securityCode + ')'; //Cupertino quirks
+    String titleText = !kIsWeb && Platform.isIOS ? tradeOrder.securityName : tradeOrder.securityName + ' (' + tradeOrder.securityCode + ')'; //Cupertino quirks
 
     return Padding(
       padding: EdgeInsets.only(bottom: 4),
@@ -502,7 +502,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 3,
           child: InkWell(
             onTap: () async {
-              DateTime now = DateTime.now();
+/*              DateTime now = DateTime.now();
               final List<DateTime> picked = await DateRangePicker.showDatePicker(
                   context: context,
                   initialFirstDate: DateTime(now.year, now.month - 1, now.day),
@@ -520,7 +520,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _pressYTDAttention = false;
                   _animate = true;
                 });
-              }
+              }*/
             },
             child: Container(
                 height: 26,

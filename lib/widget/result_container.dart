@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ResultContainer extends StatelessWidget {
@@ -16,7 +17,7 @@ class ResultContainer extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       child: Center(
-        child: Platform.isIOS ? _getiOSResult(context, success) : _getAndroidResult(context, success),
+        child: !kIsWeb && Platform.isIOS ? _getiOSResult(context, success) : _getAndroidResult(context, success),
       ),
     );
   }

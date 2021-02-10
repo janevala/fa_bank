@@ -5,6 +5,7 @@ import 'package:fa_bank/podo/portfolio/investment.dart';
 import 'package:fa_bank/ui/security_screen.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 
@@ -32,7 +33,7 @@ class InvestmentItem extends StatelessWidget {
   Widget build(BuildContext context) {
     double rowHeight = 50;
     var iconForwardPlatform;
-    if (Platform.isIOS)
+    if (!kIsWeb && Platform.isIOS)
       iconForwardPlatform = Icon(Icons.arrow_forward_ios);
     else
       iconForwardPlatform = Icon(Icons.arrow_forward);

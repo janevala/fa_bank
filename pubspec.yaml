@@ -23,12 +23,12 @@ dependencies:
   intl:
   fl_chart:
   url_launcher:
-  date_range_picker:
+#  date_range_picker:
   flutter_money_formatter:
   package_info:
   video_player:
   visibility_detector:
-  flutter_platform_widgets:
+#  flutter_platform_widgets:
   lipsum:
   camera:
   permission_handler:

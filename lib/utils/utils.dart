@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 import 'dart:math';
 
@@ -31,7 +32,6 @@ class Utils {
   static int randomIntRange(int min, int max) {
     return (min + Random().nextInt(max - min));
   }
-
 
   static MoneyFormatterSettings getMoneySetting(String symbol, int decimal) {
     if (symbol.toUpperCase() == 'EUR') {

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 import 'package:fa_bank/bloc/security_bloc.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/mutation/mutation_data.dart';
@@ -15,6 +14,7 @@ import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/result_container.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -593,7 +593,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 3,
           child: InkWell(
               onTap: () async {
-                DateTime now = DateTime.now();
+/*                DateTime now = DateTime.now();
                 final List<DateTime> picked = await DateRangePicker.showDatePicker(
                     context: context,
                     initialFirstDate: DateTime(now.year, now.month - 1, now.day),
@@ -611,7 +611,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     _pressYTDAttention = false;
                     _animate = true;
                   });
-                }
+                }*/
               },
             child: Container(
                 height: 26,
@@ -860,7 +860,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   textAlign: TextAlign.end,
                   style: TextStyle(fontSize: 18),
                   controller: _controllerAmount,
-                  keyboardType: Platform.isIOS ? TextInputType.numberWithOptions(signed: true) : TextInputType.number,
+                  keyboardType: !kIsWeb && Platform.isIOS ? TextInputType.numberWithOptions(signed: true) : TextInputType.number,
                   onChanged: (text) {
                     setState(() {
                       _controllerOnChanged = text;

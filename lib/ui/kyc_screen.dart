@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:community_material_icon/community_material_icon.dart';
@@ -16,7 +15,6 @@ import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
@@ -253,7 +251,8 @@ class _KycScreenState extends State<KycScreen> {
                   padding: EdgeInsets.all(20),
                   child: SizedBox.expand(
                     child: FlatButton(
-                        child: PlatformText("Lets Start!", style: TextStyle(fontSize: 22, color: Colors.white)),
+                        //child: PlatformText("Lets Start!", style: TextStyle(fontSize: 22, color: Colors.white)),
+                        child: Text("Lets Start!", style: TextStyle(fontSize: 22, color: Colors.white)),
                         color: FaColor.red[900],
                         onPressed: () async {
                           _pageController.nextPage(duration: Duration(milliseconds: 600), curve: ListUtils.getCurve(0));
@@ -632,7 +631,8 @@ class _KycScreenState extends State<KycScreen> {
                               padding: EdgeInsets.all(20),
                               child: SizedBox.expand(
                                 child: FlatButton(
-                                    child: PlatformText("Ready!", style: TextStyle(fontSize: 22, color: Colors.white)),
+//                                    child: PlatformText("Ready!", style: TextStyle(fontSize: 22, color: Colors.white)),
+                                    child: Text("Ready!", style: TextStyle(fontSize: 22, color: Colors.white)),
                                     color: FaColor.red[900],
                                     onPressed: () async {
                                       _preferencesManager.putBool(PreferencesManager.keyKycCompleted, true);
@@ -979,7 +979,8 @@ class _KycScreenState extends State<KycScreen> {
                     padding: EdgeInsets.all(20),
                     child: SizedBox.expand(
                       child: FlatButton(
-                          child: PlatformText('Back', style: TextStyle(fontSize: 22, color: Colors.white)),
+//                          child: PlatformText('Back', style: TextStyle(fontSize: 22, color: Colors.white)),
+                          child: Text('Back', style: TextStyle(fontSize: 22, color: Colors.white)),
                           color: FaColor.red[900],
                           onPressed: () {
                             _pageController.previousPage(duration: Duration(milliseconds: 500), curve: ListUtils.getCurve(0));
@@ -993,7 +994,8 @@ class _KycScreenState extends State<KycScreen> {
                     padding: EdgeInsets.all(20),
                     child: SizedBox.expand(
                       child: FlatButton(
-                          child: PlatformText('Next', style: TextStyle(fontSize: 22, color: Colors.white)),
+//                          child: PlatformText('Next', style: TextStyle(fontSize: 22, color: Colors.white)),
+                          child: Text('Next', style: TextStyle(fontSize: 22, color: Colors.white)),
                           color: FaColor.red[900],
                           onPressed: () {
                             _pageController.nextPage(duration: Duration(milliseconds: 500), curve: ListUtils.getCurve(0));
