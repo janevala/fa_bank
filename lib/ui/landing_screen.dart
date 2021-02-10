@@ -36,7 +36,7 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
   void initState() {
     super.initState();
 
-    _fadeController = AnimationController(vsync: this, duration: Duration(seconds: 15))..repeat(reverse: true);
+    _fadeController = AnimationController(vsync: this, duration: Duration(seconds: 4))..repeat(reverse: true);
     _fadeAnimation = Tween(begin: 1.0, end: 0.85).animate(CurvedAnimation(parent: _fadeController, curve: ListUtils.getRandomCurve()));
 
     _doRefreshToken();
