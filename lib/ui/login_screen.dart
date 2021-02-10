@@ -112,7 +112,12 @@ class _LoginScreenState extends State<LoginScreen> {
               if (_preferencesManager.isKeyExists(PreferencesManager.keyKycCompleted)) {
                 Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
               } else {
-                Navigator.pushNamedAndRemoveUntil(context, KycScreen.route, (r) => false);
+                if (kIsWeb || Platform.isMacOS) {
+                  _preferencesManager.putBool(PreferencesManager.keyKycCompleted, true);
+                  Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
+                } else {
+                  Navigator.pushNamedAndRemoveUntil(context, KycScreen.route, (r) => false);
+                }
               }
             }
           },
