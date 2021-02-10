@@ -4,7 +4,7 @@ class PreferencesManager {
   static PreferencesManager _manager;
   static SharedPreferences _preferences;
 
-  static const int version = 8;
+  static const int version = 19; //change this to match app version when preferences need reset
   static const String keyAccessToken = 'accessToken.$version';
   static const String keyRefreshToken = 'refreshToken.$version';
   static const String keyIsLogin = 'isLogin.$version';
