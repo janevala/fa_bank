@@ -278,11 +278,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Container(height: 12, color: Colors.grey[300]),
                   _widgetSummary(context, portfolioBody),
                   Divider(thickness: 2, color: Colors.grey[300]),
-                  Padding(
+                  !kIsWeb ? Padding(
                       padding: EdgeInsets.only(left: 2, right: 2),
-                      child: _widgetDateChooser(context)),
-                  _widgetDateTitle(context),
-                  Padding(
+                      child: _widgetDateChooser(context)) : Container(),
+                  !kIsWeb ? _widgetDateTitle(context) : Container(),
+                  !kIsWeb ? Padding(
                     padding: EdgeInsets.only(left: 2, right: 4),
                     child: Row(
                       children: [
@@ -310,7 +310,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         )
                       ],
                     ),
-                  ),
+                  ) : Container(),
                   _widgetDescriptor(context),
                   Container(height: 12, color: Colors.grey[300]),
                   _widgetInvestments(
@@ -502,17 +502,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           flex: 3,
           child: InkWell(
             onTap: () async {
-/*              DateTime now = DateTime.now();
-              final List<DateTime> picked = await DateRangePicker.showDatePicker(
-                  context: context,
-                  initialFirstDate: DateTime(now.year, now.month - 1, now.day),
-                  initialLastDate: DateTime(now.year, now.month, now.day),
-                  firstDate: DateTime(2016),
-                  lastDate: DateTime(now.year, now.month, now.day)
+              DateTime now = DateTime.now();
+              final DateTimeRange picked = await showDateRangePicker(
+                context: context,
+                lastDate: DateTime(now.year, now.month, now.day),
+                firstDate: DateTime(now.year, now.month - 1, now.day),
               );
-              if (picked != null && picked.length == 2) {
+              if (picked != null) {
                 setState(() {
-                  _pressRangeAttention = picked;
+                  _pressRangeAttention = [picked.start, picked.end];
                   _pressWeekAttention = false;
                   _pressMonthAttention = false;
                   _press3MonthAttention = false;
@@ -520,7 +518,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _pressYTDAttention = false;
                   _animate = true;
                 });
-              }*/
+              }
             },
             child: Container(
                 height: 26,

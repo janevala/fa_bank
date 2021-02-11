@@ -280,11 +280,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   Divider(thickness: 2, color: Colors.grey[300]),
                   _widgetDetail(context, securityBody, investment),
                   Divider(thickness: 2, color: Colors.grey[300]),
-                  _graphSecurity.length > 0 ? Padding(
+                  _graphSecurity.length > 0 && !kIsWeb ? Padding(
                       padding: EdgeInsets.only(left: 2, right: 2),
                       child: _widgetDateChooser(context)) : Container(),
-                  _graphSecurity.length > 0 ? _widgetDateTitle(context) : Container(),
-                  _graphSecurity.length > 0 ? Padding(
+                  _graphSecurity.length > 0 && !kIsWeb ? _widgetDateTitle(context) : Container(),
+                  _graphSecurity.length > 0 && !kIsWeb ? Padding(
                     padding: EdgeInsets.only(left: 2, right: 4),
                     child: Row(
                       children: [
@@ -593,17 +593,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
           flex: 3,
           child: InkWell(
               onTap: () async {
-/*                DateTime now = DateTime.now();
-                final List<DateTime> picked = await DateRangePicker.showDatePicker(
-                    context: context,
-                    initialFirstDate: DateTime(now.year, now.month - 1, now.day),
-                    initialLastDate: DateTime(now.year, now.month, now.day),
-                    firstDate: DateTime(2016),
-                    lastDate: DateTime(now.year, now.month, now.day)
+                DateTime now = DateTime.now();
+                final DateTimeRange picked = await showDateRangePicker(
+                  context: context,
+                  lastDate: DateTime(now.year, now.month, now.day),
+                  firstDate: DateTime(now.year, now.month - 1, now.day),
                 );
-                if (picked != null && picked.length == 2) {
+                if (picked != null) {
                   setState(() {
-                    _pressRangeAttention = picked;
+                    _pressRangeAttention = [picked.start, picked.end];
                     _pressWeekAttention = false;
                     _pressMonthAttention = false;
                     _press3MonthAttention = false;
@@ -611,7 +609,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     _pressYTDAttention = false;
                     _animate = true;
                   });
-                }*/
+                }
               },
             child: Container(
                 height: 26,
