@@ -28,7 +28,6 @@ dependencies:
   package_info:
   video_player:
   visibility_detector:
-#  flutter_platform_widgets:
   lipsum:
   camera:
   permission_handler:

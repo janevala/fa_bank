@@ -251,7 +251,6 @@ class _KycScreenState extends State<KycScreen> {
                   padding: EdgeInsets.all(20),
                   child: SizedBox.expand(
                     child: FlatButton(
-                        //child: PlatformText("Lets Start!", style: TextStyle(fontSize: 22, color: Colors.white)),
                         child: Text("Lets Start!", style: TextStyle(fontSize: 22, color: Colors.white)),
                         color: FaColor.red[900],
                         onPressed: () async {
@@ -631,7 +630,6 @@ class _KycScreenState extends State<KycScreen> {
                               padding: EdgeInsets.all(20),
                               child: SizedBox.expand(
                                 child: FlatButton(
-//                                    child: PlatformText("Ready!", style: TextStyle(fontSize: 22, color: Colors.white)),
                                     child: Text("Ready!", style: TextStyle(fontSize: 22, color: Colors.white)),
                                     color: FaColor.red[900],
                                     onPressed: () async {
@@ -979,7 +977,6 @@ class _KycScreenState extends State<KycScreen> {
                     padding: EdgeInsets.all(20),
                     child: SizedBox.expand(
                       child: FlatButton(
-//                          child: PlatformText('Back', style: TextStyle(fontSize: 22, color: Colors.white)),
                           child: Text('Back', style: TextStyle(fontSize: 22, color: Colors.white)),
                           color: FaColor.red[900],
                           onPressed: () {
@@ -994,7 +991,6 @@ class _KycScreenState extends State<KycScreen> {
                     padding: EdgeInsets.all(20),
                     child: SizedBox.expand(
                       child: FlatButton(
-//                          child: PlatformText('Next', style: TextStyle(fontSize: 22, color: Colors.white)),
                           child: Text('Next', style: TextStyle(fontSize: 22, color: Colors.white)),
                           color: FaColor.red[900],
                           onPressed: () {
