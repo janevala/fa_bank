@@ -26,7 +26,7 @@ import 'dart:math';
 
 /// "Security" as in financial nomenclature, not data or information security.
 ///
-/// "Security" is a fungible, negotiable financial instrument that holds some type of monetary value.
+/// "Security" is a fungible, negotiable financial instrument that holds some type of monetary value.
 
 class SecurityScreen extends StatefulWidget {
   static const String route = '/security_screen';
