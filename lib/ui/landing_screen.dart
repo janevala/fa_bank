@@ -3,13 +3,11 @@ import 'dart:ui';
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:fa_bank/bloc/landing_bloc.dart';
 import 'package:fa_bank/injector.dart';
-import 'package:fa_bank/podo/portfolio/trade_order.dart';
 import 'package:fa_bank/ui/dashboard_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/list_utils.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
-import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -73,7 +71,6 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    List<TradeOrder> tradeOrders = [];
     return Scaffold(
       body: BlocProvider<LandingBloc>(
         create: (context) => _landingBloc,
@@ -128,8 +125,8 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
                 end: Alignment.bottomCenter,
                 colors: [
                   FaColor.red[900],
-                  FaColor.red[900],
-                  FaColor.red[50]
+                  FaColor.red[700],
+                  FaColor.red[1]
                 ]
               )
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class FaColor {
   static Map<int, Color> redCodes = {
+    1: Color.fromRGBO(191, 2, 1, .01),
     50: Color.fromRGBO(191, 2, 1, .1),
     100: Color.fromRGBO(191, 2, 1, .2),
     200: Color.fromRGBO(191, 2, 1, .3),
