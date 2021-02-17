@@ -265,7 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _widgetImageHeader() {
     return Padding(
-      padding: EdgeInsets.only(left: 64, right: 64, top: 32, bottom: 32),
+      padding: EdgeInsets.only(left: 32, right: 32, top: 16, bottom: 16),
       child: InkWell(
         onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
         child: Image.asset('assets/images/fa-bank-login.png'),
