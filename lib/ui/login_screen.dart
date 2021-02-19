@@ -128,10 +128,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     children: <Widget>[
                       Container(
-                        height: screen * 0.75,
+                        height: screen * 0.77,
                         color: FaColor.red[900],
                         child: Padding(
-                          padding: EdgeInsets.all(32),
+                          padding: EdgeInsets.only(top: 32, left: 32, right: 32),
                           child: ListView(
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
@@ -150,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       Container(
-                        height: screen * 0.25,
+                        height: screen * 0.23,
                         color: Colors.white,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,

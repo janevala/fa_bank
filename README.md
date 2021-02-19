@@ -23,3 +23,5 @@ About: Demo and concept app, developed in Flutter and Graphql
 
 - Generate backend config
     openssl base64  -A -in config.json -out config.b64
+
+- Android, iOS, MacOS desktop and web builds experimented, but form factor is mobile
