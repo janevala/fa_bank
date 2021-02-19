@@ -196,7 +196,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
         title: Image.asset('assets/images/fa-bank.png',
-            height: AppBar().preferredSize.height * 0.75),
+            height: AppBar().preferredSize.height * 0.85),
         backgroundColor: FaColor.red[900],
         actions: <Widget>[
           IconButton(

@@ -137,13 +137,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             physics: NeverScrollableScrollPhysics(),
                             children: <Widget>[
                               _widgetImageHeader(),
-                              _widgetSizedBox(16),
+                              SizedBox(height: 16),
                               _widgetLabel('USER NAME'),
                               _widgetTextFieldUserName(),
-                              _widgetSizedBox(16),
+                              SizedBox(height: 16),
                               _widgetLabel('PASSWORD'),
                               _widgetTextFieldPassword(),
-                              _widgetSizedBox(64),
+                              SizedBox(height: 64),
                               _widgetButtonSignIn(),
                             ],
                           ),
@@ -264,14 +264,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _widgetImageHeader() {
-    return Padding(
-      padding: EdgeInsets.only(left: 32, right: 32, top: 16, bottom: 16),
-      child: InkWell(
-        onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
-        child: Image.asset('assets/images/fa-bank-login.png'),
-      ),
+    return InkWell(
+      onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
+      child: Image.asset('assets/images/fa-bank-login.png'),
     );
   }
-
-  Widget _widgetSizedBox(double height) => SizedBox(height: height);
 }

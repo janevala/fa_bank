@@ -131,7 +131,7 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
               )
             ),
             child: Padding(
-                padding: EdgeInsets.only(left: 32, right: 32, top: 96, bottom: 96),
+                padding: EdgeInsets.only(left: 32, right: 32, top: 120, bottom: 120),
                 child: Image.asset('assets/images/fa-bank-login.png')),
           ),
         ),
