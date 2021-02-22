@@ -37,7 +37,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final DashboardBloc _dashboardUserBloc = DashboardBloc(DashboardInitial());
 
   //Graph globals
-  bool _animate = true;
   String _graphDateCriteria = 'all';
   bool _pressWeekAttention = false;
   bool _pressMonthAttention = false;
@@ -113,7 +112,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             title: Text(title, style: TextStyle(fontSize: 18)),
             content: _widgetTradeOrderList(context, tradeOrders),
             actions: [
-              FlatButton(
+              TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: Text('Ok', style: TextStyle(fontSize: 18)),
               ),
@@ -124,7 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             title: Text(title, style: TextStyle(fontSize: 18)),
             content: _widgetTradeOrderList(context, tradeOrders),
             actions: [
-              FlatButton(
+              TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: Text('Ok', style: TextStyle(fontSize: 18)),
               ),
@@ -195,8 +194,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
-        title: Image.asset('assets/images/fa-bank.png',
-            height: AppBar().preferredSize.height * 0.85),
+        title: Image.asset('assets/images/fa-logo.png',
+            height: AppBar().preferredSize.height * 0.75),
         backgroundColor: FaColor.red[900],
         actions: <Widget>[
           IconButton(
@@ -228,14 +227,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _spin = true;
             } else if (state is DashboardSuccess) {
               _spin = false;
-              _animate = true;
               if (state.portfolioBody.portfolio == null) return Center(
                 child: Text('Error', style: TextStyle(fontSize: 18))
               );
               tradeOrders = state.portfolioBody.portfolio.tradeOrders;
               return _widgetMainView(context, state.portfolioBody);
             } else if (state is DashboardCache) {
-              _animate = false;
               if (state.portfolioBody.portfolio == null) return Center(
                 child: Text('Error', style: TextStyle(fontSize: 18)),
               );
@@ -282,7 +279,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       padding: EdgeInsets.only(left: 2, right: 2),
                       child: _widgetDateChooser(context)) : Container(),
                   !kIsWeb ? _widgetDateTitle(context) : Container(),
-                  !kIsWeb ? Padding(
+                  _graphBenchmarkMinus100.length > 0 && !kIsWeb ? Padding(
                     padding: EdgeInsets.only(left: 2, right: 4),
                     child: Row(
                       children: [
@@ -299,7 +296,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ],
                               ),
                             )),
-                        Expanded(
+                        _graphBenchmarkMinus100.length > 0 ? Expanded(
                           child: Container(
                             height: 200,
                             child: LineChart(
@@ -307,7 +304,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               swapAnimationDuration: const Duration(milliseconds: 500),
                             ),
                           ),
-                        )
+                        ) : Container()
                       ],
                     ),
                   ) : Container(),
@@ -516,7 +513,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _press3MonthAttention = false;
                   _press6MonthAttention = false;
                   _pressYTDAttention = false;
-                  _animate = true;
                 });
               }
             },
@@ -538,175 +534,188 @@ class _DashboardScreenState extends State<DashboardScreen> {
           )),
       Expanded(
           flex: 2,
-          child: Center(
-            child: ButtonTheme(
-                height: 26,
-                minWidth: 30,
-                child: FlatButton(
-                    color: _pressWeekAttention ? FaColor.red[900] : Colors.white,
-                    child: Text(_week,
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: _pressWeekAttention ? Colors.white : Colors.black)),
-                    onPressed: () => setState(() {
-                          if (_pressWeekAttention)
-                            _graphDateCriteria = 'all';
-                          else
-                            _graphDateCriteria = _week;
-                          _pressWeekAttention = !_pressWeekAttention;
-                          _pressMonthAttention = false;
-                          _press3MonthAttention = false;
-                          _press6MonthAttention = false;
-                          _pressYTDAttention = false;
-                          _pressRangeAttention = [];
-
-                          _animate = false;
-                        }),
-                    shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                            color: _pressWeekAttention ? FaColor.red[900] : Colors.black,
-                            width: 1,
-                            style: BorderStyle.solid),
-                        borderRadius: BorderRadius.circular(20.0)))),
-          )),
-      Expanded(
-          flex: 2,
-          child: Center(
-            child: ButtonTheme(
-              height: 26,
-              minWidth: 30,
-              child: FlatButton(
-                  color: _pressMonthAttention ? FaColor.red[900] : Colors.white,
-                  child: Text(_month,
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: _pressMonthAttention ? Colors.white : Colors.black)),
-                  onPressed: () => setState(() {
-                        if (_pressMonthAttention)
-                          _graphDateCriteria = 'all';
-                        else
-                          _graphDateCriteria = _month;
-                        _pressMonthAttention = !_pressMonthAttention;
-                        _pressWeekAttention = false;
-                        _press3MonthAttention = false;
-                        _press6MonthAttention = false;
-                        _pressYTDAttention = false;
-                        _pressRangeAttention = [];
-
-                        _animate = false;
-                      }),
-                  shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                          color: _pressMonthAttention ? FaColor.red[900] : Colors.black,
-                          width: 1,
-                          style: BorderStyle.solid),
-                      borderRadius: BorderRadius.circular(20.0))),
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: TextButton(
+                child: Text(_week,
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: _pressWeekAttention ? Colors.white : Colors.black)),
+                onPressed: () => setState(() {
+                      if (_pressWeekAttention)
+                        _graphDateCriteria = 'all';
+                      else
+                        _graphDateCriteria = _week;
+                      _pressWeekAttention = !_pressWeekAttention;
+                      _pressMonthAttention = false;
+                      _press3MonthAttention = false;
+                      _press6MonthAttention = false;
+                      _pressYTDAttention = false;
+                      _pressRangeAttention = [];
+                 }),
+                style: _pressWeekAttention ? TextButton.styleFrom(
+                    minimumSize: Size(0, 0),
+                    backgroundColor: FaColor.red[900],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20)))
+                ) : TextButton.styleFrom(
+                    minimumSize: Size(0, 0),
+                    side: BorderSide(
+                        color: Colors.black,
+                        width: 1,
+                        style: BorderStyle.solid),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20)))
+                )
             ),
           )),
       Expanded(
           flex: 2,
-          child: Center(
-            child: ButtonTheme(
-              height: 26,
-              minWidth: 30,
-              child: FlatButton(
-                  color: _press3MonthAttention ? FaColor.red[900] : Colors.white,
-                  child: Text(_threeMonth,
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: _press3MonthAttention ? Colors.white : Colors.black)),
-                  onPressed: () => setState(() {
-                        if (_press3MonthAttention)
-                          _graphDateCriteria = 'all';
-                        else
-                          _graphDateCriteria = _threeMonth;
-                        _press3MonthAttention = !_press3MonthAttention;
-                        _pressWeekAttention = false;
-                        _pressMonthAttention = false;
-                        _press6MonthAttention = false;
-                        _pressYTDAttention = false;
-                        _pressRangeAttention = [];
-
-                        _animate = false;
-                      }),
-                  shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                          color: _press3MonthAttention ? FaColor.red[900] : Colors.black,
-                          width: 1,
-                          style: BorderStyle.solid),
-                      borderRadius: BorderRadius.circular(20.0))),
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: TextButton(
+                child: Text(_month,
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: _pressMonthAttention ? Colors.white : Colors.black)),
+                onPressed: () => setState(() {
+                      if (_pressMonthAttention)
+                        _graphDateCriteria = 'all';
+                      else
+                        _graphDateCriteria = _month;
+                      _pressMonthAttention = !_pressMonthAttention;
+                      _pressWeekAttention = false;
+                      _press3MonthAttention = false;
+                      _press6MonthAttention = false;
+                      _pressYTDAttention = false;
+                      _pressRangeAttention = [];
+                 }),
+                style: _pressMonthAttention ? TextButton.styleFrom(
+                    minimumSize: Size(0, 0),
+                    backgroundColor: FaColor.red[900],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20)))
+                ) : TextButton.styleFrom(
+                    minimumSize: Size(0, 0),
+                    side: BorderSide(
+                        color: Colors.black,
+                        width: 1,
+                        style: BorderStyle.solid),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20)))
+                )
             ),
           )),
       Expanded(
           flex: 2,
-          child: Center(
-            child: ButtonTheme(
-                height: 26,
-                minWidth: 30,
-                child: FlatButton(
-                    color: _press6MonthAttention ? FaColor.red[900] : Colors.white,
-                    child: Text(_sixMonth,
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: _press6MonthAttention ? Colors.white : Colors.black)),
-                    onPressed: () => setState(() {
-                          if (_press6MonthAttention)
-                            _graphDateCriteria = 'all';
-                          else
-                            _graphDateCriteria = _sixMonth;
-                          _press6MonthAttention = !_press6MonthAttention;
-                          _pressWeekAttention = false;
-                          _pressMonthAttention = false;
-                          _press3MonthAttention = false;
-                          _pressYTDAttention = false;
-                          _pressRangeAttention = [];
-
-                          _animate = false;
-                        }),
-                    shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                            color: _press6MonthAttention ? FaColor.red[900] : Colors.black,
-                            width: 1,
-                            style: BorderStyle.solid),
-                        borderRadius: BorderRadius.circular(20.0)))),
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: TextButton(
+                child: Text(_threeMonth,
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: _press3MonthAttention ? Colors.white : Colors.black)),
+                onPressed: () => setState(() {
+                      if (_press3MonthAttention)
+                        _graphDateCriteria = 'all';
+                      else
+                        _graphDateCriteria = _threeMonth;
+                      _press3MonthAttention = !_press3MonthAttention;
+                      _pressWeekAttention = false;
+                      _pressMonthAttention = false;
+                      _press6MonthAttention = false;
+                      _pressYTDAttention = false;
+                      _pressRangeAttention = [];
+                 }),
+                style: _press3MonthAttention ? TextButton.styleFrom(
+                    minimumSize: Size(0, 0),
+                    backgroundColor: FaColor.red[900],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20)))
+                ) : TextButton.styleFrom(
+                    minimumSize: Size(0, 0),
+                    side: BorderSide(
+                        color: Colors.black,
+                        width: 1,
+                        style: BorderStyle.solid),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20)))
+                )
+            ),
           )),
       Expanded(
           flex: 2,
-          child: Center(
-            child: ButtonTheme(
-                height: 26,
-                minWidth: 30,
-                child: FlatButton(
-                    color: _pressYTDAttention ? FaColor.red[900] : Colors.white,
-                    child: Text(_ytd,
-                        style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: _pressYTDAttention ? Colors.white : Colors.black)),
-                    onPressed: () => setState(() {
-                          if (_pressYTDAttention)
-                            _graphDateCriteria = 'all';
-                          else
-                            _graphDateCriteria = _ytd;
-                          _pressYTDAttention = !_pressYTDAttention;
-                          _pressWeekAttention = false;
-                          _pressMonthAttention = false;
-                          _press3MonthAttention = false;
-                          _press6MonthAttention = false;
-                          _pressRangeAttention = [];
-
-                          _animate = false;
-                        }),
-                    shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                            color: _pressYTDAttention ? FaColor.red[900] : Colors.black,
-                            width: 1,
-                            style: BorderStyle.solid),
-                        borderRadius: BorderRadius.circular(20.0)))),
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: TextButton(
+                child: Text(_sixMonth,
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: _press6MonthAttention ? Colors.white : Colors.black)),
+                onPressed: () => setState(() {
+                      if (_press6MonthAttention)
+                        _graphDateCriteria = 'all';
+                      else
+                        _graphDateCriteria = _sixMonth;
+                      _press6MonthAttention = !_press6MonthAttention;
+                      _pressWeekAttention = false;
+                      _pressMonthAttention = false;
+                      _press3MonthAttention = false;
+                      _pressYTDAttention = false;
+                      _pressRangeAttention = [];
+                 }),
+                style: _press6MonthAttention ? TextButton.styleFrom(
+                    minimumSize: Size(0, 0),
+                    backgroundColor: FaColor.red[900],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20)))
+                ) : TextButton.styleFrom(
+                    minimumSize: Size(0, 0),
+                    side: BorderSide(
+                        color: Colors.black,
+                        width: 1,
+                        style: BorderStyle.solid),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20)))
+                )
+            ),
+          )),
+      Expanded(
+          flex: 2,
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: TextButton(
+                child: Text(_ytd,
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: _pressYTDAttention ? Colors.white : Colors.black)),
+                onPressed: () => setState(() {
+                      if (_pressYTDAttention)
+                        _graphDateCriteria = 'all';
+                      else
+                        _graphDateCriteria = _ytd;
+                      _pressYTDAttention = !_pressYTDAttention;
+                      _pressWeekAttention = false;
+                      _pressMonthAttention = false;
+                      _press3MonthAttention = false;
+                      _press6MonthAttention = false;
+                      _pressRangeAttention = [];
+                 }),
+                style: _pressYTDAttention ? TextButton.styleFrom(
+                    minimumSize: Size(0, 0),
+                    backgroundColor: FaColor.red[900],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20)))
+                ) : TextButton.styleFrom(
+                    minimumSize: Size(0, 0),
+                    side: BorderSide(
+                        color: Colors.black,
+                        width: 1,
+                        style: BorderStyle.solid),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20)))
+                )
+            ),
           ))
     ]);
   }

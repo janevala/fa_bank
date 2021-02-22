@@ -136,7 +136,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
                             children: <Widget>[
-                              _widgetImageHeader(),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 48, right: 48, top: 32, bottom: 16),
+                                child: _widgetImageHeader(),
+                              ),
                               SizedBox(height: 16),
                               _widgetLabel('USER NAME'),
                               _widgetTextFieldUserName(),
@@ -195,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _widgetButtonSignIn() {
     return Padding(
       padding: EdgeInsets.only(left: 64, right: 64),
-      child: FlatButton(
+      child: TextButton(
           child: Text(
             'SIGN IN',
             style: TextStyle(fontSize: 18, color: FaColor.red[900], fontWeight: FontWeight.bold),
@@ -213,9 +216,11 @@ class _LoginScreenState extends State<LoginScreen> {
               }
             }
           },
-          color: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))),
-    );
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5)))
+          ),
+    ));
   }
 
   Widget _widgetTextFieldUserName() {
@@ -266,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _widgetImageHeader() {
     return InkWell(
       onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
-      child: Image.asset('assets/images/fa-bank-login.png'),
+      child: Image.asset('assets/images/fa-logo.png'),
     );
   }
 }

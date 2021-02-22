@@ -250,17 +250,19 @@ class _KycScreenState extends State<KycScreen> {
                 child: Padding(
                   padding: EdgeInsets.all(20),
                   child: SizedBox.expand(
-                    child: FlatButton(
+                    child: TextButton(
                         child: Text("Lets Start!", style: TextStyle(fontSize: 22, color: Colors.white)),
-                        color: FaColor.red[900],
                         onPressed: () async {
                           _pageController.nextPage(duration: Duration(milliseconds: 600), curve: ListUtils.getCurve(0));
                         },
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))),
+                        style: TextButton.styleFrom(
+                          backgroundColor: FaColor.red[900],
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5)))
+                        ),
                   ),
                 ),
               ))
-        ],
+          )],
       ),
     );
   }
@@ -559,7 +561,7 @@ class _KycScreenState extends State<KycScreen> {
         children: [
           Visibility(
             visible: !_cameraPermissionsOk,
-            child: FlatButton(
+            child: TextButton(
               onPressed: () {
                 _requestCameraPermission(setState);
               },
@@ -568,7 +570,7 @@ class _KycScreenState extends State<KycScreen> {
           ),
           Visibility(
             visible: _cameraPermissionsOk,
-            child: FlatButton(
+            child: TextButton(
               onPressed: () => _handleCameraAndReturnValue(setState),
               child:  Text("Open camera and take selfie along with the first page of your passport", style: TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.underline), textAlign: TextAlign.center),
             ),
@@ -629,9 +631,8 @@ class _KycScreenState extends State<KycScreen> {
                             child: Padding(
                               padding: EdgeInsets.all(20),
                               child: SizedBox.expand(
-                                child: FlatButton(
+                                child: TextButton(
                                     child: Text("Ready!", style: TextStyle(fontSize: 22, color: Colors.white)),
-                                    color: FaColor.red[900],
                                     onPressed: () async {
                                       _preferencesManager.putBool(PreferencesManager.keyKycCompleted, true);
 
@@ -641,7 +642,11 @@ class _KycScreenState extends State<KycScreen> {
 
                                       Navigator.pushNamedAndRemoveUntil(context, LandingScreen.route, (r) => false);
                                     },
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))),
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: FaColor.red[900],
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5)))
+                                  ),
+                                ),
                               ),
                             ),
                           ))
@@ -976,13 +981,16 @@ class _KycScreenState extends State<KycScreen> {
                   child: Padding(
                     padding: EdgeInsets.all(20),
                     child: SizedBox.expand(
-                      child: FlatButton(
+                      child: TextButton(
                           child: Text('Back', style: TextStyle(fontSize: 22, color: Colors.white)),
-                          color: FaColor.red[900],
                           onPressed: () {
                             _pageController.previousPage(duration: Duration(milliseconds: 500), curve: ListUtils.getCurve(0));
                           },
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))),
+                          style: TextButton.styleFrom(
+                            backgroundColor: FaColor.red[900],
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5)))
+                          ),
+                      ),
                     ),
                   ),
                 ),
@@ -990,13 +998,16 @@ class _KycScreenState extends State<KycScreen> {
                   child: Padding(
                     padding: EdgeInsets.all(20),
                     child: SizedBox.expand(
-                      child: FlatButton(
+                      child: TextButton(
                           child: Text('Next', style: TextStyle(fontSize: 22, color: Colors.white)),
-                          color: FaColor.red[900],
                           onPressed: () {
                             _pageController.nextPage(duration: Duration(milliseconds: 500), curve: ListUtils.getCurve(0));
                           },
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))),
+                          style: TextButton.styleFrom(
+                            backgroundColor: FaColor.red[900],
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5)))
+                          ),
+                      ),
                     ),
                   ),
                 ),

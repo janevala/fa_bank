@@ -96,7 +96,7 @@ class _BackendScreenState extends State<BackendScreen> {
   Widget _widgetSaveAndReboot(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(left: 32, right: 32),
-      child: FlatButton(
+      child: TextButton(
           child: Text('SAVE AND RESTART',
             style: TextStyle(fontSize: 18, color: FaColor.red[900], fontWeight: FontWeight.bold)),
           onPressed: () async {
@@ -123,8 +123,10 @@ class _BackendScreenState extends State<BackendScreen> {
               RestartWidget.restartApp(context);
             }
           },
-          color: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))),
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5)))
+          ))
     );
   }
 

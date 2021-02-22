@@ -8,6 +8,7 @@ import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/list_utils.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
+import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,11 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
   bool _spin = true;
   AnimationController _fadeController;
   Animation _fadeAnimation;
+  List<String> _backgroundImages = [
+    'assets/images/shutterstock_111899093.jpg',
+    'assets/images/shutterstock_1627633462.jpg',
+    'assets/images/shutterstock_403945477.jpg'
+  ];
 
   @override
   void initState() {
@@ -102,7 +108,7 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
     return Stack(
       children: [
         Center(
-          child: Image.asset('assets/images/login_bg.png',
+          child: Image.asset(Utils.randomImage(_backgroundImages),
             fit: BoxFit.cover,
             height: double.infinity,
             width: double.infinity),
@@ -131,8 +137,8 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
               )
             ),
             child: Padding(
-                padding: EdgeInsets.only(left: 32, right: 32, top: 120, bottom: 120),
-                child: Image.asset('assets/images/fa-bank-login.png')),
+                padding: EdgeInsets.only(left: 64, right: 64, top: 120, bottom: 120),
+                child: Image.asset('assets/images/fa-logo.png')),
           ),
         ),
         Align(

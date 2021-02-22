@@ -3,7 +3,7 @@ description: FA Bank
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.21+21
+version: 1.0.22+22
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -45,9 +45,10 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/fa-bank.png
-    - assets/images/fa-bank-login.png
-    - assets/images/login_bg.png
+    - assets/images/fa-logo.png
+    - assets/images/shutterstock_111899093.jpg
+    - assets/images/shutterstock_1627633462.jpg
+    - assets/images/shutterstock_403945477.jpg
     - assets/demo.mp4
     - assets/config.b64
     - assets/config.json

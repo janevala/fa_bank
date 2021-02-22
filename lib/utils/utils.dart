@@ -29,6 +29,10 @@ class Utils {
     return Random().nextInt(max);
   }
 
+  static String randomImage(List<String> list) {
+    return list[Random().nextInt(list.length)];
+  }
+
   static int randomIntRange(int min, int max) {
     return (min + Random().nextInt(max - min));
   }
