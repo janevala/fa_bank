@@ -55,7 +55,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Graph _graphRaw = Graph(DailyValues([DailyValue(DateTime.now(), 0, 0)]));
   List<FlSpot> _graphBenchmarkMinus100 = [];
   List<FlSpot> _graphPortfolioMinus100 = [];
-  double _portfolioFirstX, _portfolioLastX = 0;
   double _minY, _maxY = 0;
   double _chartTimeMSecs = 0;
   bool _spin = true;
@@ -885,8 +884,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         _dateRangeFirst = DateTime.fromMillisecondsSinceEpoch(_graphPortfolioMinus100[0].x.toInt());
         _dateRangeLast = DateTime.fromMillisecondsSinceEpoch(_graphPortfolioMinus100[_graphPortfolioMinus100.length -1].x.toInt());
-        _portfolioFirstX = _graphPortfolioMinus100[0].x;
-        _portfolioLastX = _graphPortfolioMinus100[_graphPortfolioMinus100.length -1].x;
       }
     }
   }

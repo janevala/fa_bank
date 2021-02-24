@@ -67,15 +67,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
   DateTime _dateRangeLast = DateTime.now();
   List<Graph> _graphs = [];
   List<FlSpot> _graphSecurity = [];
-  double _portfolioFirstX, _portfolioLastX = 0;
   double _minY, _maxY = 0;
   double _chartTimeMSecs = 0;
   bool _spin = true;
   bool _mutationSuccess = false;
 
   GlobalKey<ScaffoldState> _key = GlobalKey();
-  PersistentBottomSheetController _purchaseSheetController;
-  bool _purchaseSheetOpen = false;
 
   @override
   void initState() {
@@ -801,11 +798,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
     ]);
   }
 
-  String _parsedNumberText(BuildContext context, String str) {
+/*  String _parsedNumberText(BuildContext context, String str) {
     final formatter = NumberFormat("#,###");// using comma here will not work, even by escaping with back slash
     String newString = formatter.format(int.parse(str));
     return newString.replaceAll(',', '.');
-  }
+  }*/
 
   Widget _widgetSummary(BuildContext context, SecurityBody securityBody, Investment investment) {
     return Padding(
@@ -880,7 +877,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   },
                   inputFormatters: [
                     LengthLimitingTextInputFormatter(8),
-                    WhitelistingTextInputFormatter(RegExp("[0-9]"))
+                    FilteringTextInputFormatter.allow(RegExp("[0-9]"))
                   ],
                 ),
               ),
@@ -1095,8 +1092,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
         _dateRangeFirst = DateTime.fromMillisecondsSinceEpoch(_graphSecurity[0].x.toInt());
         _dateRangeLast = DateTime.fromMillisecondsSinceEpoch(_graphSecurity[_graphSecurity.length -1].x.toInt());
-        _portfolioFirstX = _graphSecurity[0].x;
-        _portfolioLastX = _graphSecurity[_graphSecurity.length -1].x;
       }
     }
   }
