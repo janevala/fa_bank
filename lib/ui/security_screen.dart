@@ -279,11 +279,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   Divider(thickness: 2, color: Colors.grey[300]),
                   _widgetDetail(context, securityBody, investment),
                   Divider(thickness: 2, color: Colors.grey[300]),
-                  !kIsWeb ? Padding(
+                  Padding(
                       padding: EdgeInsets.only(left: 2, right: 2),
-                      child: _widgetDateChooser(context)) : Container(),
-                  _graphSecurity.length > 0 && !kIsWeb ? _widgetDateTitle(context) : Container(),
-                  _graphSecurity.length > 0 && !kIsWeb ? Padding(
+                      child: _widgetDateChooser(context)),
+                  _widgetDateTitle(context),
+                  _graphSecurity.length > 0 ? Padding(
                     padding: EdgeInsets.only(left: 2, right: 4),
                     child: Row(
                       children: [

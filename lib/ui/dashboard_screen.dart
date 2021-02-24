@@ -275,11 +275,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Container(height: 12, color: Colors.grey[300]),
                   _widgetSummary(context, portfolioBody),
                   Divider(thickness: 2, color: Colors.grey[300]),
-                  !kIsWeb ? Padding(
+                  Padding(
                       padding: EdgeInsets.only(left: 2, right: 2),
-                      child: _widgetDateChooser(context)) : Container(),
-                  !kIsWeb ? _widgetDateTitle(context) : Container(),
-                  _graphBenchmarkMinus100.length > 0 && !kIsWeb ? Padding(
+                      child: _widgetDateChooser(context)),
+                  _widgetDateTitle(context),
+                  _graphBenchmarkMinus100.length > 0 ? Padding(
                     padding: EdgeInsets.only(left: 2, right: 4),
                     child: Row(
                       children: [
