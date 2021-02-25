@@ -97,9 +97,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     //https://stackoverflow.com/questions/49553402/flutter-screen-size
-    double height = MediaQuery.of(context).size.height;
+    double heightOriginal = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
     EdgeInsets padding = MediaQuery.of(context).padding;
-    double screen = height - padding.top - padding.bottom;
+    double heightActual = heightOriginal - padding.top - padding.bottom;
 
     return Scaffold(
       body: BlocProvider<LoginBloc>(
@@ -124,60 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: SafeArea(
             child: Stack(
               children: <Widget>[
-                SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        height: screen * 0.77,
-                        color: FaColor.red[900],
-                        child: Padding(
-                          padding: EdgeInsets.only(top: 32, left: 32, right: 32),
-                          child: ListView(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.only(left: 48, right: 48, top: 32, bottom: 16),
-                                child: _widgetImageHeader(),
-                              ),
-                              SizedBox(height: 16),
-                              _widgetLabel('USER NAME'),
-                              _widgetTextFieldUserName(),
-                              SizedBox(height: 16),
-                              _widgetLabel('PASSWORD'),
-                              _widgetTextFieldPassword(),
-                              SizedBox(height: 64),
-                              _widgetButtonSignIn(),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: screen * 0.23,
-                        color: Colors.white,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Builder(
-                                builder: (stupidToastContext) => InkWell(
-                                    onTap: () => _showToast(stupidToastContext, 'Not implemented'),
-                                      child: Text('FORGOT PASSWORD?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                    ))),
-                            Container(
-                              height: 36,
-                            ),
-                            Builder(
-                                builder: (stupidToastContext) => InkWell(
-                                    onTap: () => _showToast(stupidToastContext, 'Not implemented'),
-                                      child: Text('PRIVACY POLICY', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                    ))),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
+                kIsWeb ? _webView(heightActual, width) : _mobileView(heightActual),
                 BlocBuilder<LoginBloc, LoginState>(
                   builder: (context, state) {
                     if (state is LoginLoading) {
@@ -191,6 +139,118 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _mobileView(double height) {
+    return SingleChildScrollView(
+      child: Column(
+        children: <Widget>[
+          Container(
+            height: height * 0.77,
+            color: FaColor.red[900],
+            child: Padding(
+              padding: EdgeInsets.only(top: 32, left: 32, right: 32),
+              child: ListView(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.only(left: 48, right: 48, top: 32, bottom: 16),
+                    child: _widgetImageHeader(),
+                  ),
+                  SizedBox(height: 16),
+                  _widgetLabel('USER NAME'),
+                  _widgetTextFieldUserName(),
+                  SizedBox(height: 16),
+                  _widgetLabel('PASSWORD'),
+                  _widgetTextFieldPassword(),
+                  SizedBox(height: 64),
+                  _widgetButtonSignIn(),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            height: height * 0.23,
+            color: Colors.white,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Builder(
+                    builder: (stupidToastContext) => InkWell(
+                        onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                        child: Text('FORGOT PASSWORD?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ))),
+                Container(
+                  height: 36,
+                ),
+                Builder(
+                    builder: (stupidToastContext) => InkWell(
+                        onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                        child: Text('PRIVACY POLICY', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ))),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _webView(double height, double width) {
+    return SingleChildScrollView(
+      child: Column(
+        children: <Widget>[
+          Container(
+            height: height * 0.77,
+            width: width * 0.5,
+            color: FaColor.red[900],
+            child: ListView(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(left: 64, right: 64, top: 32, bottom: 32),
+                  child: _widgetImageHeader(),
+                ),
+                SizedBox(height: 16),
+                _widgetLabel('USER NAME'),
+                _widgetTextFieldUserName(),
+                SizedBox(height: 16),
+                _widgetLabel('PASSWORD'),
+                _widgetTextFieldPassword(),
+                SizedBox(height: 64),
+                _widgetButtonSignIn(),
+              ],
+            ),
+          ),
+          Container(
+            height: height * 0.23,
+            color: Colors.white,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Builder(
+                    builder: (stupidToastContext) => InkWell(
+                        onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                        child: Text('FORGOT PASSWORD?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ))),
+                Container(
+                  height: 36,
+                ),
+                Builder(
+                    builder: (stupidToastContext) => InkWell(
+                        onTap: () => _showToast(stupidToastContext, 'Not implemented'),
+                        child: Text('PRIVACY POLICY', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ))),
+              ],
+            ),
+          )
+        ],
       ),
     );
   }
