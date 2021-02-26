@@ -123,19 +123,22 @@ class _LoginScreenState extends State<LoginScreen> {
             }
           },
           child: SafeArea(
-            child: Stack(
-              children: <Widget>[
-                kIsWeb ? _webView(heightActual, width) : _mobileView(heightActual),
-                BlocBuilder<LoginBloc, LoginState>(
-                  builder: (context, state) {
-                    if (state is LoginLoading) {
-                      return Spinner();
-                    } else {
-                      return Container();
-                    }
-                  },
-                ),
-              ],
+            child: Container(
+              color: FaColor.red[900],
+              child: Stack(
+                children: <Widget>[
+                  kIsWeb ? _webView(heightActual, width) : _mobileView(heightActual),
+                  BlocBuilder<LoginBloc, LoginState>(
+                    builder: (context, state) {
+                      if (state is LoginLoading) {
+                        return Spinner();
+                      } else {
+                        return Container();
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -158,7 +161,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: <Widget>[
                   Padding(
                     padding: EdgeInsets.only(left: 48, right: 48, top: 32, bottom: 16),
-                    child: _widgetImageHeader(),
+                    child: InkWell(
+                      onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
+                      child: Image.asset('assets/images/fa-logo.png'),
+                    ),
                   ),
                   SizedBox(height: 16),
                   _widgetLabel('USER NAME'),
@@ -205,16 +211,19 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         children: <Widget>[
           Container(
-            height: height * 0.77,
-            width: width * 0.5,
+            height: height * 0.85,
+            width: width * 0.3,
             color: FaColor.red[900],
             child: ListView(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               children: <Widget>[
                 Padding(
-                  padding: EdgeInsets.only(left: 64, right: 64, top: 32, bottom: 32),
-                  child: _widgetImageHeader(),
+                  padding: EdgeInsets.only(top: 32, bottom: 32),
+                  child: InkWell(
+                    onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
+                    child: Image.asset('assets/images/fa-logo.png'),
+                  ),
                 ),
                 SizedBox(height: 16),
                 _widgetLabel('USER NAME'),
@@ -228,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           Container(
-            height: height * 0.23,
+            height: height * 0.15,
             color: Colors.white,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -325,13 +334,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _widgetLabel(String label) {
     return Text(label,
       style: TextStyle(fontSize: 18, color: Colors.white),
-    );
-  }
-
-  Widget _widgetImageHeader() {
-    return InkWell(
-      onLongPress: () => Navigator.pushNamed(context, BackendScreen.route),
-      child: Image.asset('assets/images/fa-logo.png'),
     );
   }
 }

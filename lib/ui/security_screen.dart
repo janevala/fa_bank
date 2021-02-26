@@ -8,7 +8,7 @@ import 'package:fa_bank/podo/security/graph.dart';
 import 'package:fa_bank/podo/security/security.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
 import 'package:fa_bank/ui/fa_color.dart';
-import 'package:fa_bank/ui/investment_item.dart';
+import 'package:fa_bank/ui/mobile_investment_item.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/result_container.dart';

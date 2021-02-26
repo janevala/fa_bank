@@ -22,21 +22,16 @@ class SecurityArgument {
 //get rid of this and do more clever way
 final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
-class InvestmentItem extends StatelessWidget {
+class WebInvestmentItem extends StatelessWidget {
   final Investment investment;
   final String shortName;
   final double cashBalance;
 
-  const InvestmentItem({Key key, this.investment, this.shortName, this.cashBalance}) : super(key: key);
+  const WebInvestmentItem({Key key, this.investment, this.shortName, this.cashBalance}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     double rowHeight = 50;
-    var iconForwardPlatform;
-    if (!kIsWeb && Platform.isIOS)
-      iconForwardPlatform = Icon(Icons.arrow_forward_ios);
-    else
-      iconForwardPlatform = Icon(Icons.arrow_forward);
 
 //    var code = investment.security.currency == null ? 'EUR' : investment.security.currency.currencyCode;
     var code = 'EUR';
@@ -60,7 +55,7 @@ class InvestmentItem extends StatelessWidget {
               padding: EdgeInsets.only(left: 6, right: 6, top: 4, bottom: 4),
               child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
                 Expanded(
-                    flex: 5,
+                    flex: 6,
                     child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
@@ -71,37 +66,34 @@ class InvestmentItem extends StatelessWidget {
                 ),
                 Container(height: rowHeight, width: 10, child: VerticalDivider(thickness: 2, color: Colors.grey[300])),
                 Expanded(
-                    flex: 3,
+                    flex: 2,
                     child: Column(
                       children: <Widget>[
-                        _widgetBodyText(context, 'Pos. Value'),
+                        _widgetBodyText(context, 'Pos. Value', Alignment.centerLeft),
                         _widgetHeadline(
-                            context, strPositionValue, Colors.black),
+                            context, strPositionValue, Colors.black, Alignment.centerLeft),
                       ],
                     )),
                 Container(height: rowHeight, width: 10, child: VerticalDivider(thickness: 2,color: Colors.grey[300])),
                 Expanded(
-                    flex: 3,
+                    flex: 2,
                     child: Column(
                       children: <Widget>[
-                        _widgetBodyText(context, 'Amount'),
+                        _widgetBodyText(context, 'Amount', Alignment.centerLeft),
                         _widgetHeadline(context, investment.amount.toStringAsFixed(0),
-                            Colors.black),
+                            Colors.black, Alignment.centerLeft),
                       ],
                     )),
                 Expanded(
-                  flex: 3,
+                  flex: 1,
                   child: Column(
                     children: <Widget>[
-                      _widgetBodyText(context, 'Return'),
+                      _widgetBodyText(context, 'Return', Alignment.centerRight),
                       _widgetHeadline(context, (investment.changePercent * 100).toStringAsFixed(1).replaceFirst('.', ',') + '%',
-                          Utils.getColor(investment.changePercent * 100)),
+                          Utils.getColor(investment.changePercent * 100), Alignment.centerRight),
                     ],
                   ),
                 ),
-                Expanded(
-                  child: iconForwardPlatform,
-                )
               ])),
         ),
         Container(height: 8, color: Colors.grey[300]),
@@ -109,18 +101,18 @@ class InvestmentItem extends StatelessWidget {
     );
   }
 
-  Widget _widgetHeadline(BuildContext context, String text, Color color) {
+  Widget _widgetHeadline(BuildContext context, String text, Color color, Alignment alignment) {
     return Align(
-        alignment: Alignment.centerLeft,
+        alignment: alignment,
         child: Text(
           text,
           style: TextStyle(fontSize: 16, color: color, fontWeight: FontWeight.bold),
         ));
   }
 
-  Widget _widgetBodyText(BuildContext context, String text) {
+  Widget _widgetBodyText(BuildContext context, String text, Alignment alignment) {
     return Align(
-        alignment: Alignment.centerLeft,
+        alignment: alignment,
         child: Text(
           text,
           style: TextStyle(fontSize: 14, color: Colors.grey[600]),

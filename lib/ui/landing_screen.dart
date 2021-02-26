@@ -3,14 +3,16 @@ import 'dart:ui';
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:fa_bank/bloc/landing_bloc.dart';
 import 'package:fa_bank/injector.dart';
-import 'package:fa_bank/ui/dashboard_screen.dart';
+import 'package:fa_bank/ui/mobile_dashboard_screen.dart';
 import 'package:fa_bank/ui/fa_color.dart';
 import 'package:fa_bank/ui/login_screen.dart';
+import 'package:fa_bank/ui/web_dashboard_screen.dart';
 import 'package:fa_bank/utils/list_utils.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -78,33 +80,100 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocProvider<LandingBloc>(
-        create: (context) => _landingBloc,
-        child: BlocBuilder<LandingBloc, LandingState>(
-          builder: (context, state) {
-            if (state is LandingLoading) {
-              _spin = true;
-            } else if (state is LandingSuccess) {
-              _spin = false;
-              return Center(
-                child: _widgetMainView(context),
-              );
-            } else if (state is LandingCache) {
-              _spin = false;
-              return Center(child: Text('LandingCache'));
-            } else if (state is LandingFailure) {
-              _spin = false;
-              return Center(child: Text('LandingFailure'));
-            }
+      body: SafeArea(
+        child: BlocProvider<LandingBloc>(
+          create: (context) => _landingBloc,
+          child: BlocBuilder<LandingBloc, LandingState>(
+            builder: (context, state) {
+              if (state is LandingLoading) {
+                _spin = true;
+              } else if (state is LandingSuccess) {
+                _spin = false;
+                return kIsWeb ? _webView(context) : _mobileView(context);
+              } else if (state is LandingCache) {
+                _spin = false;
+                return Center(child: Text('LandingCache'));
+              } else if (state is LandingFailure) {
+                _spin = false;
+                return Center(child: Text('LandingFailure'));
+              }
 
-            return Spinner();
-          },
+              return Spinner();
+            },
+          ),
         ),
       ),
     );
   }
 
-  Widget _widgetMainView(BuildContext context) {
+  Widget _mobileView(BuildContext context) {
+    return Stack(
+      children: [
+        Center(
+          child: Image.asset(Utils.randomImage(_backgroundImages),
+              fit: BoxFit.cover,
+              height: double.infinity,
+              width: double.infinity),
+        ),
+        FadeTransition(
+          opacity: _fadeAnimation,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 1.0, sigmaY: 1.0),
+            child: Container(
+              color: FaColor.red[900].withOpacity(0.8),
+            ),
+          ),
+        ),
+        Align(
+          alignment: FractionalOffset.topCenter,
+          child: Container(
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      FaColor.red[900],
+                      FaColor.red[700],
+                      FaColor.red[1]
+                    ]
+                )
+            ),
+            child: Padding(
+                padding: EdgeInsets.only(left: 64, right: 64, top: 120, bottom: 120),
+                child: Image.asset('assets/images/fa-logo.png')),
+          ),
+        ),
+        Align(
+          alignment: FractionalOffset.bottomCenter,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 6),
+            child: Table(
+              defaultColumnWidth: FixedColumnWidth(MediaQuery.of(context).size.width / 4),
+              border: TableBorder.all(color: Colors.black26, width: 1, style: BorderStyle.none),
+              children: [
+                TableRow(children: [
+                  TableCell(child: _getDummyCell('Performance', 1)),
+                  TableCell(child: _getDummyCell('Positions', 2)),
+                  TableCell(child: _getDummyCell('Allocations', 3)),
+                  TableCell(child: _getDummyCell('Transactions', 4)),
+                ]),
+                TableRow(children: [
+                  TableCell(child: _getTradingCell('Trading')),
+                  TableCell(child: _getDummyCell('Deposit &  \nWithdraw', 6)),
+                  TableCell(child: _getBlogCell('FA Blog')),
+                  TableCell(child: _getSignOutCell('Sign Out')),
+                ])
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _webView(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+
     return Stack(
       children: [
         Center(
@@ -136,9 +205,12 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
                 ]
               )
             ),
-            child: Padding(
-                padding: EdgeInsets.only(left: 64, right: 64, top: 120, bottom: 120),
-                child: Image.asset('assets/images/fa-logo.png')),
+            child: Container(
+              width: width * 0.4,
+              child: Padding(
+                  padding: EdgeInsets.only(top: 120, bottom: 120),
+                  child: Image.asset('assets/images/fa-logo.png')),
+            ),
           ),
         ),
         Align(
@@ -157,7 +229,7 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
                 ]),
                 TableRow(children: [
                   TableCell(child: _getTradingCell('Trading')),
-                  TableCell(child: _getDummyCell('Deposit &  \nWithdraw', 6)),
+                  TableCell(child: _getDummyCell('Deposit & \nWithdraw', 6)),
                   TableCell(child: _getBlogCell('FA Blog')),
                   TableCell(child: _getSignOutCell('Sign Out')),
                 ])
@@ -205,7 +277,7 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Navigator.pushNamedAndRemoveUntil(context, DashboardScreen.route, (r) => false);
+          kIsWeb ? Navigator.pushNamedAndRemoveUntil(context, WebDashboardScreen.route, (r) => false) : Navigator.pushNamedAndRemoveUntil(context, MobileDashboardScreen.route, (r) => false);
         },
         child: Column(
           children: [

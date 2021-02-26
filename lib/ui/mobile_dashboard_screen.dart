@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fa_bank/bloc/dashboard_bloc.dart';
+import 'package:fa_bank/bloc/mobile_dashboard_bloc.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/portfolio/daily_value.dart';
 import 'package:fa_bank/podo/portfolio/daily_values.dart';
@@ -9,7 +9,7 @@ import 'package:fa_bank/podo/portfolio/investment.dart';
 import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/portfolio/trade_order.dart';
 import 'package:fa_bank/ui/fa_color.dart';
-import 'package:fa_bank/ui/investment_item.dart';
+import 'package:fa_bank/ui/mobile_investment_item.dart';
 import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/ui/login_screen.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
@@ -24,17 +24,17 @@ import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 
-class DashboardScreen extends StatefulWidget {
-  static const String route = '/dashboard_screen';
+class MobileDashboardScreen extends StatefulWidget {
+  static const String route = '/mobile_dashboard_screen';
 
   @override
-  _DashboardScreenState createState() => _DashboardScreenState();
+  _MobileDashboardScreenState createState() => _MobileDashboardScreenState();
 }
 
 final PreferencesManager _preferencesManager = locator<PreferencesManager>();
 
-class _DashboardScreenState extends State<DashboardScreen> {
-  final DashboardBloc _dashboardUserBloc = DashboardBloc(DashboardInitial());
+class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
+  final MobileDashboardBloc _dashboardUserBloc = MobileDashboardBloc(MobileDashboardInitial());
 
   //Graph globals
   String _graphDateCriteria = 'all';
@@ -72,7 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   _doRefreshToken() async {
-    _dashboardUserBloc.add(DashboardEvent());
+    _dashboardUserBloc.add(MobileDashboardEvent());
   }
 
   String _formatDateTime(DateTime dateTime) {
@@ -218,25 +218,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: BlocProvider<DashboardBloc>(
+      body: BlocProvider<MobileDashboardBloc>(
         create: (context) => _dashboardUserBloc,
-        child: BlocBuilder<DashboardBloc, DashboardState>(
+        child: BlocBuilder<MobileDashboardBloc, MobileDashboardState>(
           builder: (context, state) {
-            if (state is DashboardLoading) {
+            if (state is MobileDashboardLoading) {
               _spin = true;
-            } else if (state is DashboardSuccess) {
+            } else if (state is MobileDashboardSuccess) {
               _spin = false;
               if (state.portfolioBody.portfolio == null) return Center(
                 child: Text('Error', style: TextStyle(fontSize: 18))
               );
               tradeOrders = state.portfolioBody.portfolio.tradeOrders;
               return _widgetMainView(context, state.portfolioBody);
-            } else if (state is DashboardCache) {
+            } else if (state is MobileDashboardCache) {
               if (state.portfolioBody.portfolio == null) return Center(
                 child: Text('Error', style: TextStyle(fontSize: 18)),
               );
               return _widgetMainView(context, state.portfolioBody);
-            } else if (state is DashboardFailure) {
+            } else if (state is MobileDashboardFailure) {
               return Center(
                 child: Text(state.error, style: TextStyle(fontSize: 18)),
               );
@@ -823,7 +823,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (BuildContext context, int i) {
-              return InvestmentItem(investment: investments[i], shortName: shortName, cashBalance: cashBalance);
+              return MobileInvestmentItem(investment: investments[i], shortName: shortName, cashBalance: cashBalance);
             }));
   }
 

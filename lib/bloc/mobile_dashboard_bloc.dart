@@ -8,44 +8,44 @@ import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 
-abstract class DashboardState {}
+abstract class MobileDashboardState {}
 
-class DashboardInitial extends DashboardState {}
+class MobileDashboardInitial extends MobileDashboardState {}
 
-class DashboardLoading extends DashboardState {}
+class MobileDashboardLoading extends MobileDashboardState {}
 
-class DashboardFailure extends DashboardState {
+class MobileDashboardFailure extends MobileDashboardState {
   final String error;
 
-  DashboardFailure(this.error);
+  MobileDashboardFailure(this.error);
 }
 
-class DashboardSuccess extends DashboardState {
+class MobileDashboardSuccess extends MobileDashboardState {
   final PortfolioBody portfolioBody;
 
-  DashboardSuccess(this.portfolioBody);
+  MobileDashboardSuccess(this.portfolioBody);
 }
 
-class DashboardCache extends DashboardState {
+class MobileDashboardCache extends MobileDashboardState {
   final PortfolioBody portfolioBody;
 
-  DashboardCache(this.portfolioBody);
+  MobileDashboardCache(this.portfolioBody);
 }
 
-class DashboardEvent extends DashboardState {
+class MobileDashboardEvent extends MobileDashboardState {
 }
 
-class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
+class MobileDashboardBloc extends Bloc<MobileDashboardEvent, MobileDashboardState> {
   final ApiRepository _apiRepository = ApiRepository();
   final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
-  DashboardBloc(DashboardState initialState) : super(initialState);
+  MobileDashboardBloc(MobileDashboardState initialState) : super(initialState);
 
   @override
-  DashboardState get _initialState => DashboardInitial();
+  MobileDashboardState get _initialState => MobileDashboardInitial();
 
   @override
-  Stream<DashboardState> mapEventToState(DashboardEvent event) async* {
+  Stream<MobileDashboardState> mapEventToState(MobileDashboardEvent event) async* {
     bool expired = true;
     if (_sharedPreferencesManager.isKeyExists(PreferencesManager.keyAuthMSecs)) {
       int wasThen = _sharedPreferencesManager.getInt(PreferencesManager.keyAuthMSecs);
@@ -56,12 +56,12 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       }
     }
 
-    yield DashboardLoading();
+    yield MobileDashboardLoading();
 
     if (_sharedPreferencesManager.isKeyExists(PreferencesManager.keyPortfolioBody)) {
       var portfolioString = _sharedPreferencesManager.getString(PreferencesManager.keyPortfolioBody);
       PortfolioBody p = PortfolioBody.fromJson(jsonDecode(portfolioString));
-      yield DashboardCache(p);
+      yield MobileDashboardCache(p);
     }
 
     Token token;
@@ -70,7 +70,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       RefreshTokenBody refreshTokenBody = RefreshTokenBody('refresh_token', refreshToken);
       token = await _apiRepository.postRefreshAuth(refreshTokenBody);
       if (token.error != null) {
-        yield DashboardFailure(token.error);
+        yield MobileDashboardFailure(token.error);
         return;
       }
 
@@ -85,15 +85,15 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       String accessToken = token == null ? _sharedPreferencesManager.getString(PreferencesManager.keyAccessToken) : token.accessToken;
       PortfolioBody portfolioBody = await _apiRepository.postPortfolioQuery(accessToken, userId);
       if (portfolioBody.error != null) {
-        yield DashboardFailure(portfolioBody.error);
+        yield MobileDashboardFailure(portfolioBody.error);
         return;
       }
 
       await _sharedPreferencesManager.putString(PreferencesManager.keyPortfolioBody, jsonEncode(portfolioBody.toJson()));
 
-      yield DashboardSuccess(portfolioBody);
+      yield MobileDashboardSuccess(portfolioBody);
     } else {
-      yield DashboardFailure('Error');
+      yield MobileDashboardFailure('Error');
     }
   }
 }
