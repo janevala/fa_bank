@@ -58,6 +58,9 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
   double _minY, _maxY = 0;
   double _chartTimeMSecs = 0;
   bool _spin = true;
+  List<TradeOrder> _tradeOrders = [];
+  DateFormat _rssDateFormat = DateFormat('E, dd MMM yyyy HH:mm:ss zzz');
+  DateFormat _wantedDateFormat = DateFormat('d MMM yyyy');
 
   @override
   void initState() {
@@ -76,7 +79,7 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return DateFormat('d MMM yyyy').format(dateTime);
+    return _wantedDateFormat.format(dateTime);
   }
 
   _showToast(BuildContext context, var text) {
@@ -189,7 +192,6 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<TradeOrder> tradeOrders = [];
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
@@ -207,7 +209,7 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
           IconButton(
             icon: Icon(Icons.format_list_numbered),
             onPressed: () {
-              if (tradeOrders.length > 0) _openTradeOrders(context, tradeOrders);
+              if (_tradeOrders.length > 0) _openTradeOrders(context, _tradeOrders);
             },
           ),
           IconButton(
@@ -229,7 +231,7 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
               if (state.portfolioBody.portfolio == null) return Center(
                 child: Text('Error', style: TextStyle(fontSize: 18))
               );
-              tradeOrders = state.portfolioBody.portfolio.tradeOrders;
+              _tradeOrders = state.portfolioBody.portfolio.tradeOrders;
               return _widgetMainView(context, state.portfolioBody);
             } else if (state is MobileDashboardCache) {
               if (state.portfolioBody.portfolio == null) return Center(

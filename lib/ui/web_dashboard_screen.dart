@@ -15,14 +15,15 @@ import 'package:fa_bank/ui/web_investment_item.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/spinner.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:math';
+import 'package:webfeed/webfeed.dart';
 
 class WebDashboardScreen extends StatefulWidget {
   static const String route = '/web_dashboard_screen';
@@ -58,6 +59,11 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
   double _minY, _maxY = 0;
   double _chartTimeMSecs = 0;
   bool _spin = true;
+  RssFeed _rssFeed;
+  List<TradeOrder> _tradeOrders = [];
+  DateFormat _rssDateFormat = DateFormat('E, dd MMM yyyy HH:mm:ss zzz');
+  DateFormat _wantedDateFormat = DateFormat('d MMM yyyy');
+  double _paddingBetweenColumns = 12;
 
   @override
   void initState() {
@@ -76,7 +82,11 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return DateFormat('d MMM yyyy').format(dateTime);
+    return _wantedDateFormat.format(dateTime);
+  }
+
+  DateTime _parseRssTimeString(String dateString) {
+    return _rssDateFormat.parse(dateString);
   }
 
   _showToast(BuildContext context, var text) {
@@ -99,46 +109,31 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
     return dataRows;
   }
 
-  _openTradeOrders(BuildContext context, List<TradeOrder> tradeOrders) {
+  _openTradeOrders(BuildContext context, List<TradeOrder> tradeOrders, double height, double width) {
     showDialog(
       context: context,
       builder: (context) {
         int numOfOrders = tradeOrders.length;
         String title = 'Trade Orders ($numOfOrders)';
 
-        if (!kIsWeb && Platform.isIOS) {
-          return CupertinoAlertDialog(
-            title: Text(title, style: TextStyle(fontSize: 18)),
-            content: _widgetTradeOrderList(context, tradeOrders),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text('Ok', style: TextStyle(fontSize: 18)),
-              ),
-            ],
-          );
-        } else {
-          return AlertDialog(
-            title: Text(title, style: TextStyle(fontSize: 18)),
-            content: _widgetTradeOrderList(context, tradeOrders),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text('Ok', style: TextStyle(fontSize: 18)),
-              ),
-            ],
-          );
-        }
+        return AlertDialog(
+          title: Text(title, style: TextStyle(fontSize: 18)),
+          content: _widgetTradeOrderList(context, tradeOrders, height, width),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text('Ok', style: TextStyle(fontSize: 18)),
+            ),
+          ],
+        );
       },
     );
   }
 
-  Widget _widgetTradeOrderList(BuildContext context, List<TradeOrder> tradeOrders) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height * 0.70;
+  Widget _widgetTradeOrderList(BuildContext context, List<TradeOrder> tradeOrders, double height, double width) {
     return Container(
-      width: width,
-      height: height,
+      width: width * 0.5,
+      height: height * 0.7,
       child: ListView.builder(
         shrinkWrap: true,
         itemCount: tradeOrders.length,
@@ -189,7 +184,9 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<TradeOrder> tradeOrders = [];
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
@@ -207,7 +204,7 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
           IconButton(
             icon: Icon(Icons.format_list_numbered),
             onPressed: () {
-              if (tradeOrders.length > 0) _openTradeOrders(context, tradeOrders);
+              if (_tradeOrders.length > 0) _openTradeOrders(context, _tradeOrders, height, width);
             },
           ),
           IconButton(
@@ -224,22 +221,17 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
           builder: (context, state) {
             if (state is WebDashboardLoading) {
               _spin = true;
-            } else if (state is WebDashboardSuccess) {
+            } else if (state is WebDashboardPortfolio) {
               _spin = false;
-              if (state.portfolioBody.portfolio == null) return Center(
-                child: Text('Error', style: TextStyle(fontSize: 18))
-              );
-              tradeOrders = state.portfolioBody.portfolio.tradeOrders;
-              return _widgetMainView(context, state.portfolioBody);
+              _rssFeed = state.rssFeed;
+              if (state.portfolioBody.portfolio == null) return Center(child: Text('Error', style: TextStyle(fontSize: 18)));
+              _tradeOrders = state.portfolioBody.portfolio.tradeOrders;
+              return _widgetMainView(context, state.portfolioBody, height, width);
             } else if (state is WebDashboardCache) {
-              if (state.portfolioBody.portfolio == null) return Center(
-                child: Text('Error', style: TextStyle(fontSize: 18)),
-              );
-              return _widgetMainView(context, state.portfolioBody);
+              if (state.portfolioBody.portfolio == null) return Center(child: Text('Error', style: TextStyle(fontSize: 18)));
+              return _widgetMainView(context, state.portfolioBody, height, width);
             } else if (state is WebDashboardFailure) {
-              return Center(
-                child: Text(state.error, style: TextStyle(fontSize: 18)),
-              );
+              return Center(child: Text(state.error, style: TextStyle(fontSize: 18)));
             }
 
             return Spinner();
@@ -249,7 +241,7 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
     );
   }
 
-  Widget _widgetMainView(BuildContext context, PortfolioBody portfolioBody) {
+  Widget _widgetMainView(BuildContext context, PortfolioBody portfolioBody, double height, double width) {
     if (portfolioBody.portfolio == null) return Center(
       child: Text('Error', style: TextStyle(fontSize: 18)),
     );
@@ -260,64 +252,116 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
     return SafeArea(
       child: Stack(
         children: <Widget>[
-          Row(
-            children: [
-              Expanded(flex: 1,child: Align(
-                alignment: Alignment.topCenter,
-                child: Column(
-                  children: [
-                    _widgetTitle(context, portfolioBody),
-                    _widgetSummary(context, portfolioBody)
-                  ],
-                ),
-              )),
-              Expanded(flex: 2, child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                        padding: EdgeInsets.only(left: 2, right: 2),
-                        child: _widgetDateChooser(context)),
-                    _widgetDateTitle(context),
-                    _graphBenchmarkMinus100.length > 0 ? Padding(
-                      padding: EdgeInsets.only(left: 2, right: 4),
-                      child: Row(
+          Container(
+            color: Colors.grey[300],
+            child: Row(
+              children: [
+                Expanded(flex: 1,child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: EdgeInsets.all(_paddingBetweenColumns),
+                    child: Container(
+                      height: height * 0.5,
+                      color: Colors.white,
+                      child: Column(
                         children: [
-                          Container(
-                              height: 200,
-                              child: Padding(
-                                padding: EdgeInsets.only(right: 2),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Expanded(child: Align(alignment: Alignment.topCenter, child: Text(_maxY.toString(), style: TextStyle(fontSize: 12)))),
-                                    Expanded(child: Align(alignment: Alignment.center, child: Text(((_maxY+_minY) / 2).toStringAsFixed(1), style: TextStyle(fontSize: 12)))),
-                                    Expanded(child: Align(alignment: Alignment.bottomCenter, child: Text(_minY.toString(), style: TextStyle(fontSize: 12))))
-                                  ],
-                                ),
-                              )),
-                          _graphBenchmarkMinus100.length > 0 ? Expanded(
-                            child: Container(
-                              height: 200,
-                              child: LineChart(
-                                _getLineChartData(),
-                                swapAnimationDuration: const Duration(milliseconds: 500),
-                              ),
-                            ),
-                          ) : Container()
+                          _widgetTitle(context, portfolioBody),
+                          _widgetSummary(context, portfolioBody)
                         ],
                       ),
-                    ) : Container(),
-                    _widgetDescriptor(context),
-                    Container(height: 12, color: Colors.grey[300]),
-                    _widgetInvestments(
-                        context, portfolioBody.portfolio.portfolioReport.investments, portfolioBody.portfolio.shortName, portfolioBody.portfolio.portfolioReport.cashBalance)
-                  ],
-                ),
-              )),
-              Expanded(flex: 1, child: FlutterLogo())
-            ],
+                    ),
+                  ),
+                )),
+                Expanded(flex: 2, child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: _paddingBetweenColumns, bottom: _paddingBetweenColumns),
+                    child: Container(
+                      color: Colors.white,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Padding(
+                                padding: EdgeInsets.only(left: 2, right: 2),
+                                child: _widgetDateChooser(context)),
+                            _widgetDateTitle(context),
+                            _graphBenchmarkMinus100.length > 0 ? Padding(
+                              padding: EdgeInsets.only(left: 2, right: 4),
+                              child: Row(
+                                children: [
+                                  Container(
+                                      height: 200,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(right: 2),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            Expanded(child: Align(alignment: Alignment.topCenter, child: Text(_maxY.toString(), style: TextStyle(fontSize: 12)))),
+                                            Expanded(child: Align(alignment: Alignment.center, child: Text(((_maxY+_minY) / 2).toStringAsFixed(1), style: TextStyle(fontSize: 12)))),
+                                            Expanded(child: Align(alignment: Alignment.bottomCenter, child: Text(_minY.toString(), style: TextStyle(fontSize: 12))))
+                                          ],
+                                        ),
+                                      )),
+                                  _graphBenchmarkMinus100.length > 0 ? Expanded(
+                                    child: Container(
+                                      height: 200,
+                                      child: LineChart(
+                                        _getLineChartData(),
+                                        swapAnimationDuration: const Duration(milliseconds: 500),
+                                      ),
+                                    ),
+                                  ) : Container()
+                                ],
+                              ),
+                            ) : Container(),
+                            _widgetDescriptor(context),
+                            Container(height: 12, color: Colors.grey[300]),
+                            _widgetInvestments(
+                                context, portfolioBody.portfolio.portfolioReport.investments, portfolioBody.portfolio.shortName, portfolioBody.portfolio.portfolioReport.cashBalance)
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                )),
+                Expanded(flex: 1, child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: EdgeInsets.all(_paddingBetweenColumns),
+                    child: Container(
+                      color: Colors.white,
+                      height: height * 0.5,
+                      child: _rssFeed != null ? ListView.builder(
+                          itemCount: _rssFeed.items.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final item = _rssFeed.items[index];
+                                if (index == 0) {
+                                  return ListTile(
+                                    title: Text(_rssFeed.title),
+                                    subtitle: Text(_rssFeed.description),
+                                  );
+                                } else {
+                                  return ListTile(
+                                    onTap: () async {
+                                      if (await canLaunch(item.link)) {
+                                        await launch(item.link);
+                                      } else {
+                                        _showToast(context, 'Cannot open link');
+                                      }
+                                    },
+                                    title: Text(item.title),
+                                    subtitle: Text(_formatDateTime(_parseRssTimeString(item.pubDate)) + " - " + item.description),
+                                  );
+                                }
+                                  }
+                                  ) : Container(),
+                    ),
+                  ),
+                ))
+              ],
+            ),
           ),
           Visibility(
             visible: _spin,

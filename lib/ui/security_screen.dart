@@ -71,8 +71,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
   double _chartTimeMSecs = 0;
   bool _spin = true;
   bool _mutationSuccess = false;
-
   GlobalKey<ScaffoldState> _key = GlobalKey();
+  DateFormat _rssDateFormat = DateFormat('E, dd MMM yyyy HH:mm:ss zzz');
+  DateFormat _wantedDateFormat = DateFormat('d MMM yyyy');
 
   @override
   void initState() {
@@ -91,7 +92,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return DateFormat('d MMM yyyy').format(dateTime);
+    return _wantedDateFormat.format(dateTime);
   }
 
   String _getNowAgain() {
@@ -995,7 +996,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       if (await canLaunch(url)) {
                         await launch(url);
                       } else {
-                        _showToast(context, 'Cannot open information');
+                        _showToast(context, 'Cannot open link');
                       }
                     },
                     child: Text(

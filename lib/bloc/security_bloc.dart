@@ -1,7 +1,7 @@
 
 import 'dart:convert';
 
-import 'package:fa_bank/api/repository.dart';
+import 'package:fa_bank/api/api_repository.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/mutation/mutation_data.dart';
 import 'package:fa_bank/podo/mutation/mutation_response.dart';

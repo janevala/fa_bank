@@ -30,6 +30,7 @@ dependencies:
   lipsum:
   camera:
   permission_handler:
+  webfeed:
 #  path_provider:
 #  path:
 

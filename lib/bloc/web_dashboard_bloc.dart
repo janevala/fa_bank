@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
-import 'package:fa_bank/api/repository.dart';
+import 'package:fa_bank/api/api_repository.dart';
+import 'package:fa_bank/api/rss_repository.dart';
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/portfolio/portfolio_body.dart';
 import 'package:fa_bank/podo/refreshtoken/refresh_token_body.dart';
 import 'package:fa_bank/podo/token/token.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
+import 'package:webfeed/webfeed.dart';
 
 abstract class WebDashboardState {}
 
@@ -20,10 +22,11 @@ class WebDashboardFailure extends WebDashboardState {
   WebDashboardFailure(this.error);
 }
 
-class WebDashboardSuccess extends WebDashboardState {
+class WebDashboardPortfolio extends WebDashboardState {
   final PortfolioBody portfolioBody;
+  final RssFeed rssFeed;
 
-  WebDashboardSuccess(this.portfolioBody);
+  WebDashboardPortfolio(this.portfolioBody, this.rssFeed);
 }
 
 class WebDashboardCache extends WebDashboardState {
@@ -33,10 +36,12 @@ class WebDashboardCache extends WebDashboardState {
 }
 
 class WebDashboardEvent extends WebDashboardState {
+  WebDashboardEvent();
 }
 
 class WebDashboardBloc extends Bloc<WebDashboardEvent, WebDashboardState> {
   final ApiRepository _apiRepository = ApiRepository();
+  final RssRepository _rssRepository = RssRepository();
   final PreferencesManager _sharedPreferencesManager = locator<PreferencesManager>();
 
   WebDashboardBloc(WebDashboardState initialState) : super(initialState);
@@ -91,7 +96,12 @@ class WebDashboardBloc extends Bloc<WebDashboardEvent, WebDashboardState> {
 
       await _sharedPreferencesManager.putString(PreferencesManager.keyPortfolioBody, jsonEncode(portfolioBody.toJson()));
 
-      yield WebDashboardSuccess(portfolioBody);
+      RssFeed feed = await _rssRepository.getRssRequest();
+      if (feed == null) {
+        yield WebDashboardFailure("Feed unavailable");
+      } else {
+        yield WebDashboardPortfolio(portfolioBody, feed);
+      }
     } else {
       yield WebDashboardFailure('Error');
     }
