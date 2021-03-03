@@ -5,8 +5,9 @@ import 'package:fa_bank/ui/mobile_dashboard_screen.dart';
 import 'package:fa_bank/ui/kyc_screen.dart';
 import 'package:fa_bank/ui/landing_screen.dart';
 import 'package:fa_bank/ui/login_screen.dart';
-import 'package:fa_bank/ui/security_screen.dart';
+import 'package:fa_bank/ui/mobile_security_screen.dart';
 import 'package:fa_bank/ui/web_dashboard_screen.dart';
+import 'package:fa_bank/ui/web_security_screen.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -50,7 +51,8 @@ class _AppState extends State<App> {
           LandingScreen.route: (context) => LandingScreen(),
           MobileDashboardScreen.route: (context) => MobileDashboardScreen(),
           WebDashboardScreen.route: (context) => WebDashboardScreen(),
-          SecurityScreen.route: (context) => SecurityScreen(),
+          MobileSecurityScreen.route: (context) => MobileSecurityScreen(),
+          WebSecurityScreen.route: (context) => WebSecurityScreen(),
           BackendScreen.route: (context) => BackendScreen(),
           KycScreen.route: (context) => KycScreen(),
           CameraScreen.route: (context) => CameraScreen(),

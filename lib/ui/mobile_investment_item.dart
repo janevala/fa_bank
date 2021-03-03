@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/portfolio/investment.dart';
-import 'package:fa_bank/ui/security_screen.dart';
+import 'package:fa_bank/ui/mobile_security_screen.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:flutter/foundation.dart';
@@ -52,7 +52,7 @@ class MobileInvestmentItem extends StatelessWidget {
           onTap: () {
             _sharedPreferencesManager.putString(PreferencesManager.keySecurityCode, investment.security.securityCode);
 
-            Navigator.pushNamed(context, SecurityScreen.route,
+            Navigator.pushNamed(context, MobileSecurityScreen.route,
               arguments: SecurityArgument(investment, shortName, cashBalance),
             );
           },

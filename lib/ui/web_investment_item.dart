@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:fa_bank/injector.dart';
 import 'package:fa_bank/podo/portfolio/investment.dart';
-import 'package:fa_bank/ui/security_screen.dart';
+import 'package:fa_bank/ui/web_security_screen.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:flutter/foundation.dart';
@@ -47,7 +47,7 @@ class WebInvestmentItem extends StatelessWidget {
           onTap: () {
             _sharedPreferencesManager.putString(PreferencesManager.keySecurityCode, investment.security.securityCode);
 
-            Navigator.pushNamed(context, SecurityScreen.route,
+            Navigator.pushNamed(context, WebSecurityScreen.route,
               arguments: SecurityArgument(investment, shortName, cashBalance),
             );
           },
@@ -96,7 +96,7 @@ class WebInvestmentItem extends StatelessWidget {
                 ),
               ])),
         ),
-        Container(height: 8, color: Colors.grey[300]),
+        Container(height: 6, color: Colors.grey[300]),
       ],
     );
   }

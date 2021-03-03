@@ -8,7 +8,7 @@ import 'package:fa_bank/podo/security/graph.dart';
 import 'package:fa_bank/podo/security/security.dart';
 import 'package:fa_bank/podo/security/security_body.dart';
 import 'package:fa_bank/ui/fa_color.dart';
-import 'package:fa_bank/ui/mobile_investment_item.dart';
+import 'package:fa_bank/ui/web_investment_item.dart';
 import 'package:fa_bank/utils/preferences_manager.dart';
 import 'package:fa_bank/utils/utils.dart';
 import 'package:fa_bank/widget/result_container.dart';
@@ -28,18 +28,18 @@ import 'dart:math';
 ///
 /// "Security" is a fungible, negotiable financial instrument that holds some type of monetary value.
 
-class SecurityScreen extends StatefulWidget {
-  static const String route = '/security_screen';
+class WebSecurityScreen extends StatefulWidget {
+  static const String route = '/web_security_screen';
 
   @override
-  _SecurityScreenState createState() => _SecurityScreenState();
+  _WebSecurityScreenState createState() => _WebSecurityScreenState();
 }
 
 final PreferencesManager _preferencesManager = locator<PreferencesManager>();
 
 enum ConfirmAction { CANCEL, PROCEED }
 
-class _SecurityScreenState extends State<SecurityScreen> {
+class _WebSecurityScreenState extends State<WebSecurityScreen> {
 
   final SecurityBloc _securityBloc = SecurityBloc(SecurityInitial());
 
@@ -74,6 +74,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   GlobalKey<ScaffoldState> _key = GlobalKey();
   DateFormat _rssDateFormat = DateFormat('E, dd MMM yyyy HH:mm:ss zzz');
   DateFormat _wantedDateFormat = DateFormat('d MMM yyyy');
+  double _paddingBetweenColumns = 12;
 
   @override
   void initState() {
@@ -267,146 +268,172 @@ class _SecurityScreenState extends State<SecurityScreen> {
       child: Stack(
         children: <Widget>[
           Container(
-            height: heightScreen - 160, //fix this mess
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  _widgetSummary(context, securityBody, investment),
-                  Divider(thickness: 2, color: Colors.grey[300]),
-                  _widgetDetail(context, securityBody, investment),
-                  Divider(thickness: 2, color: Colors.grey[300]),
-                  Padding(
-                      padding: EdgeInsets.only(left: 2, right: 2),
-                      child: _widgetDateChooser(context)),
-                  _widgetDateTitle(context),
-                  _graphSecurity.length > 0 ? Padding(
-                    padding: EdgeInsets.only(left: 2, right: 4),
-                    child: Row(
-                      children: [
-                        Container(
-                            height: 200,
-                            child: Padding(
-                              padding: EdgeInsets.only(right: 2),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Expanded(child: Align(alignment: Alignment.topCenter, child: Text(_maxY.toString(), style: TextStyle(fontSize: 12)))),
-                                  Expanded(child: Align(alignment: Alignment.center, child: Text(((_maxY+_minY) / 2).toStringAsFixed(1), style: TextStyle(fontSize: 12)))),
-                                  Expanded(child: Align(alignment: Alignment.bottomCenter, child: Text(_minY.toString(), style: TextStyle(fontSize: 12))))
-                                ],
-                              ),
-                            )),
-                        Expanded(
-                          child: Container(
-                            height: 200,
-                            child: LineChart(
-                              _getLineChartData(investment),
-                              swapAnimationDuration: const Duration(milliseconds: 500),
-                            ),
+            color: Colors.grey[300],
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: EdgeInsets.all(_paddingBetweenColumns),
+                      child: Container(
+                        color: Colors.white,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              _widgetSummary(context, securityBody, investment),
+                              Divider(thickness: 2, color: Colors.grey[300]),
+                              _widgetDetail(context, securityBody, investment),
+                              Divider(thickness: 2, color: Colors.grey[300]),
+                              Padding(
+                                padding: EdgeInsets.only(left: 42, right: 42),
+                                child: Column(children: <Widget>[
+                                  _widgetInformation(
+                                      context, securityBody.securities[0].url),
+                                  Divider(thickness: 2, color: Colors.grey[300]),
+                                  _widgetTextRowSubtitle(context, 'Position Value', _getParsedValueWithCode('EUR', investment.positionValue, 2)),
+                                  _widgetTextRowSubtitle(context, 'Purchase Value', _getParsedValueWithCode('EUR', investment.purchaseValue, 2)),
+                                  Padding(
+                                      padding: EdgeInsets.only(top: 12, bottom: 12),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Flexible(
+                                            child: Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text('Return', style: TextStyle(fontSize: 18)),
+                                            ),
+                                          ),
+                                          Flexible(
+                                            child: Align(
+                                              alignment: Alignment.centerRight,
+                                              child: Text(
+                                                _getParsedValueWithCode('EUR', investment.positionValue - investment.purchaseValue, 2),
+                                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Utils.getColor(investment.positionValue - investment.purchaseValue)),
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      )),
+                                  _widgetTextRowSubtitle(context, 'ESG Rating', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.esgObject.value.toStringAsFixed(0) : 'n/a'),
+                                  _widgetTextRowSubtitle(context, 'Risk Score', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.riskObject.value.toStringAsFixed(0) : 'n/a'),
+                                  _widgetTextRowSubtitle(context, 'Ticker', investment.security.securityCode),
+                                ]),
+                              )
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ) : Container(),
-                  Container(height: 16),
-                  Container(
-                    color: Colors.grey[300],
+                  ),
+                ), Expanded(
+                  flex: 1,
+                  child: Align(
+                    alignment: Alignment.topCenter,
                     child: Padding(
-                      padding: EdgeInsets.only(left: 42, right: 42),
-                      child: Column(children: <Widget>[
-                        _widgetInformation(
-                            context, securityBody.securities[0].url),
-                        Divider(color: Colors.black),
-                        _widgetTextRowSubtitle(context, 'Position Value', _getParsedValueWithCode('EUR', investment.positionValue, 2)),
-                        _widgetTextRowSubtitle(context, 'Purchase Value', _getParsedValueWithCode('EUR', investment.purchaseValue, 2)),
-                        Padding(
-                            padding: EdgeInsets.only(top: 12, bottom: 12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Flexible(
-                                  child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text('Return', style: TextStyle(fontSize: 18)),
-                                  ),
-                                ),
-                                Flexible(
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      _getParsedValueWithCode('EUR', investment.positionValue - investment.purchaseValue, 2),
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Utils.getColor(investment.positionValue - investment.purchaseValue)),
+                      padding: EdgeInsets.only(top: _paddingBetweenColumns, bottom: _paddingBetweenColumns, right: _paddingBetweenColumns),
+                      child: Container(
+                        color: Colors.white,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              _widgetDateTitle(context),
+                              _graphSecurity.length > 0 ? Padding(
+                                padding: EdgeInsets.only(left: 2, right: 4),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                        height: 200,
+                                        child: Padding(
+                                          padding: EdgeInsets.only(right: 2),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.max,
+                                            children: [
+                                              Expanded(child: Align(alignment: Alignment.topCenter, child: Text(_maxY.toString(), style: TextStyle(fontSize: 12)))),
+                                              Expanded(child: Align(alignment: Alignment.center, child: Text(((_maxY+_minY) / 2).toStringAsFixed(1), style: TextStyle(fontSize: 12)))),
+                                              Expanded(child: Align(alignment: Alignment.bottomCenter, child: Text(_minY.toString(), style: TextStyle(fontSize: 12))))
+                                            ],
+                                          ),
+                                        )),
+                                    Expanded(
+                                      child: Container(
+                                        height: 200,
+                                        child: LineChart(
+                                          _getLineChartData(investment),
+                                          swapAnimationDuration: const Duration(milliseconds: 500),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                )
-                              ],
-                            )),
-                        _widgetTextRowSubtitle(context, 'ESG Rating', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.esgObject.value.toStringAsFixed(0) : 'n/a'),
-                        _widgetTextRowSubtitle(context, 'Risk Score', esgRisk ? securityBody.securities[0].figuresAsObject.latestValues.riskObject.value.toStringAsFixed(0) : 'n/a'),
-                        _widgetTextRowSubtitle(context, 'Ticker', investment.security.securityCode),
-                      ]),
+                                  ],
+                                ),
+                              ) : Container(),
+                              Padding(
+                                  padding: EdgeInsets.only(left: 2, right: 2),
+                                  child: _widgetDateChooser(context)),
+                              Container(
+                                height: 80,
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(20),
+                                          child: SizedBox.expand(
+                                            child: FlatButton(
+                                                child: Text('SELL', style: TextStyle(color: Colors.white, fontSize: 20)),
+                                                color: FaColor.red[900],
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _controllerAmount.text = '';
+                                                    _controllerOnChanged = '';
+                                                    _transactionType = 'S';
+                                                  });
+
+                                                  _showPurchaseDialogBottomSheet(context, securityBody, shortName, cashBalance);
+                                                },
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(5.0))),
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(20),
+                                          child: SizedBox.expand(
+                                            child: FlatButton(
+                                                child: Text('BUY', style: TextStyle(color: Colors.white, fontSize: 20)),
+                                                color: Colors.green,
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _controllerAmount.text = '';
+                                                    _controllerOnChanged = '';
+                                                    _transactionType = 'B';
+                                                  });
+
+                                                  _showPurchaseDialogBottomSheet(context, securityBody, shortName, cashBalance);
+                                                },
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(5.0))),
+                                          ),
+                                        ),
+                                      ),
+                                    ]),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  )
-                ],
-              ),
+                  ),
+                )
+              ],
             ),
           ),
-          Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: 80,
-                color: Colors.white,
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: SizedBox.expand(
-                            child: FlatButton(
-                                child: Text('SELL', style: TextStyle(color: Colors.white, fontSize: 20)),
-                                color: FaColor.red[900],
-                                onPressed: () {
-                                  setState(() {
-                                    _controllerAmount.text = '';
-                                    _controllerOnChanged = '';
-                                    _transactionType = 'S';
-                                  });
-
-                                  _showPurchaseDialogBottomSheet(context, securityBody, shortName, cashBalance);
-                                },
-                                shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(5.0))),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: SizedBox.expand(
-                            child: FlatButton(
-                                child: Text('BUY', style: TextStyle(color: Colors.white, fontSize: 20)),
-                                color: Colors.green,
-                                onPressed: () {
-                                  setState(() {
-                                    _controllerAmount.text = '';
-                                    _controllerOnChanged = '';
-                                    _transactionType = 'B';
-                                  });
-
-                                  _showPurchaseDialogBottomSheet(context, securityBody, shortName, cashBalance);
-                                },
-                                shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(5.0))),
-                          ),
-                        ),
-                      ),
-                    ]),
-              )),
           Visibility(
             visible: _spin,
             child: Spinner(),

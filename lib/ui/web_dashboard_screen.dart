@@ -62,6 +62,7 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
   RssFeed _rssFeed;
   List<TradeOrder> _tradeOrders = [];
   DateFormat _rssDateFormat = DateFormat('E, dd MMM yyyy HH:mm:ss zzz');
+  DateFormat _wantedTime = DateFormat('d.M. HH:mm');
   DateFormat _wantedDateFormat = DateFormat('d MMM yyyy');
   double _paddingBetweenColumns = 12;
 
@@ -82,7 +83,7 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return _wantedDateFormat.format(dateTime);
+    return _wantedTime.format(dateTime);
   }
 
   DateTime _parseRssTimeString(String dateString) {
@@ -91,22 +92,6 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
 
   _showToast(BuildContext context, var text) {
     Scaffold.of(context).showSnackBar(SnackBar(duration: Duration(milliseconds: 500), content: Text(text)));
-  }
-
-  List<DataRow> _getDataRows(List<TradeOrder> tradeOrders) {
-    List<DataRow> dataRows = [];
-    for (var i = 0; i < tradeOrders.length; i++) {
-      dataRows.add(DataRow(
-        cells: <DataCell>[
-          DataCell(Text(DateFormat('dd.MM.yyyy').format(tradeOrders[i].transactionDate))),
-          DataCell(Text(tradeOrders[i].securityName)),
-          DataCell(Text(tradeOrders[i].typeName)),
-          DataCell(Text(tradeOrders[i].amount.toString())),
-        ],
-      ));
-    }
-
-    return dataRows;
   }
 
   _openTradeOrders(BuildContext context, List<TradeOrder> tradeOrders, double height, double width) {
@@ -141,6 +126,36 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
           return _widgetTradeOrder(context, tradeOrders[index]);
         },
       ),
+    );
+  }
+
+  _openRssItem(BuildContext context, RssItem item, double height, double width) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(item.title, style: TextStyle(fontSize: 18)),
+          content: Container(
+              width: width * 0.5,
+              child: Text(item.description)),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                if (await canLaunch(item.link)) {
+                  await launch(item.link);
+                } else {
+                  _showToast(context, 'Cannot open link');
+                }
+              },
+              child: Text('Open in browser', style: TextStyle(fontSize: 18)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text('Ok', style: TextStyle(fontSize: 18)),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -261,13 +276,14 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
                   child: Padding(
                     padding: EdgeInsets.all(_paddingBetweenColumns),
                     child: Container(
-                      height: height * 0.5,
                       color: Colors.white,
-                      child: Column(
-                        children: [
-                          _widgetTitle(context, portfolioBody),
-                          _widgetSummary(context, portfolioBody)
-                        ],
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            _widgetTitle(context, portfolioBody),
+                            _widgetSummary(context, portfolioBody)
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -283,9 +299,6 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Padding(
-                                padding: EdgeInsets.only(left: 2, right: 2),
-                                child: _widgetDateChooser(context)),
                             _widgetDateTitle(context),
                             _graphBenchmarkMinus100.length > 0 ? Padding(
                               padding: EdgeInsets.only(left: 2, right: 4),
@@ -317,6 +330,9 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
                               ),
                             ) : Container(),
                             _widgetDescriptor(context),
+                            Padding(
+                                padding: EdgeInsets.only(left: 2, right: 2),
+                                child: _widgetDateChooser(context)),
                             Container(height: 12, color: Colors.grey[300]),
                             _widgetInvestments(
                                 context, portfolioBody.portfolio.portfolioReport.investments, portfolioBody.portfolio.shortName, portfolioBody.portfolio.portfolioReport.cashBalance)
@@ -332,7 +348,7 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
                     padding: EdgeInsets.all(_paddingBetweenColumns),
                     child: Container(
                       color: Colors.white,
-                      height: height * 0.5,
+                      height: height * 0.8,
                       child: _rssFeed != null ? ListView.builder(
                           itemCount: _rssFeed.items.length,
                           itemBuilder: (BuildContext context, int index) {
@@ -345,14 +361,13 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
                                 } else {
                                   return ListTile(
                                     onTap: () async {
-                                      if (await canLaunch(item.link)) {
-                                        await launch(item.link);
-                                      } else {
-                                        _showToast(context, 'Cannot open link');
-                                      }
+                                      _openRssItem(context, _rssFeed.items[index], height, width);
                                     },
                                     title: Text(item.title),
-                                    subtitle: Text(_formatDateTime(_parseRssTimeString(item.pubDate)) + " - " + item.description),
+                                    subtitle: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(_formatDateTime(_parseRssTimeString(item.pubDate))),
+                                    ),
                                   );
                                 }
                                   }
@@ -773,23 +788,6 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
     return Text('€' + newString.replaceAll(',', '.'), style: TextStyle(fontSize: 19));
   }
 
-  Widget _widgetPersonalSummary(BuildContext context, PortfolioBody portfolio) {
-    var setting = Utils.getMoneySetting('EUR', 1);
-    double netAssetValue = portfolio.portfolio.portfolioReport.netAssetValue;
-    String strNetAssetValue = netAssetValue > 1000000 ?
-    (FlutterMoneyFormatter(amount: netAssetValue, settings: setting).output.compactSymbolOnLeft).replaceFirst('.', ',') :
-    FlutterMoneyFormatter(amount: netAssetValue, settings: setting).output.symbolOnLeft;
-
-    return Column(
-      children: <Widget>[
-        _widgetBodyText(context, 'Total Value'),
-        Center(
-          child: Text(strNetAssetValue, style: TextStyle(fontSize: 19)),
-        ),
-      ],
-    );
-  }
-
   Widget _widgetSummary(BuildContext context, PortfolioBody portfolio) {
 
     var setting = Utils.getMoneySetting('EUR', 1);
@@ -810,38 +808,41 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
 
     return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12),
-      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-        Flexible(
-          child: Column(
+      child: Column(
+        children: [
+          Column(
             children: <Widget>[
               _widgetBodyText(context, 'Total Value'),
               Center(
-                  child: Text(strNetAssetValue, style: TextStyle(fontSize: 19)),
+                child: Text(strNetAssetValue, style: TextStyle(fontSize: 19)),
               ),
             ],
           ),
-        ),
-        Flexible(
-          child: Column(
-            children: <Widget>[
-              _widgetBodyText(context, 'Market Value'),
-              Center(
-                child: Text(strMarketValue, style: TextStyle(fontSize: 19)),
-              )
-            ],
-          ),
-        ),
-        Flexible(
-          child: Column(
-            children: <Widget>[
-              _widgetBodyText(context, 'Cash Balance'),
-              Center(
-                child: Text(strCashBalance, style: TextStyle(fontSize: 19)),
-              )
-            ],
-          ),
-        ),
-      ]),
+          Container(height: 16),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+            Flexible(
+              child: Column(
+                children: <Widget>[
+                  _widgetBodyText(context, 'Market Value'),
+                  Center(
+                    child: Text(strMarketValue, style: TextStyle(fontSize: 19)),
+                  )
+                ],
+              ),
+            ),
+            Flexible(
+              child: Column(
+                children: <Widget>[
+                  _widgetBodyText(context, 'Cash Balance'),
+                  Center(
+                    child: Text(strCashBalance, style: TextStyle(fontSize: 19)),
+                  )
+                ],
+              ),
+            ),
+          ])
+        ],
+      ),
     );
   }
 
@@ -880,16 +881,14 @@ class _WebDashboardScreenState extends State<WebDashboardScreen> {
   Widget _widgetInvestments(BuildContext context, List<Investment> investments, String shortName, double cashBalance) {
 //    deviceList.sort((a, b) => b.deviceLocation.deviceTime.compareTo(a.deviceLocation.deviceTime));
 
-    return Padding(
-        padding: EdgeInsets.only(top: 12, bottom: 12),
-        child: ListView.builder(
-            itemCount: investments.length,
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (BuildContext context, int i) {
-              return WebInvestmentItem(investment: investments[i], shortName: shortName, cashBalance: cashBalance);
-            }));
+    return ListView.builder(
+        itemCount: investments.length,
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (BuildContext context, int i) {
+          return WebInvestmentItem(investment: investments[i], shortName: shortName, cashBalance: cashBalance);
+        });
   }
 
   Widget _widgetHeadline(BuildContext context, String text) {
