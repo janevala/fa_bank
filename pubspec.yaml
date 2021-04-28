@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
 # fix versions when doing production software
-  dio:
+  dio: ^3.0.10
   get_it:
   cupertino_icons:
   community_material_icon:
@@ -21,7 +21,7 @@ dependencies:
   flutter_bloc:
   google_fonts:
   intl:
-  fl_chart:
+  fl_chart: ^0.12.3
   url_launcher:
   flutter_money_formatter:
   package_info:
@@ -29,7 +29,7 @@ dependencies:
   visibility_detector:
   lipsum:
   camera:
-  permission_handler:
+  permission_handler: ^5.1.0+2
   webfeed:
 #  path_provider:
 #  path:
