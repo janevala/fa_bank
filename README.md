@@ -2,6 +2,8 @@
 
 About: Demo and concept app, developed in Flutter and Graphql
 
+(implementation done before null safety)
+
 ## Portfolio App
 - User authentication done using OAuth2
 -- Access token expires in 1 minute, and is renewed with refresh token
